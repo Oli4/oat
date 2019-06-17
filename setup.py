@@ -1,7 +1,7 @@
 from setuptools import setup
 
 requirements = [
-    # TODO: put your package requirements here
+    'PyQt5', 'numpy', 'opencv-python'
 ]
 
 test_requirements = [
