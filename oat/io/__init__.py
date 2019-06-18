@@ -3,6 +3,8 @@ import numpy as np
 import os
 import cv2
 
+import functools
+
 def hist_match(source, template=None):
     """
     Adjust the pixel values of a grayscale image such that its histogram
@@ -30,7 +32,7 @@ def hist_match(source, template=None):
         t_values, t_counts = np.unique(template, return_counts=True)
         np.savez('oct_refhist.npz', t_values=np.array(t_values), t_counts=np.array(t_counts))
     else:
-        refhist_path = os.path.join(os.path.dirname(__file__), 'data/oct_refhist.npz')
+        refhist_path = os.path.join(os.path.dirname(__file__), 'oct_refhist.npz')
         ref_vals = np.load(refhist_path)
         t_values, t_counts = ref_vals['t_values'], ref_vals['t_counts']
 
@@ -53,6 +55,7 @@ def hist_match(source, template=None):
 
     return interp_t_values[bin_idx].reshape(oldshape)
 
+@functools.lru_cache(maxsize=4, typed=False)
 def get_vol_header(filepath):
     """ Read the header of the .vol file and return it as a Python dictionary.
 
@@ -160,14 +163,16 @@ def get_vol_header(filepath):
 
     return hdr
 
-
-def get_slo_image(filepath, hdr):
+@functools.lru_cache(maxsize=4, typed=False)
+def get_slo_image(filepath):
     """
 
     :param filepath:
     :param hdr:
     :return:
     """
+    hdr = get_vol_header(filepath)
+
     with open(filepath, mode='rb') as myfile:
         fileContent = myfile.read()
 
@@ -182,8 +187,8 @@ def get_slo_image(filepath, hdr):
     slo_img = slo_img.reshape(size_x_slo, size_y_slo)
     return slo_img
 
-
-def get_bscan_images(filepath, hdr, improve_constrast=None):
+@functools.lru_cache(maxsize=4, typed=False)
+def get_bscan_images(filepath, improve_constrast=None):
     """
 
     :param file:
@@ -215,6 +220,7 @@ def get_bscan_images(filepath, hdr, improve_constrast=None):
                                       to 0.
     {'Spare','c',88}};              % Spare bytes for future use.
     """
+    hdr = get_vol_header(filepath)
 
     with open(filepath, mode='rb') as myfile:
         fileContent = myfile.read()

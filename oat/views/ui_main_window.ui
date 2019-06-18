@@ -6,20 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>805</width>
-    <height>575</height>
+    <width>836</width>
+    <height>613</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget"/>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QMdiArea" name="mdiArea"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>805</width>
+     <width>836</width>
      <height>23</height>
     </rect>
    </property>
@@ -39,7 +45,16 @@
     <addaction name="actionSave_as"/>
     <addaction name="actionSave"/>
    </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>Windows</string>
+    </property>
+    <addaction name="action2D_Viewr"/>
+    <addaction name="action3D_Viewer"/>
+    <addaction name="actionToolbox"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuWindows"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_as">
@@ -63,6 +78,36 @@
    </property>
    <property name="text">
     <string>.vol (HE raw Export)</string>
+   </property>
+  </action>
+  <action name="action2D_Viewr">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>2D Viewer</string>
+   </property>
+  </action>
+  <action name="action3D_Viewer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>3D Viewer</string>
+   </property>
+  </action>
+  <action name="actionToolbox">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Toolbox</string>
    </property>
   </action>
  </widget>

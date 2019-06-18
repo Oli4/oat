@@ -1,6 +1,7 @@
-from oat.models.layers.base import _base_layer
+from oat.models.layers.base import _BaseLayer
+from oat.io import get_vol_header, get_bscan_images, get_slo_image
 
-class image_layer(_base_layer):
+class ImageLayer(_BaseLayer):
     """ A class to hold image layers which can not be manipulated by the user.
     For example the original data.
 
@@ -8,7 +9,7 @@ class image_layer(_base_layer):
     def __init__(self, data, name, type='image', editable=False):
         super().__init__(data, name, type, editable)
 
-    @_base_layer.editable.setter
+    @_BaseLayer.editable.setter
     def editable(self, value):
         raise ValueError("The 'editable' status of the image layer can not be changed.")
 
@@ -20,14 +21,26 @@ class image_layer(_base_layer):
 
 
 
-class oct_layer(image_layer):
+class OctLayer(ImageLayer):
     def __init__(self, data, name='OCT'):
         super().__init__(data, name)
 
-class nir_layer(image_layer):
+    @classmethod
+    def import_vol(cls, filepath):
+        b_hdrs, b_seglines, b_scans = get_bscan_images(filepath, improve_constrast='hist_match')
+        return cls(b_scans)
+
+
+class NirLayer(ImageLayer):
     def __init__(self, data, name='NIR'):
         super().__init__(data, name)
 
-class cfp_layer(image_layer):
+    @classmethod
+    def import_vol(cls, filepath):
+        # SLO is Scanning Laser Ophthalmoskopie -> NIR
+        slo = get_slo_image(filepath)
+        return cls(slo)
+
+class CfpLayer(ImageLayer):
     def __init__(self, data, name='CFP'):
         super().__init__(data, name)

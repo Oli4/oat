@@ -1,6 +1,6 @@
 import numpy as np
 
-class _base_layer(object):
+class _BaseLayer(object):
     def __init__(self, data, name, type=None, editable=None):
         self._name = name
         self._data = data

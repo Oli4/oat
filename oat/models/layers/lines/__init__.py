@@ -1,15 +1,19 @@
-from oat.models.layers.base import _base_layer
+from oat.models.layers.base import _BaseLayer
 
 # Line layers
-class line_layer(_base_layer):
+class LineLayer(_BaseLayer):
     def __init__(self, data, name, type='line', editable=True):
         super().__init__(data, name, type, editable)
 
-class rpe_layer(line_layer):
+class RpeLayer(LineLayer):
     def __init__(self, data, name='RPE'):
         super().__init__(data, name)
 
-class bm_layer(line_layer):
+class BmLayer(LineLayer):
     def __init__(self, data, name='BM'):
+        super().__init__(data, name)
+
+class EzLayer(LineLayer):
+    def __init__(self, data, name='EZ'):
         super().__init__(data, name)
 
