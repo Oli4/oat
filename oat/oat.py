@@ -107,10 +107,11 @@ class oat(QMainWindow, Ui_MainWindow):
     def save_as(self):
         pass
 
-class Toolbox(QMdiSubWindow, Ui_Toolbox):
+class Toolbox(QWidget, Ui_Toolbox):
     def __init__(self, parent=None):
         """Initialize the components of the main window."""
         super().__init__(parent)
+        self.setupUi(self)
 
 
 

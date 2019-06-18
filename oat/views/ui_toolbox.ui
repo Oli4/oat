@@ -61,7 +61,7 @@
            <x>0</x>
            <y>0</y>
            <width>180</width>
-           <height>169</height>
+           <height>180</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4"/>
@@ -76,8 +76,8 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>../images/baseline-add_circle-24px.svg</normaloff>../images/baseline-add_circle-24px.svg</iconset>
+           <iconset resource="../images/icons.qrc">
+            <normaloff>:/material/baseline-add_circle-24px.svg</normaloff>:/material/baseline-add_circle-24px.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -93,8 +93,8 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>../images/baseline-arrow_upward-24px.svg</normaloff>../images/baseline-arrow_upward-24px.svg</iconset>
+           <iconset resource="../images/icons.qrc">
+            <normaloff>:/material/baseline-arrow_upward-24px.svg</normaloff>:/material/baseline-arrow_upward-24px.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -110,8 +110,8 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>../images/baseline-arrow_downward-24px.svg</normaloff>../images/baseline-arrow_downward-24px.svg</iconset>
+           <iconset resource="../images/icons.qrc">
+            <normaloff>:/material/baseline-arrow_downward-24px.svg</normaloff>:/material/baseline-arrow_downward-24px.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -127,8 +127,8 @@
            <string>...</string>
           </property>
           <property name="icon">
-           <iconset>
-            <normaloff>../images/baseline-delete-24px.svg</normaloff>../images/baseline-delete-24px.svg</iconset>
+           <iconset resource="../images/icons.qrc">
+            <normaloff>:/material/baseline-delete-24px.svg</normaloff>:/material/baseline-delete-24px.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -201,8 +201,8 @@
          <string>...</string>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>../images/baseline-edit-24px.svg</normaloff>../images/baseline-edit-24px.svg</iconset>
+         <iconset resource="../images/icons.qrc">
+          <normaloff>:/material/baseline-edit-24px.svg</normaloff>:/material/baseline-edit-24px.svg</iconset>
         </property>
         <property name="iconSize">
          <size>
@@ -282,6 +282,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../images/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>
