@@ -9,51 +9,54 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(281, 56)
-        self.horizontalLayout = QtWidgets.QHBoxLayout(Form)
+class Ui_LayerEntry(object):
+    def setupUi(self, LayerEntry):
+        LayerEntry.setObjectName("LayerEntry")
+        LayerEntry.resize(243, 60)
+        LayerEntry.setMinimumSize(QtCore.QSize(150, 60))
+        LayerEntry.setMaximumSize(QtCore.QSize(16777215, 60))
+        self.horizontalLayout = QtWidgets.QHBoxLayout(LayerEntry)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.hideButton = QtWidgets.QToolButton(Form)
+        self.hideButton = QtWidgets.QToolButton(LayerEntry)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("../images/baseline-visibility-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.hideButton.setIcon(icon)
         self.hideButton.setIconSize(QtCore.QSize(24, 24))
         self.hideButton.setObjectName("hideButton")
         self.horizontalLayout.addWidget(self.hideButton)
-        self.line = QtWidgets.QFrame(Form)
+        self.line = QtWidgets.QFrame(LayerEntry)
         self.line.setFrameShape(QtWidgets.QFrame.VLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line.setObjectName("line")
         self.horizontalLayout.addWidget(self.line)
-        self.layerLabel = QtWidgets.QLabel(Form)
-        self.layerLabel.setObjectName("layerLabel")
-        self.horizontalLayout.addWidget(self.layerLabel)
-        self.settingButton = QtWidgets.QToolButton(Form)
+        self.LayerName = QtWidgets.QLineEdit(LayerEntry)
+        self.LayerName.setObjectName("LayerName")
+        self.horizontalLayout.addWidget(self.LayerName)
+        self.settingButton = QtWidgets.QToolButton(LayerEntry)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("../images/baseline-settings-20px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-settings-20px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.settingButton.setIcon(icon1)
         self.settingButton.setIconSize(QtCore.QSize(24, 24))
         self.settingButton.setObjectName("settingButton")
         self.horizontalLayout.addWidget(self.settingButton)
-        self.saveButton = QtWidgets.QToolButton(Form)
+        self.saveButton = QtWidgets.QToolButton(LayerEntry)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("../images/baseline-save-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-save-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.saveButton.setIcon(icon2)
         self.saveButton.setIconSize(QtCore.QSize(24, 24))
         self.saveButton.setObjectName("saveButton")
         self.horizontalLayout.addWidget(self.saveButton)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(LayerEntry)
+        QtCore.QMetaObject.connectSlotsByName(LayerEntry)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, LayerEntry):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.hideButton.setText(_translate("Form", "..."))
-        self.layerLabel.setText(_translate("Form", "Layer name"))
-        self.settingButton.setText(_translate("Form", "..."))
-        self.saveButton.setText(_translate("Form", "..."))
+        LayerEntry.setWindowTitle(_translate("LayerEntry", "Form"))
+        self.hideButton.setText(_translate("LayerEntry", "..."))
+        self.LayerName.setText(_translate("LayerEntry", "New Layer"))
+        self.settingButton.setText(_translate("LayerEntry", "..."))
+        self.saveButton.setText(_translate("LayerEntry", "..."))
 
 
+from . import resources_rc

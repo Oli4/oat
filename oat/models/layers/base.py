@@ -1,11 +1,12 @@
 import numpy as np
 
 class _BaseLayer(object):
-    def __init__(self, data, name, type=None, editable=None):
+    def __init__(self, data, name, type=None, editable=None, dimension=None,):
         self._name = name
         self._data = data
         self._type = type
         self._editable = editable
+        self._dimension = dimension
         self._opacity = 100
         self._visible = True
 
@@ -51,7 +52,9 @@ class _BaseLayer(object):
     def parent_layer(self):
         return self._parent_layer
 
-
+    @property
+    def dimension(self):
+        return self._dimension
 
     # Property setters
     @name.setter
@@ -96,10 +99,20 @@ class _BaseLayer(object):
 
     @save_path.setter
     def save_path(self, value):
-        # Tell registered layers that the position changed
         self._save_path = value
 
     @parent_layer.setter
     def parent_layer(self, value):
-        # Tell registered layers that the position changed
         self._parent_layer = value
+
+    @dimension.setter
+    def dimension(self, value):
+        raise ValueError("The 'dimension' status of a layer can not be changed.")
+
+class _Layer3D(_BaseLayer):
+    def __init__(self, data, name, type=None, editable=None, dimension=3):
+        super().__init__(data, name, type, editable, dimension)
+
+class _Layer2D(_BaseLayer):
+    def __init__(self, data, name, type=None, editable=None, dimension=2):
+        super().__init__(data, name, type, editable, dimension)

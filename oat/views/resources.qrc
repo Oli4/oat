@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="/icons">
+    <file>icons/baseline-add_circle-24px.svg</file>
+    <file>icons/baseline-arrow_downward-24px.svg</file>
+    <file>icons/baseline-arrow_upward-24px.svg</file>
+    <file>icons/baseline-delete-24px.svg</file>
+    <file>icons/baseline-edit-24px.svg</file>
+    <file>icons/baseline-redo-24px.svg</file>
+    <file>icons/baseline-save-24px.svg</file>
+    <file>icons/baseline-settings-20px.svg</file>
+    <file>icons/baseline-undo-24px.svg</file>
+    <file>icons/baseline-visibility_off-24px.svg</file>
+    <file>icons/baseline-visibility-24px.svg</file>
+  </qresource>
+</RCC>

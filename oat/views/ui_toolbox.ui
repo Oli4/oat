@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>218</width>
-    <height>441</height>
+    <width>250</width>
+    <height>470</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>250</width>
+    <height>470</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -36,109 +42,263 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Opacity</string>
+      <item alignment="Qt::AlignTop">
+       <widget class="QTabWidget" name="tabWidget">
+        <property name="currentIndex">
+         <number>1</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="opacitySlider">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QScrollArea" name="scrollArea">
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>180</width>
-           <height>180</height>
-          </rect>
-         </property>
-         <layout class="QVBoxLayout" name="verticalLayout_4"/>
+        <widget class="QWidget" name="layers2d">
+         <attribute name="title">
+          <string>2D</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="opacitySliderLabel_2d">
+            <property name="text">
+             <string>Opacity</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="opacitySlider_2d">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignTop">
+           <widget class="QScrollArea" name="scrollArea_2d">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2d">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>190</width>
+               <height>118</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <layout class="QVBoxLayout" name="ScrollAreaLayout_2d"/>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2d">
+            <item>
+             <widget class="QToolButton" name="addButton_2d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-add_circle-24px.svg</normaloff>:/icons/icons/baseline-add_circle-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="upButton_2d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="downButton_2d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="deleteButton_2d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-delete-24px.svg</normaloff>:/icons/icons/baseline-delete-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="layers3d">
+         <attribute name="title">
+          <string>3D</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QLabel" name="opacitySliderLabel_3d">
+            <property name="text">
+             <string>Opacity</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="opacitySlider_3d">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item alignment="Qt::AlignTop">
+           <widget class="QScrollArea" name="scrollArea_3d">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_3d">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>190</width>
+               <height>118</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_5">
+              <item>
+               <layout class="QVBoxLayout" name="ScrollAreaLayout_3d"/>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3d">
+            <item>
+             <widget class="QToolButton" name="addButton_3d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-add_circle-24px.svg</normaloff>:/icons/icons/baseline-add_circle-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="arrowType">
+               <enum>Qt::NoArrow</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="upButton_3d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="downButton_3d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QToolButton" name="deleteButton_3d">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources.qrc">
+                <normaloff>:/icons/icons/baseline-delete-24px.svg</normaloff>:/icons/icons/baseline-delete-24px.svg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="QToolButton" name="addButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../images/icons.qrc">
-            <normaloff>:/material/baseline-add_circle-24px.svg</normaloff>:/material/baseline-add_circle-24px.svg</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="upButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../images/icons.qrc">
-            <normaloff>:/material/baseline-arrow_upward-24px.svg</normaloff>:/material/baseline-arrow_upward-24px.svg</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="downButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../images/icons.qrc">
-            <normaloff>:/material/baseline-arrow_downward-24px.svg</normaloff>:/material/baseline-arrow_downward-24px.svg</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QToolButton" name="deleteButton">
-          <property name="text">
-           <string>...</string>
-          </property>
-          <property name="icon">
-           <iconset resource="../images/icons.qrc">
-            <normaloff>:/material/baseline-delete-24px.svg</normaloff>:/material/baseline-delete-24px.svg</iconset>
-          </property>
-          <property name="iconSize">
-           <size>
-            <width>24</width>
-            <height>24</height>
-           </size>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>
@@ -150,131 +310,143 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QLabel" name="label_2">
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Tools</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QWidget" name="widget_2" native="true">
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="3">
-       <widget class="QToolButton" name="toolButton_8">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
+   <item alignment="Qt::AlignTop">
+    <widget class="QWidget" name="widget_3" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_7">
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="minimumSize">
          <size>
-          <width>24</width>
-          <height>24</height>
+          <width>0</width>
+          <height>0</height>
          </size>
+        </property>
+        <property name="font">
+         <font>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string>Tools</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QToolButton" name="toolButton_11">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QToolButton" name="penButton">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../images/icons.qrc">
-          <normaloff>:/material/baseline-edit-24px.svg</normaloff>:/material/baseline-edit-24px.svg</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QToolButton" name="toolButton_10">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QToolButton" name="toolButton_9">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QToolButton" name="toolButton_7">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QToolButton" name="toolButton_6">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QToolButton" name="toolButton_12">
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>24</width>
-          <height>24</height>
-         </size>
-        </property>
+      <item>
+       <widget class="QWidget" name="widget_2" native="true">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="1" column="3">
+          <widget class="QToolButton" name="toolButton_8">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="2">
+          <widget class="QToolButton" name="toolButton_11">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QToolButton" name="penButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resources.qrc">
+             <normaloff>:/icons/icons/baseline-edit-24px.svg</normaloff>:/icons/icons/baseline-edit-24px.svg</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QToolButton" name="toolButton_10">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QToolButton" name="toolButton_9">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QToolButton" name="toolButton_7">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QToolButton" name="toolButton_6">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="3">
+          <widget class="QToolButton" name="toolButton_12">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -283,7 +455,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../images/icons.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections/>
 </ui>

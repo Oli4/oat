@@ -9,24 +9,24 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(400, 300)
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Form)
+class Ui_Viewer3D(object):
+    def setupUi(self, Viewer3D):
+        Viewer3D.setObjectName("Viewer3D")
+        Viewer3D.resize(400, 300)
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(Viewer3D)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.graphicsView3D = QtWidgets.QGraphicsView(Form)
+        self.graphicsView3D = QtWidgets.QGraphicsView(Viewer3D)
         self.graphicsView3D.setObjectName("graphicsView3D")
         self.verticalLayout_2.addWidget(self.graphicsView3D)
-        self.spinBox = QtWidgets.QSpinBox(Form)
+        self.spinBox = QtWidgets.QSpinBox(Viewer3D)
         self.spinBox.setObjectName("spinBox")
         self.verticalLayout_2.addWidget(self.spinBox)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Viewer3D)
+        QtCore.QMetaObject.connectSlotsByName(Viewer3D)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Viewer3D):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Viewer3D.setWindowTitle(_translate("Viewer3D", "Form"))
 
 

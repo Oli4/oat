@@ -5,13 +5,13 @@ import pkg_resources
 
 #from oat.views import main_window, toolbox
 
+from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
-from oat.views.ui_main_window import Ui_MainWindow
-from oat.views.ui_toolbox import Ui_Toolbox
+from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_LayerEntry, Ui_Viewer3D, Ui_Viewer2D
 from oat.models.layers import  OctLayer, NirLayer
 
 class oat(QMainWindow, Ui_MainWindow):
@@ -22,13 +22,15 @@ class oat(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        toolbox = Toolbox(self)
-        self.mdiArea.addSubWindow(toolbox)
+        self.subwindows = {}
+        self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
+        self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
+        self.subwindows['toolbox'] = self.mdiArea.addSubWindow(Toolbox(self))
 
-
-
-        self.viewer_2d = None
-        self.viewer_3d = None
+        self.subwindow_visibility = {}
+        self.subwindow_visibility['viewer2d'] = True
+        self.subwindow_visibility['viewer3d'] = True
+        self.subwindow_visibility['toolbox'] = True
 
         self.import_path = os.path.expanduser('~')
         self.save_path = os.path.expanduser('~')
@@ -43,6 +45,9 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.save_as)
 
+        self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
+        self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
+        self.actionToogleToolbox.triggered.connect(lambda: self.toggle_subwindow('toolbox'))
 
     @property
     def id_2d(self):
@@ -58,6 +63,23 @@ class oat(QMainWindow, Ui_MainWindow):
         self._id_2d = 0
         self._id_3d = 0
 
+    def toggle_subwindow(self, name):
+        if self.subwindow_visibility[name]:
+            self.hide_subwindow(name)
+            self.subwindow_visibility[name] = False
+        else:
+            self.show_subwindow(name)
+            self.subwindow_visibility[name] = True
+
+    def show_subwindow(self, name):
+        self.subwindows[name].show()
+
+    def hide_subwindow(self, name):
+        self.subwindows[name].hide()
+
+    def close_subwindow(self, name):
+        self.subwindows[name].close()
+
 
     def import_vol(self):
         """ Imports HE OCT raw file (.vol ending)
@@ -72,9 +94,13 @@ class oat(QMainWindow, Ui_MainWindow):
             self.layers_2d[self.id_2d] = NirLayer.import_vol(fname)
             self.layers_3d[self.id_3d] = OctLayer.import_vol(fname)
 
-            self.show_2d()
-            self.show_3d()
-            self.show_toolbox()
+            self.update_toolbox_layer_entries()
+
+
+            #self.show_2d()
+            #self.show_3d()
+            #self.show_toolbox()
+            self.statusbar.showMessage(self.import_path)
 
 
         ''' 
@@ -91,6 +117,9 @@ class oat(QMainWindow, Ui_MainWindow):
             return 0
         else:
             return 1'''
+
+    def update_toolbox_layer_entries(self):
+        self.subwindows['toolbox'].widget().update_layer_entries(self.layers_2d, self.layers_3d)
 
     def delete_previous(self):
         self.layers_2d = {}
@@ -109,9 +138,109 @@ class oat(QMainWindow, Ui_MainWindow):
 
 class Toolbox(QWidget, Ui_Toolbox):
     def __init__(self, parent=None):
-        """Initialize the components of the main window."""
+        """Initialize the components of the Toolbox subwindow."""
         super().__init__(parent)
         self.setupUi(self)
+
+        self.addButton_2d.clicked.connect(self.create_layer_2d)
+        self.addButton_3d.clicked.connect(self.create_layer_3d)
+
+    def closeEvent(self, evnt):
+        evnt.ignore()
+        self.setWindowState(QtCore.Qt.WindowMinimized)
+
+    def update_layer_entries(self, layers_2d, layers_3d):
+        for key in layers_2d:
+            self.add_layer(layers_2d[key])
+
+        for key in layers_3d:
+            self.add_layer(layers_3d[key])
+
+    def add_layer(self, layer_obj):
+        new_entry = LayerEntry(self, layer_obj)
+        if layer_obj.dimension == 2:
+            self.ScrollAreaLayout_2d.addWidget(new_entry)
+        else:
+            self.ScrollAreaLayout_3d.addWidget(new_entry)
+
+    def create_layer_2d(self):
+        layer_type, layer_name = self.new_layer_dialog(dimension=2)
+        layer_obj = layer_types_2d[layer_type](name=layer_name)
+        new_layer = LayerEntry(self, layer_obj)
+
+    def create_layer_3d(self):
+        layer_type, layer_name = self.new_layer_dialog(dimension=3)
+        layer_obj = layer_types_3d[layer_type](name=layer_name)
+        new_layer = LayerEntry(self, layer_obj)
+
+    def new_layer_dialog(self, dimenson):
+        # return layer_type, layer_name
+        pass
+
+
+
+
+class Viewer3D(QWidget, Ui_Viewer3D):
+    def __init__(self, parent=None):
+        """Initialize the components of the Viewer3D subwindow."""
+        super().__init__(parent)
+
+        self.setupUi(self)
+
+    def closeEvent(self, evnt):
+        evnt.ignore()
+        self.setWindowState(QtCore.Qt.WindowMinimized)
+
+class Viewer2D(QWidget, Ui_Viewer2D):
+    def __init__(self, parent=None):
+        """Initialize the components of the Viewer2D subwindow."""
+        super().__init__(parent)
+        self.setupUi(self)
+
+    def closeEvent(self, evnt):
+        evnt.ignore()
+        self.setWindowState(QtCore.Qt.WindowMinimized)
+
+class LayerEntry(QWidget, Ui_LayerEntry):
+    def __init__(self, parent, layer_obj):
+        """Initialize the components of an LayerEntry."""
+        super().__init__(parent)
+        self.setupUi(self)
+
+        self.layer_obj = layer_obj
+        self.LayerName.setText(self.layer_obj.name)
+        self.set_layer_visibility(self.layer_obj.visible)
+
+        self.hideButton.clicked.connect(self.toogle_visibility)
+
+    def set_layer_visibility(self, visible):
+        if visible:
+            self.show_layer()
+        else:
+            self.hide_layer()
+
+    def toogle_visibility(self):
+        if self.layer_obj.visible:
+            self.hide_layer()
+        else:
+            self.show_layer()
+
+    def hide_layer(self):
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility_off-24px.svg"), QtGui.QIcon.Normal,
+                       QtGui.QIcon.Off)
+        self.hideButton.setIcon(icon)
+
+        self.layer_obj.visible = False
+
+    def show_layer(self):
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"), QtGui.QIcon.Normal,
+                       QtGui.QIcon.Off)
+        self.hideButton.setIcon(icon)
+
+        self.layer_obj.visible = True
+
 
 
 

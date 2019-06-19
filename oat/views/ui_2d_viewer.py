@@ -9,21 +9,21 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(400, 300)
-        self.verticalLayout = QtWidgets.QVBoxLayout(Form)
+class Ui_Viewer2D(object):
+    def setupUi(self, Viewer2D):
+        Viewer2D.setObjectName("Viewer2D")
+        Viewer2D.resize(400, 300)
+        self.verticalLayout = QtWidgets.QVBoxLayout(Viewer2D)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.graphicsView2D = QtWidgets.QGraphicsView(Form)
+        self.graphicsView2D = QtWidgets.QGraphicsView(Viewer2D)
         self.graphicsView2D.setObjectName("graphicsView2D")
         self.verticalLayout.addWidget(self.graphicsView2D)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(Viewer2D)
+        QtCore.QMetaObject.connectSlotsByName(Viewer2D)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, Viewer2D):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Viewer2D.setWindowTitle(_translate("Viewer2D", "Form"))
 
 
