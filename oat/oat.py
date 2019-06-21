@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_LayerEntry, Ui_Viewer3D, Ui_Viewer2D
-from oat.models.layers import  OctLayer, NirLayer
+from oat.models.layers import  OctLayer, NirLayer, layer_types_2d, layer_types_3d
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -164,14 +164,17 @@ class Toolbox(QWidget, Ui_Toolbox):
             self.ScrollAreaLayout_3d.addWidget(new_entry)
 
     def create_layer_2d(self):
-        layer_type, layer_name = self.new_layer_dialog(dimension=2)
-        layer_obj = layer_types_2d[layer_type](name=layer_name)
-        new_layer = LayerEntry(self, layer_obj)
+        #layer_type, layer_name = self.new_layer_dialog(dimension=2)
+        layer_type, layer_name = 'Area Layer', 'Test'
+        layer_obj = layer_types_2d[layer_type](data=None, name=layer_name)
+        # Add Layer to mainwindow layer list
+        self.add_layer(layer_obj)
 
     def create_layer_3d(self):
-        layer_type, layer_name = self.new_layer_dialog(dimension=3)
-        layer_obj = layer_types_3d[layer_type](name=layer_name)
-        new_layer = LayerEntry(self, layer_obj)
+        #layer_type, layer_name = self.new_layer_dialog(dimension=3)
+        layer_type, layer_name = 'Area Layer', 'Test'
+        layer_obj = layer_types_3d[layer_type](data=None, name=layer_name)
+        self.add_layer(layer_obj)
 
     def new_layer_dialog(self, dimenson):
         # return layer_type, layer_name

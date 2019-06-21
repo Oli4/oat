@@ -25,3 +25,7 @@ class DrusenLayer2D(AreaLayer2D):
 class HrfLayer2D(AreaLayer2D):
     def __init__(self, data, name='HRF'):
         super().__init__(data, name)
+
+class HPLayer2D(AreaLayer2D):
+    def __init__(self, data, name='HP'):
+        super().__init__(data, name)
