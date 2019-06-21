@@ -1,11 +1,12 @@
 import sys
 import os
+import qimage2ndarray
 
 import pkg_resources
 
 #from oat.views import main_window, toolbox
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
@@ -22,6 +23,9 @@ class oat(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
+        self.layers_2d = {}
+        self.layers_3d = {}
+
         self.subwindows = {}
         self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
         self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
@@ -35,8 +39,6 @@ class oat(QMainWindow, Ui_MainWindow):
         self.import_path = os.path.expanduser('~')
         self.save_path = os.path.expanduser('~')
 
-        self.layers_2d = {}
-        self.layers_3d = {}
         self._id_2d = 0
         self._id_3d = 0
 
@@ -95,11 +97,9 @@ class oat(QMainWindow, Ui_MainWindow):
             self.layers_3d[self.id_3d] = OctLayer.import_vol(fname)
 
             self.update_toolbox_layer_entries()
+            self.update_viewer2d()
+            self.update_viewer3d()
 
-
-            #self.show_2d()
-            #self.show_3d()
-            #self.show_toolbox()
             self.statusbar.showMessage(self.import_path)
 
 
@@ -121,6 +121,12 @@ class oat(QMainWindow, Ui_MainWindow):
     def update_toolbox_layer_entries(self):
         self.subwindows['toolbox'].widget().update_layer_entries(self.layers_2d, self.layers_3d)
 
+    def update_viewer2d(self):
+        self.subwindows['viewer2d'].widget().display_layers()
+
+    def update_viewer3d(self):
+        self.subwindows['viewer3d'].widget().update()
+
     def delete_previous(self):
         self.layers_2d = {}
         self.layers_3d = {}
@@ -141,6 +147,11 @@ class Toolbox(QWidget, Ui_Toolbox):
         """Initialize the components of the Toolbox subwindow."""
         super().__init__(parent)
         self.setupUi(self)
+
+        self.parent_window = parent
+
+        self.layers_2d = parent.layers_2d
+        self.layers_3d = parent.layers_3d
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)
@@ -188,11 +199,17 @@ class Viewer3D(QWidget, Ui_Viewer3D):
         """Initialize the components of the Viewer3D subwindow."""
         super().__init__(parent)
 
+        self.parent_window = parent
+        self.layers_3d = parent.layers_3d
+
         self.setupUi(self)
 
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
+
+    def display(self):
+        pass
 
 class Viewer2D(QWidget, Ui_Viewer2D):
     def __init__(self, parent=None):
@@ -200,9 +217,29 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         super().__init__(parent)
         self.setupUi(self)
 
+        self.parent_window = parent
+
+        self.scene = QtWidgets.QGraphicsScene(self)
+        self.graphicsView2D.setScene(self.scene)
+        self.pixmapitem_dict = {}
+        self.layers_2d = parent.layers_2d
+
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
+
+    def display_layers(self):
+        #print(self.parent_window.__dict__)
+        for key in self.parent_window.layers_2d:
+            print(key)
+            print(self.parent_window.layers_2d[key].data.sum())
+            q_img = qimage2ndarray.array2qimage(self.parent_window.layers_2d[key].data)
+
+            self.pixmapitem_dict[key] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+            self.scene.addItem(self.pixmapitem_dict[key])
+    def show_layer(self, layer_key):
+        pass
+
 
 class LayerEntry(QWidget, Ui_LayerEntry):
     def __init__(self, parent, layer_obj):
