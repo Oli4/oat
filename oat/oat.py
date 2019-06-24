@@ -281,7 +281,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
         self.hideButton.setIcon(icon)
         self.layer_obj.visible = False
 
-        if self.layer_obj.dimension = 2:
+        if self.layer_obj.dimension == 2:
             self.main_window.update_viewer2d()
         else:
             self.main_window.update_viewer3d()
@@ -294,7 +294,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
 
         self.layer_obj.visible = True
 
-        if self.layer_obj.dimension = 2:
+        if self.layer_obj.dimension == 2:
             self.main_window.update_viewer2d()
         else:
             self.main_window.update_viewer3d()

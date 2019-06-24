@@ -1,4 +1,6 @@
 import numpy as np
+from PyQt5.QtCore import pyqtSignal
+
 
 class _BaseLayer(object):
     def __init__(self, data, name, type=None, editable=None, dimension=None,):
@@ -14,6 +16,15 @@ class _BaseLayer(object):
         self._position = None
         self._save_path = ''
         self._parent_layer = None
+
+        self.name_changed = pyqtSignal(str)
+        self.data_changed = pyqtSignal(np.ndarray)
+        self.opacity_changed = pyqtSignal(int)
+        self.visible_changed = pyqtSignal(bool)
+        self.editable_changed = pyqtSignal(bool)
+        self.shape_changed = pyqtSignal(tuple)
+        self.position_changed = pyqtSignal(tuple)
+        self.save_path_changed = pyqtSignal(str)
 
     # Property getters
     @property
@@ -62,6 +73,7 @@ class _BaseLayer(object):
         if type(value) is not str or len(value) > 20:
             raise ValueError("'name' needs to be a string of length < 20 characters")
         self._name = value
+        self.name_changed.emit(value)
 
     @data.setter
     def data(self, value):
@@ -70,6 +82,7 @@ class _BaseLayer(object):
                              "but it is of type {}".format(type(value)))
         self._data = value
         self._shape = self._data.shape
+        self.data_changed.emit(value)
 
     @opacity.setter
     def opacity(self, value):
@@ -77,6 +90,7 @@ class _BaseLayer(object):
             raise ValueError("'opacity' can only have values between 0 and 100."
                              " You tried setting it to {}".format(value))
         self._opacity = value
+        self.opacity_changed.emit(value)
 
     @visible.setter
     def visible(self, value):
@@ -84,6 +98,7 @@ class _BaseLayer(object):
             raise ValueError("'visible' can only be True or False."
                              " You tried setting it to {}".format(value))
         self._visible = value
+        self.visible_changed.emit(value)
 
     @editable.setter
     def editable(self, value):
@@ -91,19 +106,22 @@ class _BaseLayer(object):
             raise ValueError("'editable' can only be True or False."
                              " You tried setting it to {}".format(value))
         self._editable = value
+        self.editable_changed.emit(value)
 
     @position.setter
     def position(self, value):
         # Tell registered layers that the position changed
         self._position = value
+        self.position_changed.emit(value)
 
     @save_path.setter
     def save_path(self, value):
         self._save_path = value
+        self.save_path_changed.emit(value)
 
     @parent_layer.setter
     def parent_layer(self, value):
-        self._parent_layer = value
+        raise ValueError("The 'parent_layer' status of a layer can not be changed.")
 
     @dimension.setter
     def dimension(self, value):
