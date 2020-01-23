@@ -72,7 +72,10 @@ class Ui_MainWindow(object):
         icon2.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-redo-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionRedo.setIcon(icon2)
         self.actionRedo.setObjectName("actionRedo")
+        self.action_cfp = QtWidgets.QAction(MainWindow)
+        self.action_cfp.setObjectName("action_cfp")
         self.menuImport.addAction(self.action_vol)
+        self.menuImport.addAction(self.action_cfp)
         self.menuFile.addAction(self.actionOpen_Project)
         self.menuFile.addAction(self.menuImport.menuAction())
         self.menuFile.addSeparator()
@@ -101,7 +104,7 @@ class Ui_MainWindow(object):
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.actionOpen_Project.setText(_translate("MainWindow", "Open Project"))
-        self.action_vol.setText(_translate("MainWindow", ".vol (HE raw Export)"))
+        self.action_vol.setText(_translate("MainWindow", "HE raw Export (.vol )"))
         self.actionToggle2D.setText(_translate("MainWindow", "2D Viewer"))
         self.actionToggle3D.setText(_translate("MainWindow", "3D Viewer"))
         self.actionToogleToolbox.setText(_translate("MainWindow", "Toolbox"))
@@ -109,6 +112,7 @@ class Ui_MainWindow(object):
         self.actionUndo.setShortcut(_translate("MainWindow", "Ctrl+Z"))
         self.actionRedo.setText(_translate("MainWindow", "Redo"))
         self.actionRedo.setShortcut(_translate("MainWindow", "Ctrl+Y"))
+        self.action_cfp.setText(_translate("MainWindow", "CFP (.bmp/.tif/.jpg)"))
 
 
 from . import resources_rc

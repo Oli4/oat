@@ -15,7 +15,7 @@ class Ui_Viewer2D(object):
         Viewer2D.resize(400, 300)
         self.verticalLayout = QtWidgets.QVBoxLayout(Viewer2D)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.graphicsView2D = QtWidgets.QGraphicsView(Viewer2D)
+        self.graphicsView2D = CustomGraphicsView(Viewer2D)
         self.graphicsView2D.setObjectName("graphicsView2D")
         self.verticalLayout.addWidget(self.graphicsView2D)
 
@@ -27,3 +27,4 @@ class Ui_Viewer2D(object):
         Viewer2D.setWindowTitle(_translate("Viewer2D", "Form"))
 
 
+from oat.views.custom import CustomGraphicsView

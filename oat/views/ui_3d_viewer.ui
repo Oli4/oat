@@ -15,13 +15,20 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QGraphicsView" name="graphicsView3D"/>
+    <widget class="CustomGraphicsView" name="graphicsView3D"/>
    </item>
    <item>
     <widget class="QSpinBox" name="spinBox"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CustomGraphicsView</class>
+   <extends>QGraphicsView</extends>
+   <header>oat.views.custom</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

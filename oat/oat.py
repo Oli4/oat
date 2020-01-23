@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_LayerEntry, Ui_Viewer3D, Ui_Viewer2D
-from oat.models.layers import  OctLayer, NirLayer, layer_types_2d, layer_types_3d
+from oat.models.layers import  OctLayer, NirLayer, layer_types_2d, layer_types_3d, CfpLayer
+from oat.utils import DisjointSetForest
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -25,6 +26,10 @@ class oat(QMainWindow, Ui_MainWindow):
 
         self.layers_2d = {}
         self.layers_3d = {}
+
+        # This is used to keep track which layers are registed with each other
+        # If A registered to B and B registered to C than we also have a registration between A and C
+        self.registered_layers = DisjointSetForest()
 
         self.subwindows = {}
         self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
@@ -43,6 +48,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self._id_3d = 0
 
         self.action_vol.triggered.connect(self.import_vol)
+        self.action_cfp.triggered.connect(self.import_cfp)
         self.actionOpen_Project.triggered.connect(self.open_project)
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.save_as)
@@ -51,17 +57,16 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
         self.actionToogleToolbox.triggered.connect(lambda: self.toggle_subwindow('toolbox'))
 
-    @property
-    def id_2d(self):
+
+    def new_layer_id_2d(self):
         self._id_2d += 1
-        return self._id_2d -1
+        return "2D_{}".format(self._id_2d -1)
 
-    @property
-    def id_3d(self):
+    def new_layer_id_3d(self):
         self._id_3d += 1
-        return self._id_3d - 1
+        return "3D_{}".format(self._id_3d - 1)
 
-    def reset_layer_ids(self):
+    def _reset_layer_ids(self):
         self._id_2d = 0
         self._id_3d = 0
 
@@ -88,13 +93,19 @@ class oat(QMainWindow, Ui_MainWindow):
 
         """
         fname, _ = QFileDialog.getOpenFileName(self, "Import Heidelberg Engineering OCT raw files (.vol ending)",
-                                           '/home', "HE OCT raw files (*.vol)")
+                                           self.import_path, "HE OCT raw files (*.vol)")
         if fname:
             self.import_path = os.path.dirname(fname)
-            self.delete_previous()
 
-            self.layers_2d[self.id_2d] = NirLayer.import_vol(fname)
-            self.layers_3d[self.id_3d] = OctLayer.import_vol(fname)
+            nir_id = self.new_layer_id_2d()
+            oct_id = self.new_layer_id_3d()
+            self.layers_2d[nir_id] = NirLayer.import_vol(fname)
+            self.layers_3d[oct_id] = OctLayer.import_vol(fname)
+
+            # We assume that NIR and OCT from .vol are registered
+            self.registered_layers.make_set(nir_id)
+            self.registered_layers.make_set(oct_id)
+            self.registered_layers.union(nir_id, oct_id)
 
             self.update_toolbox_layer_entries()
             self.update_viewer2d()
@@ -102,21 +113,26 @@ class oat(QMainWindow, Ui_MainWindow):
 
             self.statusbar.showMessage(self.import_path)
 
+    def import_cfp(self):
+        """ Imports CFP
 
-        ''' 
-            self.oct.import_vol_from(import_path)
+        :return:
+        """
+        fname, _ = QFileDialog.getOpenFileName(self, "Import Color Fundus Photography",
+                                               self.import_path, "CFP files (*.bmp *.BMP *.tif *.TIF *.tiff *.TIFF)")
+        if fname:
+            self.import_path = os.path.dirname(fname)
 
-            npimg = self.oct.get_scan()[:, :, self.currentScanNumber - 1]
-            # slo = self.oct.get_slo()
-            self.mainWindowUi.show_scan(npimg, self.oct.numSlices)
-            # self.mainWindowUi.show_slo(slo)
+            cfp_id = self.new_layer_id_2d()
+            self.layers_2d[cfp_id] = CfpLayer.import_cfp(fname)
 
-            self.activaViewerSet.add('scanViewer')
+            # We assume that added CFP is not registered with any existing modality
+            self.registered_layers.make_set(cfp_id)
 
-            self.mainWindowUi.set_status_bar(self.lastImportPath)
-            return 0
-        else:
-            return 1'''
+            self.update_toolbox_layer_entries()
+            self.update_viewer2d()
+
+            self.statusbar.showMessage(self.import_path)
 
     def update_toolbox_layer_entries(self):
         self.subwindows['toolbox'].widget().update_layer_entries(self.layers_2d, self.layers_3d)
@@ -131,7 +147,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.layers_2d = {}
         self.layers_3d = {}
 
-        self.reset_layer_ids()
+        self._reset_layer_ids()
 
     def open_project(self):
         pass
@@ -147,18 +163,135 @@ class Viewer3D(QWidget, Ui_Viewer3D):
     def __init__(self, parent=None):
         """Initialize the components of the Viewer3D subwindow."""
         super().__init__(parent)
+        self.setupUi(self)
 
         self.main_window = parent
+
+        self.scene = QtWidgets.QGraphicsScene(self)
+        self.graphicsView3D.setScene(self.scene)
+
+        self.spinBox.valueChanged.connect(self.spin_box_change_action)
+        self.pixmapitem_dict = {}
         self.layers_3d = parent.layers_3d
 
-        self.setupUi(self)
+        # Active slices for all modalities are saved independently
+        # The key of this dict is the layer_id. Starts with 3D_*
+        self._active_slice = {}
+        # The active modality refers to a layer_id of the form 3D_*
+        self._active_modality = ""
+
+    @property
+    def active_modality(self):
+        if self._active_modality == "":
+            self.active_modality = self.main_window.layers_3d.keys().__iter__().__next__()
+        return self._active_modality
+
+    @active_modality.setter
+    def active_modality(self, new_active):
+        if new_active in self.main_window.layers_3d.keys():
+            self._active_modality = new_active
+            self.spinBox.setRange(0, self.main_window.layers_3d[self.active_modality].data.shape[-1]-1)
+        else:
+            raise ValueError("{} is not an available Layer.".format(new_active))
+
+    @property
+    def active_slice(self):
+        if self._active_slice == {}:
+            self._active_slice = {"{}".format(self.active_modality):0}
+        return self._active_slice
+
+    #def reset_viewer(self):
+    #    self._active_slice = {}
+    #    self.graphicsView3D._zoom = 0
+    #    self.graphicsView3D.setTransform(QtGui.QTransform())
+
+    def next_slice(self):
+        self.set_slice(self._active_slice[self._active_modality] + 1)
+
+        #if (self._active_slice[self.active_modality] + 2
+        #        <= self.main_window.layers_3d[self.active_modality].data.shape[-1]):
+        #    for modality in self.main_window.layers_3d.keys():
+        #        if self.main_window.registered_layers.connected(modality, self.active_modality):
+        #            self._active_slice[modality] += 1
+        #    self.main_window.update_viewer3d()
+
+    def last_slice(self):
+        self.set_slice(self._active_slice[self._active_modality]-1)
+
+        #if (self._active_slice[self._active_modality] >= 0):
+        #    for modality in self.main_window.layers_3d.keys():
+        #        if self.main_window.registered_layers.connected(modality, self.active_modality):
+        #            self._active_slice[modality] -= 1
+        #    self.main_window.update_viewer3d()
+
+    def set_slice(self, slice_n):
+        # Make sure slice_n is within possible range
+        slice_n = max(0, slice_n)
+        slice_n = min(self.main_window.layers_3d[self.active_modality].data.shape[-1]-1, slice_n)
+
+        # Set slice for active modality and all connected/registered modalities
+        for modality in self.main_window.layers_3d.keys():
+            if self.main_window.registered_layers.connected(modality, self.active_modality):
+                self._active_slice[modality] = slice_n
+
+        self.main_window.update_viewer3d()
+
+    def spin_box_change_action(self):
+        self.set_slice(self.spinBox.value())
+
+    def wheelEvent(self, event):
+        if self.main_window.layers_3d:
+            if event.angleDelta().y() > 0:
+                self.next_slice()
+            else:
+                self.last_slice()
+
+            event.accept()
+
+    # Scroll through modalities with Alt+Wheel
+    # def next_modality(self):
+    #     pass
+    #
+    # def last_modality(self):
+    #     pass
 
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
 
     def display_layers(self):
-        pass
+        if self.main_window.layers_3d:
+            self.graphicsView3D._empty = False
+
+            active_component = self.main_window.registered_layers.find(self.active_modality)
+            # Currently we have only 1 volume but at some point there might be multiple registered volumes
+            for key in self.main_window.layers_3d:
+                # Only display the modality "key" if it is registered to the current active modality
+                if self.main_window.registered_layers.find(key) == active_component:
+                    # Add active slice as pixmaps to the scene
+                    slice = self.active_slice[self.active_modality]
+                    q_img = qimage2ndarray.array2qimage(self.main_window.layers_3d[key].data[..., slice])
+
+                    self.pixmapitem_dict[key, slice] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+                    self.scene.addItem(self.pixmapitem_dict[key, slice])
+                    self.set_visibility(key)
+        else:
+            self.graphicsView3D._empty = True
+
+        self.spinBox.setValue(self._active_slice[self._active_modality])
+
+    def set_visibility(self, key):
+        if self.main_window.layers_3d[key].visible:
+            self.show_layer(key)
+        else:
+            self.hide_layer(key)
+
+    def hide_layer(self, key):
+        self.pixmapitem_dict[key, self.active_slice[self.active_modality]].setOpacity(0)
+
+    def show_layer(self, key):
+        opacity = self.main_window.layers_3d[key].opacity
+        self.pixmapitem_dict[key, self.active_slice[self.active_modality]].setOpacity(opacity*0.01)
 
 
 class Viewer2D(QWidget, Ui_Viewer2D):
@@ -174,16 +307,22 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.pixmapitem_dict = {}
         self.layers_2d = parent.layers_2d
 
+        self._active_modality = ""
+
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
 
     def display_layers(self):
-        for key in self.main_window.layers_2d:
-            q_img = qimage2ndarray.array2qimage(self.main_window.layers_2d[key].data)
-            self.pixmapitem_dict[key] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-            self.scene.addItem(self.pixmapitem_dict[key])
-            self.set_visibility(key)
+        if self.main_window.layers_2d:
+            self.graphicsView2D._empty = False
+            for key in self.main_window.layers_2d:
+                q_img = qimage2ndarray.array2qimage(self.main_window.layers_2d[key].data)
+                self.pixmapitem_dict[key] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+                self.scene.addItem(self.pixmapitem_dict[key])
+                self.set_visibility(key)
+        else:
+            self.graphicsView2D._empty=True
 
     def set_visibility(self, key):
         if self.main_window.layers_2d[key].visible:
@@ -281,7 +420,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
         self.hideButton.setIcon(icon)
         self.layer_obj.visible = False
 
-        if self.layer_obj.dimension = 2:
+        if self.layer_obj.dimension == 2:
             self.main_window.update_viewer2d()
         else:
             self.main_window.update_viewer3d()
@@ -294,7 +433,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
 
         self.layer_obj.visible = True
 
-        if self.layer_obj.dimension = 2:
+        if self.layer_obj.dimension == 2:
             self.main_window.update_viewer2d()
         else:
             self.main_window.update_viewer3d()

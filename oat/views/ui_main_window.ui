@@ -42,6 +42,7 @@
       <string>Import</string>
      </property>
      <addaction name="action_vol"/>
+     <addaction name="action_cfp"/>
     </widget>
     <addaction name="actionOpen_Project"/>
     <addaction name="menuImport"/>
@@ -96,7 +97,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>.vol (HE raw Export)</string>
+    <string>HE raw Export (.vol )</string>
    </property>
   </action>
   <action name="actionToggle2D">
@@ -157,6 +158,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_cfp">
+   <property name="text">
+    <string>CFP (.bmp/.tif/.jpg)</string>
    </property>
   </action>
  </widget>

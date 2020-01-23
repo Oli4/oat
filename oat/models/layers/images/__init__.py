@@ -1,5 +1,5 @@
 from oat.models.layers.base import _BaseLayer, _Layer3D, _Layer2D
-from oat.io import get_vol_header, get_bscan_images, get_slo_image
+from oat.io import get_vol_header, get_bscan_images, get_slo_image, get_cfp
 
 class ImageLayer3D(_Layer3D):
     """ A class to hold image layers which can not be manipulated by the user.
@@ -45,7 +45,7 @@ class OctLayer(ImageLayer3D):
 
     @classmethod
     def import_vol(cls, filepath):
-        b_hdrs, b_seglines, b_scans = get_bscan_images(filepath, improve_constrast='hist_match')
+        b_hdrs, b_seglines, b_scans = get_bscan_images(filepath, improve_constrast=None)
         return cls(b_scans)
 
 
@@ -62,3 +62,7 @@ class NirLayer(ImageLayer2D):
 class CfpLayer(ImageLayer2D):
     def __init__(self, data, name='CFP'):
         super().__init__(data, name)
+
+    @classmethod
+    def import_cfp(cls, filepath):
+        return cls(get_cfp(filepath))
