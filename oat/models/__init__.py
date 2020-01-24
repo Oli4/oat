@@ -6,6 +6,8 @@ class TreeItem():
         self._child_items = []
         self._item_data = data
 
+        self.widget
+
     def add_child(self, treeitem):
         self._child_items.append(treeitem)
 

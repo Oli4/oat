@@ -336,6 +336,16 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     def show_layer(self, key):
         self.pixmapitem_dict[key].show()
 
+class LayerTreeView(QtWidgets.QTreeView):
+    def  __init__(self, model, parent):
+        super().__init__(parent)
+        self.setModel(model)
+        model.setView(self)
+        root = model.index(0, 0)
+        self.setCurrentIndex(root)
+        self.setHeaderHidden(True)
+
+        self.setIndexWidget(root, root_widget)
 
 class Toolbox(QWidget, Ui_Toolbox):
     def __init__(self, parent=None):
