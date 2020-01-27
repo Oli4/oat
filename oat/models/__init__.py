@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
 
-class TreeItem():
+
+class TreeItem(QtCore.QStandardItem):
     def __init__(self, data, parent=None, ):
         self._parent = parent
         self._child_items = []
@@ -77,7 +78,7 @@ class SegmentationTreeItem(TreeItem):
     def __init__(self, data, parent=None, ):
         super().__init__(data, parent)
 
-class DataModel(QtCore.QAbstractItemModel):
+class DataModel(QtCore.QStandardItemModel):
     def __init__(self):
         super().__init__()
         root_data = []

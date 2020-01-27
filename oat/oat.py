@@ -12,8 +12,9 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
-from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_LayerEntry, Ui_Viewer3D, Ui_Viewer2D
+from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
 from oat.models.layers import  OctLayer, NirLayer, layer_types_2d, layer_types_3d, CfpLayer
+from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem
 from oat.utils import DisjointSetForest
 
 class oat(QMainWindow, Ui_MainWindow):
@@ -24,8 +25,7 @@ class oat(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.layers_2d = {}
-        self.layers_3d = {}
+        self.data_model = DataModel()
 
         # This is used to keep track which layers are registed with each other
         # If A registered to B and B registered to C than we also have a registration between A and C
@@ -97,19 +97,29 @@ class oat(QMainWindow, Ui_MainWindow):
         if fname:
             self.import_path = os.path.dirname(fname)
 
-            nir_id = self.new_layer_id_2d()
-            oct_id = self.new_layer_id_3d()
-            self.layers_2d[nir_id] = NirLayer.import_vol(fname)
-            self.layers_3d[oct_id] = OctLayer.import_vol(fname)
+            # Create OCT Layer with Segmentations
+            oct = OctLayer.import_vol(fname)
+
+            # Create NIR Layer
+            nir = NirLayer.import_vol(fname)
+
+            # Store references to the Layers in data_model
+            oct_TreeItem = ModalityTreeItem(oct)
+            [oct_TreeItem.add_child(SegmentationTreeItem(s)) for s in oct.segmentations]
+            self.data_model.appendRow(oct_TreeItem)
+
+            nir_TreeItem = ModalityTreeItem(nir)
+            [nir_TreeItem.add_child(SegmentationTreeItem(s)) for s in nir.segmentations]
+            self.data_model.appendRow(nir_TreeItem)
 
             # We assume that NIR and OCT from .vol are registered
-            self.registered_layers.make_set(nir_id)
-            self.registered_layers.make_set(oct_id)
-            self.registered_layers.union(nir_id, oct_id)
+            #self.registered_layers.make_set(nir_id)
+            #self.registered_layers.make_set(oct_id)
+            #self.registered_layers.union(nir_id, oct_id)
 
-            self.update_toolbox_layer_entries()
-            self.update_viewer2d()
-            self.update_viewer3d()
+            #self.update_toolbox_layer_entries()
+            #self.update_viewer2d()
+            #self.update_viewer3d()
 
             self.statusbar.showMessage(self.import_path)
 
@@ -123,14 +133,17 @@ class oat(QMainWindow, Ui_MainWindow):
         if fname:
             self.import_path = os.path.dirname(fname)
 
-            cfp_id = self.new_layer_id_2d()
-            self.layers_2d[cfp_id] = CfpLayer.import_cfp(fname)
+            cfp = CfpLayer.import_cfp(fname)
+
+            cfp_TreeItem = ModalityTreeItem(cfp)
+            [cfp_TreeItem.add_child(SegmentationTreeItem(s)) for s in cfp.segmentations]
+            self.data_model.appendRow(cfp_TreeItem)
 
             # We assume that added CFP is not registered with any existing modality
-            self.registered_layers.make_set(cfp_id)
+            #self.registered_layers.make_set(cfp_id)
 
-            self.update_toolbox_layer_entries()
-            self.update_viewer2d()
+            #self.update_toolbox_layer_entries()
+            #self.update_viewer2d()
 
             self.statusbar.showMessage(self.import_path)
 
@@ -336,16 +349,7 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     def show_layer(self, key):
         self.pixmapitem_dict[key].show()
 
-class LayerTreeView(QtWidgets.QTreeView):
-    def  __init__(self, model, parent):
-        super().__init__(parent)
-        self.setModel(model)
-        model.setView(self)
-        root = model.index(0, 0)
-        self.setCurrentIndex(root)
-        self.setHeaderHidden(True)
 
-        self.setIndexWidget(root, root_widget)
 
 class Toolbox(QWidget, Ui_Toolbox):
     def __init__(self, parent=None):
@@ -355,8 +359,14 @@ class Toolbox(QWidget, Ui_Toolbox):
 
         self.main_window = parent
 
-        self.layers_2d = parent.layers_2d
-        self.layers_3d = parent.layers_3d
+        # Setting up the ModalityTreeView
+        self.ModalityTreeView_2d.setModel(parent.data_model)
+        root = parent.data_model.index(0, 0)
+        self.ModalityTreeView_2d.setCurrentIndex(root)
+
+        self.ModalityTreeView_3d.setModel(parent.data_model)
+        root = parent.data_model.index(0, 0)
+        self.ModalityTreeView_3d.setCurrentIndex(root)
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)
@@ -371,6 +381,13 @@ class Toolbox(QWidget, Ui_Toolbox):
 
         for key in layers_3d:
             self.add_layer(layers_3d[key])
+
+    def add_modality(self):
+        pass
+
+    def add_segmentation(self):
+        pass
+
 
     def add_layer(self, layer_obj):
         new_entry = LayerEntry(self, layer_obj)
@@ -396,7 +413,26 @@ class Toolbox(QWidget, Ui_Toolbox):
         # return layer_type, layer_name
         pass
 
+class LayerTreeView(QtWidgets.QTreeView):
+    def  __init__(self, model, parent):
+        super().__init__(parent)
+        self.setModel(model)
+        model.setView(self)
+        root = model.index(0, 0)
+        self.setCurrentIndex(root)
+        self.setHeaderHidden(True)
 
+        #self.setIndexWidget(root, root_widget)
+
+class ModalityEntry(QWidget, Ui_ModalityEntry):
+    def  __init__(self):
+        pass
+
+class SegmentationEntry(QWidget, Ui_SegmentationEntry):
+    def __init__(self):
+        pass
+
+'''
 class LayerEntry(QWidget, Ui_LayerEntry):
     def __init__(self, parent, layer_obj):
         """Initialize the components of an LayerEntry."""
@@ -448,7 +484,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
         else:
             self.main_window.update_viewer3d()
 
-
+'''
 
 
 

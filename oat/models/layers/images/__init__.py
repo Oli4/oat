@@ -1,4 +1,5 @@
-from oat.models.layers.base import _BaseLayer, _Layer3D, _Layer2D
+from oat.models.layers.base import _BaseLayer, _Layer3D, _Layer2D,
+from oat.models.layers import LineLayer3D
 from oat.io import get_vol_header, get_bscan_images, get_slo_image, get_cfp
 
 class ImageLayer3D(_Layer3D):
@@ -40,13 +41,19 @@ class ImageLayer2D(_Layer2D):
 
 
 class OctLayer(ImageLayer3D):
-    def __init__(self, data, name='OCT'):
+    def __init__(self, data, segmentation, meta_data, name='OCT'):
         super().__init__(data, name)
+        self.segmentation = segmentation
+        self.meta_data = meta_data
 
     @classmethod
     def import_vol(cls, filepath):
         b_hdrs, b_seglines, b_scans = get_bscan_images(filepath, improve_constrast=None)
-        return cls(b_scans)
+
+
+        segmentations = [LineLayer3D()]
+
+        return cls(b_scans, segmentations, b_hdrs)
 
 
 class NirLayer(ImageLayer2D):

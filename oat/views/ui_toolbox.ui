@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>250</width>
-    <height>470</height>
+    <height>505</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -66,36 +66,8 @@
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignTop">
-           <widget class="QScrollArea" name="scrollArea_2d">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>120</height>
-             </size>
-            </property>
-            <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAlwaysOff</enum>
-            </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_2d">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>190</width>
-               <height>118</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_4">
-              <item>
-               <layout class="QVBoxLayout" name="ScrollAreaLayout_2d"/>
-              </item>
-             </layout>
-            </widget>
-           </widget>
+          <item>
+           <widget class="QTreeView" name="ModalityTreeView_2d"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2d">
@@ -190,36 +162,8 @@
             </property>
            </widget>
           </item>
-          <item alignment="Qt::AlignTop">
-           <widget class="QScrollArea" name="scrollArea_3d">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>120</height>
-             </size>
-            </property>
-            <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAlwaysOff</enum>
-            </property>
-            <property name="widgetResizable">
-             <bool>true</bool>
-            </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_3d">
-             <property name="geometry">
-              <rect>
-               <x>0</x>
-               <y>0</y>
-               <width>190</width>
-               <height>118</height>
-              </rect>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_5">
-              <item>
-               <layout class="QVBoxLayout" name="ScrollAreaLayout_3d"/>
-              </item>
-             </layout>
-            </widget>
-           </widget>
+          <item>
+           <widget class="QTreeView" name="ModalityTreeView_3d"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3d">

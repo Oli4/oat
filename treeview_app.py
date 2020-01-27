@@ -78,6 +78,7 @@ class TreeViewModel(QtCore.QAbstractItemModel):
     #---------------------------------------------------------------------------
     def index(self, row, column, parent=QtCore.QModelIndex()):
         if parent.isValid():
+            print(row, column)
             nodeS = parent.internalPointer()
             nodeX = nodeS.child[row]
             node = self.__createIndex(row, column, nodeX)
@@ -247,7 +248,7 @@ class MyTree(QtWidgets.QMainWindow):
         super(MyTree, self).__init__(parent)
 
         data = MyData.init()
-        frame = QtWidgets.QFrame();
+        frame = QtWidgets.QWidget();
         frame.setLayout( QtWidgets.QHBoxLayout() );
 
         treeViewModel = TreeViewModel(data)

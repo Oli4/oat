@@ -9,17 +9,17 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(300, 38)
+class Ui_ModalityEntry(object):
+    def setupUi(self, ModalityEntry):
+        ModalityEntry.setObjectName("ModalityEntry")
+        ModalityEntry.resize(300, 38)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
-        Form.setSizePolicy(sizePolicy)
-        Form.setMaximumSize(QtCore.QSize(300, 38))
-        self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
+        sizePolicy.setHeightForWidth(ModalityEntry.sizePolicy().hasHeightForWidth())
+        ModalityEntry.setSizePolicy(sizePolicy)
+        ModalityEntry.setMaximumSize(QtCore.QSize(300, 38))
+        self.horizontalLayoutWidget = QtWidgets.QWidget(ModalityEntry)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 291, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
@@ -53,14 +53,14 @@ class Ui_Form(object):
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(ModalityEntry)
+        QtCore.QMetaObject.connectSlotsByName(ModalityEntry)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, ModalityEntry):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.hideButton.setText(_translate("Form", "..."))
-        self.label.setText(_translate("Form", "New Modality"))
+        ModalityEntry.setWindowTitle(_translate("ModalityEntry", "Form"))
+        self.hideButton.setText(_translate("ModalityEntry", "..."))
+        self.label.setText(_translate("ModalityEntry", "New Modality"))
 
 
 from . import resources_rc

@@ -9,18 +9,18 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(300, 38)
+class Ui_SegmentationEntry(object):
+    def setupUi(self, SegmentationEntry):
+        SegmentationEntry.setObjectName("SegmentationEntry")
+        SegmentationEntry.resize(300, 38)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
-        Form.setSizePolicy(sizePolicy)
-        Form.setMaximumSize(QtCore.QSize(300, 38))
-        self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 291, 41))
+        sizePolicy.setHeightForWidth(SegmentationEntry.sizePolicy().hasHeightForWidth())
+        SegmentationEntry.setSizePolicy(sizePolicy)
+        SegmentationEntry.setMaximumSize(QtCore.QSize(300, 38))
+        self.horizontalLayoutWidget = QtWidgets.QWidget(SegmentationEntry)
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 291, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -44,14 +44,14 @@ class Ui_Form(object):
         self.label.setObjectName("label")
         self.horizontalLayout.addWidget(self.label)
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        self.retranslateUi(SegmentationEntry)
+        QtCore.QMetaObject.connectSlotsByName(SegmentationEntry)
 
-    def retranslateUi(self, Form):
+    def retranslateUi(self, SegmentationEntry):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.hideButton.setText(_translate("Form", "..."))
-        self.label.setText(_translate("Form", "New Segmentation"))
+        SegmentationEntry.setWindowTitle(_translate("SegmentationEntry", "Form"))
+        self.hideButton.setText(_translate("SegmentationEntry", "..."))
+        self.label.setText(_translate("SegmentationEntry", "New Segmentation"))
 
 
 from . import resources_rc
