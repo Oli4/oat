@@ -1,14 +1,18 @@
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
+class TreeItem(QtGui.QStandardItem):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
-class TreeItem(QtCore.QStandardItem):
-    def __init__(self, data, parent=None, ):
-        self._parent = parent
-        self._child_items = []
-        self._item_data = data
+        #self._parent = parent
+        #self._child_items = []
+        #self._item_data = data
 
-        self.widget
+    def column_count(self):
+        # We have only a single column currently because I plan to store the complete modality/segmentation in column 1
+        return 1
 
+    """
     def add_child(self, treeitem):
         self._child_items.append(treeitem)
 
@@ -68,21 +72,26 @@ class TreeItem(QtCore.QStandardItem):
             del self._child_items[position]
 
         return True
+    
+    """
 
 
 class ModalityTreeItem(TreeItem):
-    def __init__(self, data, parent=None, ):
-        super().__init__(data, parent)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
 class SegmentationTreeItem(TreeItem):
-    def __init__(self, data, parent=None, ):
-        super().__init__(data, parent)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-class DataModel(QtCore.QStandardItemModel):
+class DataModel(QtGui.QStandardItemModel):
     def __init__(self):
         super().__init__()
+
+
         root_data = []
         self.root_item = TreeItem(root_data)
+
 
     def get_item(self, qm_index):
         if qm_index.isValid():
@@ -102,6 +111,7 @@ class DataModel(QtCore.QStandardItemModel):
         pass
 
     def setData(self, QModelIndex, Any, role=None):
+        print("whyhere")
         pass
 
     def headerData(self, p_int, Qt_Orientation, role=None):
@@ -115,7 +125,7 @@ class DataModel(QtCore.QStandardItemModel):
 
     def rowCount(self, parent=None, *args, **kwargs):
         parent_item = self.get_item(parent)
-        return parent_item.child_count()
+        return parent_item.rowCount()
 
     def beginInsertRows(self, QModelIndex, p_int, p_int_1):
         pass
@@ -123,7 +133,7 @@ class DataModel(QtCore.QStandardItemModel):
     def removeRows(self, p_int, p_int_1, parent=None, *args, **kwargs):
         pass
 
-    def index(self, row, column, parent=None, *args, **kwargs):
+    def index(self, row, column, parent=QtCore.QModelIndex(), *args, **kwargs):
         if parent.isValid() and parent.column() != 0:
             return QtCore.QModelIndex()
 

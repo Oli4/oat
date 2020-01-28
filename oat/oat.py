@@ -16,6 +16,7 @@ from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_Segmentati
 from oat.models.layers import  OctLayer, NirLayer, layer_types_2d, layer_types_3d, CfpLayer
 from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem
 from oat.utils import DisjointSetForest
+from oat.io import OCT
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -26,19 +27,20 @@ class oat(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.data_model = DataModel()
+        self.data_model = QtGui.QStandardItemModel()
 
         # This is used to keep track which layers are registed with each other
         # If A registered to B and B registered to C than we also have a registration between A and C
-        self.registered_layers = DisjointSetForest()
+        #self.registered_layers = DisjointSetForest()
 
         self.subwindows = {}
-        self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
-        self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
+        #self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
+        #self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
         self.subwindows['toolbox'] = self.mdiArea.addSubWindow(Toolbox(self))
 
         self.subwindow_visibility = {}
-        self.subwindow_visibility['viewer2d'] = True
-        self.subwindow_visibility['viewer3d'] = True
+        #self.subwindow_visibility['viewer2d'] = True
+        #self.subwindow_visibility['viewer3d'] = True
         self.subwindow_visibility['toolbox'] = True
 
         self.import_path = os.path.expanduser('~')
@@ -53,8 +55,8 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.save_as)
 
-        self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
-        self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
+        #self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
+        #self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
         self.actionToogleToolbox.triggered.connect(lambda: self.toggle_subwindow('toolbox'))
 
 
@@ -97,20 +99,32 @@ class oat(QMainWindow, Ui_MainWindow):
         if fname:
             self.import_path = os.path.dirname(fname)
 
+            oct_data = OCT.read_vol(fname)
+            oct_layer = OctLayer(oct_data.volume)
             # Create OCT Layer with Segmentations
-            oct = OctLayer.import_vol(fname)
+            #oct = OctLayer.import_vol(fname)
 
             # Create NIR Layer
-            nir = NirLayer.import_vol(fname)
+            #nir = NirLayer.import_vol(fname)
 
             # Store references to the Layers in data_model
-            oct_TreeItem = ModalityTreeItem(oct)
-            [oct_TreeItem.add_child(SegmentationTreeItem(s)) for s in oct.segmentations]
-            self.data_model.appendRow(oct_TreeItem)
+            oct_TreeItem = ModalityTreeItem()
+            visibilityRole = Qt.UserRole+1
+            nameRole = Qt.UserRole+2
 
-            nir_TreeItem = ModalityTreeItem(nir)
-            [nir_TreeItem.add_child(SegmentationTreeItem(s)) for s in nir.segmentations]
-            self.data_model.appendRow(nir_TreeItem)
+            oct_TreeItem.setData(oct_layer.visible, visibilityRole)
+            oct_TreeItem.setData(oct_layer.name, nameRole)
+            #oct_TreeItem.appendRow(ModalityTreeItem().setData(oct_layer))
+
+            #oct_TreeItem = QtGui.QStandardItem().setData(oct_layer)
+            #oct_TreeItem.appendRow(QtGui.QStandardItem().setData(oct_layer))
+            #[oct_TreeItem.add_child(SegmentationTreeItem(s)) for s in oct.segmentations]
+            self.data_model.appendRow(oct_TreeItem)
+            self.subwindows["toolbox"].widget().ModalityTreeView_3d.openPersistentEditor(self.data_model.index(0,0,self.data_model.invisibleRootItem().index()))
+
+            #nir_TreeItem = ModalityTreeItem(nir)
+            #[nir_TreeItem.add_child(SegmentationTreeItem(s)) for s in nir.segmentations]
+            #self.data_model.appendRow(nir_TreeItem)
 
             # We assume that NIR and OCT from .vol are registered
             #self.registered_layers.make_set(nir_id)
@@ -318,7 +332,6 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.scene = QtWidgets.QGraphicsScene(self)
         self.graphicsView2D.setScene(self.scene)
         self.pixmapitem_dict = {}
-        self.layers_2d = parent.layers_2d
 
         self._active_modality = ""
 
@@ -350,6 +363,52 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.pixmapitem_dict[key].show()
 
 
+class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.visible = None
+
+    def createEditor(self, parent, option, index):
+        editor = ModalityEntry(parent)
+        editor.hideButton.clicked.connect(self.visibilityChanged)
+        return editor
+
+    @QtCore.pyqtSlot()
+    def visibilityChanged(self):
+        self.visible = not self.visible
+        self.commitData.emit(self.sender())
+
+    def setEditorData(self, editor, index):
+        if index.isValid():
+            editor.label.setText(index.model().data(index, Qt.UserRole+2))
+
+            icon = QtGui.QIcon()
+            if index.model().data(index, Qt.UserRole+1):
+                icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"), QtGui.QIcon.Normal,
+                               QtGui.QIcon.Off)
+                editor.hideButton.setIcon(icon)
+                self.visible = True
+            else:
+                icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility_off-24px.svg"), QtGui.QIcon.Normal,
+                               QtGui.QIcon.Off)
+                editor.hideButton.setIcon(icon)
+                self.visible = False
+
+    def setModelData(self, editor, model, index):
+        print("here")
+        model.setData(index, self.visible, Qt.UserRole+1)
+
+
+class ModalityEntry(QWidget, Ui_ModalityEntry):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setupUi(self)
+
+
+class SegmentationEntry(QWidget, Ui_SegmentationEntry):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setupUi(self)
 
 class Toolbox(QWidget, Ui_Toolbox):
     def __init__(self, parent=None):
@@ -363,10 +422,15 @@ class Toolbox(QWidget, Ui_Toolbox):
         self.ModalityTreeView_2d.setModel(parent.data_model)
         root = parent.data_model.index(0, 0)
         self.ModalityTreeView_2d.setCurrentIndex(root)
+        self.ModalityTreeView_2d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_2d))
+        self.ModalityTreeView_2d.setHeaderHidden(True)
+
 
         self.ModalityTreeView_3d.setModel(parent.data_model)
         root = parent.data_model.index(0, 0)
         self.ModalityTreeView_3d.setCurrentIndex(root)
+        self.ModalityTreeView_3d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_3d))
+        self.ModalityTreeView_3d.setHeaderHidden(True)
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)
@@ -424,13 +488,7 @@ class LayerTreeView(QtWidgets.QTreeView):
 
         #self.setIndexWidget(root, root_widget)
 
-class ModalityEntry(QWidget, Ui_ModalityEntry):
-    def  __init__(self):
-        pass
 
-class SegmentationEntry(QWidget, Ui_SegmentationEntry):
-    def __init__(self):
-        pass
 
 '''
 class LayerEntry(QWidget, Ui_LayerEntry):
