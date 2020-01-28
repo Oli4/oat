@@ -3,13 +3,13 @@ import pytest
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QFileDialog
 
-from oat import oat
+from oat import oatmain
 
 
 @pytest.fixture
 def window(qtbot):
     """Pass the application to the test functions via a pytest fixture."""
-    new_window = oat.oat()
+    new_window = oatmain.oat()
     qtbot.add_widget(new_window)
     new_window.show()
     return new_window

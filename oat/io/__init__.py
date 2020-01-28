@@ -22,6 +22,10 @@ class OCT():
         return self._bscans[key]
 
     @property
+    def segmentation(self):
+        return {1:[], 2:[]}
+
+    @property
     def volume(self):
         return np.stack([x._scan for x in self._bscans], axis=-1)
 

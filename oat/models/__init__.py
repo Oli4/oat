@@ -1,23 +1,28 @@
 from PyQt5 import QtCore, QtGui
 
 class TreeItem(QtGui.QStandardItem):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, parent):
         super().__init__()
 
-        #self._parent = parent
-        #self._child_items = []
+        self._parent = parent
+        self._child_items = []
         #self._item_data = data
 
     def column_count(self):
         # We have only a single column currently because I plan to store the complete modality/segmentation in column 1
         return 1
 
-    """
+
     def add_child(self, treeitem):
         self._child_items.append(treeitem)
 
     def child_count(self):
         return len(self._child_items)
+
+    def parent(self):
+        return self._parent
+    """
+    
 
     def column_count(self):
         # We have only a single column currently because I plan to store the complete modality/segmentation in column 1
@@ -77,18 +82,16 @@ class TreeItem(QtGui.QStandardItem):
 
 
 class ModalityTreeItem(TreeItem):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent):
+        super().__init__(parent)
 
 class SegmentationTreeItem(TreeItem):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent):
+        super().__init__(parent)
 
 class DataModel(QtGui.QStandardItemModel):
     def __init__(self):
         super().__init__()
-
-
         root_data = []
         self.root_item = TreeItem(root_data)
 
