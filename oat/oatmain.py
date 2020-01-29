@@ -13,10 +13,11 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
-from oat.models.layers import OctLayer, NirLayer, layer_types_2d, layer_types_3d, CfpLayer
-from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem
+from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
+from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE, PIXMAP_ROLE
 from oat.utils import DisjointSetForest
 from oat.io import OCT
+
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -26,25 +27,28 @@ class oat(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.visibilityRole = Qt.UserRole + 1
-        self.nameRole = Qt.UserRole + 2
-        self.dataRole = Qt.UserRole + 3
+        self.data_model = DataModel()
+        # Add subtrees for 2D and 3D data
+        self.data_model.appendRow(QtGui.QStandardItem())
+        self.data_model.appendRow(QtGui.QStandardItem())
+        self.data_2D_index = QtCore.QPersistentModelIndex(self.data_model.index(0, 0, parent=QtCore.QModelIndex()))
+        self.data_3D_index = QtCore.QPersistentModelIndex(self.data_model.index(1, 0, parent=QtCore.QModelIndex()))
 
-        #self.data_model = DataModel()
-        self.data_model = QtGui.QStandardItemModel()
 
         # This is used to keep track which layers are registed with each other
         # If A registered to B and B registered to C than we also have a registration between A and C
         #self.registered_layers = DisjointSetForest()
 
         self.subwindows = {}
-        #self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self))
+        self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self.data_model, self))
+        self.subwindows['viewer2d'].widget().setRootIndex(QtCore.QModelIndex(self.data_2D_index))
         #self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
+        #self.subwindows['viewer3d'].widget().setRootIndex(QtCore.QModelIndex(self.data_3D_index))
         self.subwindows['toolbox'] = self.mdiArea.addSubWindow(Toolbox(self))
 
         self.subwindow_visibility = {}
         #self.subwindow_visibility['viewer2d'] = True
-        #self.subwindow_visibility['viewer3d'] = True
+        self.subwindow_visibility['viewer3d'] = True
         self.subwindow_visibility['toolbox'] = True
 
         self.import_path = os.path.expanduser('~')
@@ -59,7 +63,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionSave_as.triggered.connect(self.save_as)
 
-        #self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
+        self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
         #self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
         self.actionToogleToolbox.triggered.connect(lambda: self.toggle_subwindow('toolbox'))
 
@@ -104,21 +108,25 @@ class oat(QMainWindow, Ui_MainWindow):
             self.import_path = os.path.dirname(fname)
 
             oct_data = OCT.read_vol(fname)
+
+            #Add OCT
             oct_layer = OctLayer(oct_data.volume)
 
             # Store references to the Layers in data_model
-            root_item = self.data_model.invisibleRootItem().index()
-            oct_TreeItem = ModalityTreeItem(root_item)
-            #oct_TreeItem = QtGui.QStandardItem()
+            oct_TreeItem = ModalityTreeItem(oct_layer)
 
-            oct_TreeItem.setData(oct_layer.visible, self.visibilityRole)
-            oct_TreeItem.setData(oct_layer.name, self.nameRole)
             for key in oct_data.segmentation:
-                seg_item = SegmentationTreeItem(oct_TreeItem.index())
-                seg_item.setData(oct_data.segmentation[key], self.dataRole)
-                oct_TreeItem.add_child(seg_item)
-            self.data_model.appendRow(oct_TreeItem)
+                seg_layer = LineLayer3D(oct_data.segmentation[key], name=key)
+                seg_TreeItem = SegmentationTreeItem(seg_layer)
+                oct_TreeItem.appendRow(seg_TreeItem)
+            self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_3D_index)).appendRow(oct_TreeItem)
 
+            # Add NIR
+            nir_layer = NirLayer(oct_data.nir)
+            nir_TreeItem = ModalityTreeItem(nir_layer)
+            self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_2D_index)).appendRow(nir_TreeItem)
+
+            self.subwindows["viewer2d"].widget().refresh()
             self.statusbar.showMessage(self.import_path)
 
     def import_cfp(self):
@@ -131,17 +139,10 @@ class oat(QMainWindow, Ui_MainWindow):
         if fname:
             self.import_path = os.path.dirname(fname)
 
-            cfp = CfpLayer.import_cfp(fname)
+            cfp_layer = CfpLayer.import_cfp(fname)
 
-            cfp_TreeItem = ModalityTreeItem(cfp)
-            [cfp_TreeItem.add_child(SegmentationTreeItem(s)) for s in cfp.segmentations]
-            self.data_model.appendRow(cfp_TreeItem)
-
-            # We assume that added CFP is not registered with any existing modality
-            #self.registered_layers.make_set(cfp_id)
-
-            #self.update_toolbox_layer_entries()
-            #self.update_viewer2d()
+            cfp_TreeItem = ModalityTreeItem(cfp_layer)
+            self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_2D_index)).appendRow(cfp_TreeItem)
 
             self.statusbar.showMessage(self.import_path)
 
@@ -306,45 +307,37 @@ class Viewer3D(QWidget, Ui_Viewer3D):
 
 
 class Viewer2D(QWidget, Ui_Viewer2D):
-    def __init__(self, parent=None):
+    def __init__(self, model, parent=None):
         """Initialize the components of the Viewer2D subwindow."""
         super().__init__(parent)
         self.setupUi(self)
 
-        self.main_window = parent
+        self.parent = parent
+        self.model: QtGui.QStandardItemModel = model
+        self.model.dataChanged.connect(self.refresh)
 
         self.scene = QtWidgets.QGraphicsScene(self)
         self.graphicsView2D.setScene(self.scene)
-        self.pixmapitem_dict = {}
 
         self._active_modality = ""
+        self._root_index = QtCore.QModelIndex()
 
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
 
-    def display_layers(self):
-        if self.main_window.layers_2d:
-            self.graphicsView2D._empty = False
-            for key in self.main_window.layers_2d:
-                q_img = qimage2ndarray.array2qimage(self.main_window.layers_2d[key].data)
-                self.pixmapitem_dict[key] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-                self.scene.addItem(self.pixmapitem_dict[key])
-                self.set_visibility(key)
-        else:
-            self.graphicsView2D._empty=True
+    def setRootIndex(self, index):
+        self._root_index = index
 
-    def set_visibility(self, key):
-        if self.main_window.layers_2d[key].visible:
-            self.show_layer(key)
-        else:
-            self.hide_layer(key)
+    def refresh(self):
+        self.scene.clear()
+        for row in range(self.model.rowCount(parent=self._root_index)):
+            index = self.model.index(row, 0, parent=self._root_index)
 
-    def hide_layer(self, key):
-        self.pixmapitem_dict[key].hide()
-
-    def show_layer(self, key):
-        self.pixmapitem_dict[key].show()
+            pm = self.model.data(index, PIXMAP_ROLE)
+            print("1")
+            self.scene.addItem(pm)
+            print("2")
 
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
@@ -359,8 +352,13 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         super().paint(painter, option, index)
 
     def createEditor(self, parent, option, index):
-        editor = ModalityEntry(parent)
+        if not index.model().itemFromIndex(index).parent():
+            editor = ModalityEntry(parent)
+        else:
+            editor = SegmentationEntry(parent)
+
         editor.hideButton.clicked.connect(self.visibilityChanged)
+
         return editor
 
     @QtCore.pyqtSlot()
@@ -409,17 +407,15 @@ class Toolbox(QWidget, Ui_Toolbox):
 
         # Setting up the ModalityTreeView
         self.ModalityTreeView_2d.setModel(parent.data_model)
-        root = parent.data_model.index(0, 0)
-        #self.ModalityTreeView_2d.setCurrentIndex(root)
         self.ModalityTreeView_2d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_2d))
         self.ModalityTreeView_2d.setHeaderHidden(True)
+        self.ModalityTreeView_2d.setRootIndex(QtCore.QModelIndex(parent.data_2D_index))
 
 
         self.ModalityTreeView_3d.setModel(parent.data_model)
-        root = parent.data_model.index(0, 0)
-        #self.ModalityTreeView_3d.setCurrentIndex(root)
         self.ModalityTreeView_3d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_3d))
         self.ModalityTreeView_3d.setHeaderHidden(True)
+        self.ModalityTreeView_3d.setRootIndex(QtCore.QModelIndex(parent.data_3D_index))
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)

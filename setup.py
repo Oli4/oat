@@ -25,7 +25,7 @@ setup(
     package_data={'oat.images': ['*.png']},
     entry_points={
         'console_scripts': [
-            'oat=oat.oat:main'
+            'oat=oat.oatmain:main'
         ]
     },
     install_requires=requirements,

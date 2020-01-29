@@ -23,15 +23,18 @@ class OCT():
 
     @property
     def segmentation(self):
-        return {1:[], 2:[]}
+        segmentations = np.stack([bscan._segmentation for bscan in self._bscans])
+        seg_mapping = {"ILM":0,"GCL":2, "BM":1, "IPl":3, "INL":4, "IPL":5, "ONL":6, "ELM":8, "EZ/PR1":14, "IZ/PR2":15,
+                       "RPE":16}
+        return {k: segmentations[:, seg_mapping[k], :] for k in seg_mapping}
 
     @property
     def volume(self):
         return np.stack([x._scan for x in self._bscans], axis=-1)
 
     @property
-    def volume_data(self):
-        return np.stack([x._scan for x in self._bscans], axis=-1)
+    def nir(self):
+        return self._nir
 
     @classmethod
     def read_vol(cls, filepath):

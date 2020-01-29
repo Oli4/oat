@@ -1,5 +1,7 @@
 from oat.models.layers.base import _BaseLayer, _Layer3D, _Layer2D
 from oat.io import get_cfp
+from PyQt5 import QtGui, QtWidgets
+import qimage2ndarray
 
 class ImageLayer3D(_Layer3D):
     """ A class to hold image layers which can not be manipulated by the user.
@@ -30,6 +32,16 @@ class ImageLayer2D(_Layer2D):
     @_BaseLayer.editable.setter
     def editable(self, value):
         raise ValueError("The 'editable' status of the image layer can not be changed.")
+
+    @property
+    def pixmap(self):
+        q_img = qimage2ndarray.array2qimage(self.data)
+        gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+        if self.visible:
+            gp_item.show()
+        else:
+            gp_item.hide()
+        return gp_item
 
     def load(self):
         pass

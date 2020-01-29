@@ -55,8 +55,6 @@ class CustomGraphicsView(QGraphicsView):
 
         event.accept()
 
-
-
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
             self._mouse_pressed = True
@@ -88,94 +86,6 @@ class CustomGraphicsView(QGraphicsView):
                 self.setCursor(QtCore.Qt.ArrowCursor)
             self._mouse_pressed = False
         super().mouseReleaseEvent(event)
-
-"""
-
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            self._mouse_pressed = True
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                self.setCursor(QtCore.Qt.ClosedHandCursor)
-                self._dragPos = event.pos()
-                event.accept()
-            else:
-                super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if self._mouse_pressed and event.modifiers() and QtCore.Qt.ControlModifier:
-            newPos = event.pos()
-            diff = newPos - self._dragPos
-            self._dragPos = newPos
-            self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - diff.x())
-            self.verticalScrollBar().setValue(self.verticalScrollBar().value() - diff.y())
-            event.accept()
-        else:
-            super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                self.setCursor(QtCore.Qt.OpenHandCursor)
-            else:
-                self._ctrl_pressed = False
-                self.setCursor(QtCore.Qt.ArrowCursor)
-            self._mouse_pressed = False
-        super().mouseReleaseEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        pass
-
-    def keyPressEvent(self, event):
-        if not self._mouse_pressed QtCore.Qt.:
-            if event.key() == QtCore.Qt.Key_Control:
-                self._ctrl_pressed = True
-
-            elif self._ctrl_alt_combined(event):
-                self._ctrl_pressed = True
-                self._alt_pressed = True
-                self.setCursor(QtCore.Qt.OpenHandCursor)
-            else:
-                super().keyPressEvent(event)
-
-    def keyReleaseEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Control:
-            self._ctrl_pressed = False
-            self.setCursor(QtCore.Qt.ArrowCursor)
-        elif event.key() == QtCore.Qt.Key_Alt:
-            self._alt_pressed = False
-            self.setCursor(QtCore.Qt.ArrowCursor)
-        else:
-            super().keyPressEvent(event)
-
-    def wheelEvent(self, event):
-        if self.hasPhoto():
-            if self._ctrl_pressed and self._alt_pressed:
-                # Ask the parent to change the data -> change slice
-                super().wheelEvent(event)
-            else:
-                if event.angleDelta().y() > 0:
-                    self.zoom_in()
-                else:
-                    self.zoom_out()
-
-            event.accept()
-
-    def _ctrl_alt_combined(self, event):
-        if event.key == QtCore.Qt.Key_Control and event.modifiers() & QtCore.Qt.AltModifier:
-            return True
-        elif event.key == QtCore.Qt.Key_Alt and event.modifiers() & QtCore.Qt.ControlModifier:
-            return True
-        else:
-            return False
-
-
-
-
-
-"""
-
-
-
 
 
 
