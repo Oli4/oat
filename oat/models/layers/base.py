@@ -10,7 +10,7 @@ class _BaseLayer(object):
         self._opacity = 100
         self._visible = True
 
-        self._shape = None
+        self._shape = self.data.shape
         self._position = None
         self._save_path = ''
         self._parent_layer = None

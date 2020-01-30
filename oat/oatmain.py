@@ -1,6 +1,8 @@
 import sys
 import os
 import qimage2ndarray
+import numpy as np
+
 
 import pkg_resources
 
@@ -14,7 +16,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
-from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE
+from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE, SHAPE_ROLE
 from oat.utils import DisjointSetForest
 from oat.io import OCT
 
@@ -42,12 +44,12 @@ class oat(QMainWindow, Ui_MainWindow):
         self.subwindows = {}
         self.subwindows['viewer2d'] = self.mdiArea.addSubWindow(Viewer2D(self.data_model, self))
         self.subwindows['viewer2d'].widget().setRootIndex(QtCore.QModelIndex(self.data_2D_index))
-        #self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self))
-        #self.subwindows['viewer3d'].widget().setRootIndex(QtCore.QModelIndex(self.data_3D_index))
+        self.subwindows['viewer3d'] = self.mdiArea.addSubWindow(Viewer3D(self.data_model, self))
+        self.subwindows['viewer3d'].widget().setRootIndex(QtCore.QModelIndex(self.data_3D_index))
         self.subwindows['toolbox'] = self.mdiArea.addSubWindow(Toolbox(self))
 
         self.subwindow_visibility = {}
-        #self.subwindow_visibility['viewer2d'] = True
+        self.subwindow_visibility['viewer2d'] = True
         self.subwindow_visibility['viewer3d'] = True
         self.subwindow_visibility['toolbox'] = True
 
@@ -64,7 +66,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave_as.triggered.connect(self.save_as)
 
         self.actionToggle2D.triggered.connect(lambda: self.toggle_subwindow('viewer2d'))
-        #self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
+        self.actionToggle3D.triggered.connect(lambda: self.toggle_subwindow('viewer3d'))
         self.actionToogleToolbox.triggered.connect(lambda: self.toggle_subwindow('toolbox'))
 
 
@@ -126,7 +128,8 @@ class oat(QMainWindow, Ui_MainWindow):
             nir_TreeItem = ModalityTreeItem(nir_layer)
             self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_2D_index)).appendRow(nir_TreeItem)
 
-            self.subwindows["viewer2d"].widget().refresh()
+            self.update_viewer2d()
+            self.update_viewer3d()
             self.statusbar.showMessage(self.import_path)
 
     def import_cfp(self):
@@ -150,10 +153,10 @@ class oat(QMainWindow, Ui_MainWindow):
         self.subwindows['toolbox'].widget().update_layer_entries(self.layers_2d, self.layers_3d)
 
     def update_viewer2d(self):
-        self.subwindows['viewer2d'].widget().display_layers()
+        self.subwindows['viewer2d'].widget().refresh()
 
     def update_viewer3d(self):
-        self.subwindows['viewer3d'].widget().display_layers()
+        self.subwindows['viewer3d'].widget().refresh()
 
     def delete_previous(self):
         self.layers_2d = {}
@@ -172,87 +175,70 @@ class oat(QMainWindow, Ui_MainWindow):
 
 
 class Viewer3D(QWidget, Ui_Viewer3D):
-    def __init__(self, parent=None):
+    def __init__(self, model, parent=None):
         """Initialize the components of the Viewer3D subwindow."""
         super().__init__(parent)
         self.setupUi(self)
 
         self.main_window = parent
-
-        self.scene = QtWidgets.QGraphicsScene(self)
-        self.graphicsView3D.setScene(self.scene)
+        self.model: QtGui.QStandardItemModel = model
+        self.model.dataChanged.connect(self.refresh)
 
         self.spinBox.valueChanged.connect(self.spin_box_change_action)
-        self.pixmapitem_dict = {}
-        self.layers_3d = parent.layers_3d
+        self._pixmaps = {}
+        self._root_index = QtCore.QModelIndex()
 
         # Active slices for all modalities are saved independently
         # The key of this dict is the layer_id. Starts with 3D_*
-        self._active_slice = {}
-        # The active modality refers to a layer_id of the form 3D_*
-        self._active_modality = ""
+        self._active_slice = 0
+        self._last_active_slice = 0
 
-    @property
-    def active_modality(self):
-        if self._active_modality == "":
-            self.active_modality = self.main_window.layers_3d.keys().__iter__().__next__()
-        return self._active_modality
-
-    @active_modality.setter
-    def active_modality(self, new_active):
-        if new_active in self.main_window.layers_3d.keys():
-            self._active_modality = new_active
-            self.spinBox.setRange(0, self.main_window.layers_3d[self.active_modality].data.shape[-1]-1)
-        else:
-            raise ValueError("{} is not an available Layer.".format(new_active))
-
-    @property
-    def active_slice(self):
-        if self._active_slice == {}:
-            self._active_slice = {"{}".format(self.active_modality):0}
-        return self._active_slice
+        self._active_modality = None
 
     #def reset_viewer(self):
     #    self._active_slice = {}
     #    self.graphicsView3D._zoom = 0
     #    self.graphicsView3D.setTransform(QtGui.QTransform())
 
-    def next_slice(self):
-        self.set_slice(self._active_slice[self._active_modality] + 1)
+    def setRootIndex(self, index):
+        self._root_index = index
 
-        #if (self._active_slice[self.active_modality] + 2
-        #        <= self.main_window.layers_3d[self.active_modality].data.shape[-1]):
-        #    for modality in self.main_window.layers_3d.keys():
-        #        if self.main_window.registered_layers.connected(modality, self.active_modality):
-        #            self._active_slice[modality] += 1
-        #    self.main_window.update_viewer3d()
+    @property
+    def active_slice(self):
+        return self._active_slice
 
-    def last_slice(self):
-        self.set_slice(self._active_slice[self._active_modality]-1)
-
-        #if (self._active_slice[self._active_modality] >= 0):
-        #    for modality in self.main_window.layers_3d.keys():
-        #        if self.main_window.registered_layers.connected(modality, self.active_modality):
-        #            self._active_slice[modality] -= 1
-        #    self.main_window.update_viewer3d()
-
-    def set_slice(self, slice_n):
-        # Make sure slice_n is within possible range
-        slice_n = max(0, slice_n)
-        slice_n = min(self.main_window.layers_3d[self.active_modality].data.shape[-1]-1, slice_n)
-
-        # Set slice for active modality and all connected/registered modalities
-        for modality in self.main_window.layers_3d.keys():
-            if self.main_window.registered_layers.connected(modality, self.active_modality):
-                self._active_slice[modality] = slice_n
-
+    @active_slice.setter
+    def active_slice(self, value):
+        # Remember last acitve slice
+        self._last_active_slice = self.active_slice
+        self._active_slice = value
         self.main_window.update_viewer3d()
 
+    @property
+    def active_modality(self):
+        return self._active_modality
+
+    @active_modality.setter
+    def active_modality(self, value):
+        self._active_modality = value
+        n_slices = self.model.data(QtCore.QModelIndex(value), SHAPE_ROLE)[-1]
+        self.spinBox.setRange(0, n_slices-1)
+
+
+    def next_slice(self):
+        self.set_slice(self.spinBox.value() + 1)
+
+    def last_slice(self):
+        self.set_slice(self.spinBox.value() - 1)
+
+    def set_slice(self, slice_n):
+        self.spinBox.setValue(slice_n)
+
     def spin_box_change_action(self):
-        self.set_slice(self.spinBox.value())
+        self.active_slice = self.spinBox.value()
 
     def wheelEvent(self, event):
-        if self.main_window.layers_3d:
+        if not self.graphicsView3D._empty:
             if event.angleDelta().y() > 0:
                 self.next_slice()
             else:
@@ -271,39 +257,32 @@ class Viewer3D(QWidget, Ui_Viewer3D):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
 
-    def display_layers(self):
-        if self.main_window.layers_3d:
-            self.graphicsView3D._empty = False
+    def refresh(self):
+        # iterate over modalities
+        for row in range(self.model.rowCount(parent=self._root_index)):
+            index = self.model.index(row, 0, parent=self._root_index)
+            if (QtCore.QPersistentModelIndex(index),0) not in self._pixmaps.keys():
+                self.graphicsView3D._empty = False
+                data = self.model.data(index, DATA_ROLE)
+                for i in range(data.shape[-1]):
+                    q_img = qimage2ndarray.array2qimage(data[..., i])
+                    gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+                    self._pixmaps[QtCore.QPersistentModelIndex(index), i] = gp_item
+                    gp_item.hide()
+                    self.graphicsView3D.scene.addItem(gp_item)
 
-            active_component = self.main_window.registered_layers.find(self.active_modality)
-            # Currently we have only 1 volume but at some point there might be multiple registered volumes
-            for key in self.main_window.layers_3d:
-                # Only display the modality "key" if it is registered to the current active modality
-                if self.main_window.registered_layers.find(key) == active_component:
-                    # Add active slice as pixmaps to the scene
-                    slice = self.active_slice[self.active_modality]
-                    q_img = qimage2ndarray.array2qimage(self.main_window.layers_3d[key].data[..., slice])
+                self.active_modality = QtCore.QPersistentModelIndex(index)
 
-                    self.pixmapitem_dict[key, slice] = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-                    self.scene.addItem(self.pixmapitem_dict[key, slice])
-                    self.set_visibility(key)
-        else:
-            self.graphicsView3D._empty = True
+            # Set last active slice hidden
+            self._pixmaps[QtCore.QPersistentModelIndex(index), self._last_active_slice].hide()
 
-        self.spinBox.setValue(self._active_slice[self._active_modality])
+            # Se modality visibility
+            if self.model.data(index, VISIBILITY_ROLE):
+                self._pixmaps[QtCore.QPersistentModelIndex(index), self.active_slice].show()
+            else:
+                self._pixmaps[QtCore.QPersistentModelIndex(index), self.active_slice].hide()
 
-    def set_visibility(self, key):
-        if self.main_window.layers_3d[key].visible:
-            self.show_layer(key)
-        else:
-            self.hide_layer(key)
 
-    def hide_layer(self, key):
-        self.pixmapitem_dict[key, self.active_slice[self.active_modality]].setOpacity(0)
-
-    def show_layer(self, key):
-        opacity = self.main_window.layers_3d[key].opacity
-        self.pixmapitem_dict[key, self.active_slice[self.active_modality]].setOpacity(opacity*0.01)
 
 
 class Viewer2D(QWidget, Ui_Viewer2D):
@@ -316,12 +295,18 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.model: QtGui.QStandardItemModel = model
         self.model.dataChanged.connect(self.refresh)
 
-        self.scene = QtWidgets.QGraphicsScene(self)
-        self.graphicsView2D.setScene(self.scene)
-
         self._root_index = QtCore.QModelIndex()
 
         self._pixmaps = {}
+        self._active_modality = None
+
+    @property
+    def active_modality(self):
+        return self._active_modality
+
+    @active_modality.setter
+    def active_modality(self, value):
+        self._active_modality = value
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -333,17 +318,19 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     def refresh(self):
         for row in range(self.model.rowCount(parent=self._root_index)):
             index = self.model.index(row, 0, parent=self._root_index)
-            if index not in self._pixmaps.keys():
+            if QtCore.QPersistentModelIndex(index) not in self._pixmaps.keys():
+                self.graphicsView2D._empty = False
                 data = self.model.data(index, DATA_ROLE)
                 q_img = qimage2ndarray.array2qimage(data)
                 gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-                self._pixmaps[index] = gp_item
-                self.scene.addItem(gp_item)
+                self._pixmaps[QtCore.QPersistentModelIndex(index)] = gp_item
+                self.graphicsView2D.scene.addItem(gp_item)
+                self.active_modality = QtCore.QPersistentModelIndex(index)
 
             if self.model.data(index, VISIBILITY_ROLE):
-                self._pixmaps[index].show()
+                self._pixmaps[QtCore.QPersistentModelIndex(index)].show()
             else:
-                self._pixmaps[index].hide()
+                self._pixmaps[QtCore.QPersistentModelIndex(index)].hide()
 
 
 
