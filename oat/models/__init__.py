@@ -5,10 +5,9 @@ from PyQt5.QtCore import Qt
 VISIBILITY_ROLE = Qt.UserRole + 1
 NAME_ROLE = Qt.UserRole + 2
 DATA_ROLE = Qt.UserRole + 3
-PIXMAP_ROLE = Qt.UserRole + 4
 
 role_mapping = {VISIBILITY_ROLE: "visible", NAME_ROLE: "name",
-                DATA_ROLE: "data", None: "data", PIXMAP_ROLE:"pixmap"}
+                DATA_ROLE: "data", None: "data"}
 
 class TreeItem(QtGui.QStandardItem):
     def __init__(self, data):

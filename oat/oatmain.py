@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
-from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE, PIXMAP_ROLE
+from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE
 from oat.utils import DisjointSetForest
 from oat.io import OCT
 
@@ -319,8 +319,9 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.scene = QtWidgets.QGraphicsScene(self)
         self.graphicsView2D.setScene(self.scene)
 
-        self._active_modality = ""
         self._root_index = QtCore.QModelIndex()
+
+        self._pixmaps = {}
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -330,14 +331,20 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self._root_index = index
 
     def refresh(self):
-        self.scene.clear()
         for row in range(self.model.rowCount(parent=self._root_index)):
             index = self.model.index(row, 0, parent=self._root_index)
+            if index not in self._pixmaps.keys():
+                data = self.model.data(index, DATA_ROLE)
+                q_img = qimage2ndarray.array2qimage(data)
+                gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+                self._pixmaps[index] = gp_item
+                self.scene.addItem(gp_item)
 
-            pm = self.model.data(index, PIXMAP_ROLE)
-            print("1")
-            self.scene.addItem(pm)
-            print("2")
+            if self.model.data(index, VISIBILITY_ROLE):
+                self._pixmaps[index].show()
+            else:
+                self._pixmaps[index].hide()
+
 
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):

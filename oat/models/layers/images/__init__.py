@@ -33,16 +33,6 @@ class ImageLayer2D(_Layer2D):
     def editable(self, value):
         raise ValueError("The 'editable' status of the image layer can not be changed.")
 
-    @property
-    def pixmap(self):
-        q_img = qimage2ndarray.array2qimage(self.data)
-        gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-        if self.visible:
-            gp_item.show()
-        else:
-            gp_item.hide()
-        return gp_item
-
     def load(self):
         pass
 
