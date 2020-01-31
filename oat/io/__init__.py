@@ -24,9 +24,12 @@ class OCT():
     @property
     def segmentation(self):
         segmentations = np.stack([bscan._segmentation for bscan in self._bscans])
-        seg_mapping = {"ILM":0,"GCL":2, "BM":1, "IPl":3, "INL":4, "IPL":5, "ONL":6, "ELM":8, "EZ/PR1":14, "IZ/PR2":15,
-                       "RPE":16}
-        return {k: segmentations[:, seg_mapping[k], :] for k in seg_mapping}
+        # It seems like there is no standard structure in the exported segmentations from HEYEX
+        #seg_mapping = {"ILM":0,"GCL":2, "BM":1, "IPl":3, "INL":4, "IPL":5, "ONL":6, "ELM":8, "EZ/PR1":14, "IZ/PR2":15,
+        #               "RPE":16}
+        # return {k: segmentations[:, seg_mapping[k], :] for k in seg_mapping}
+        return {"{}".format(i): segmentations[:, i, :] for i in range(segmentations.shape[1])}
+
 
     @property
     def volume(self):

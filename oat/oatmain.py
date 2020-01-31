@@ -309,8 +309,6 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     @active_modality.setter
     def active_modality(self, value):
         self._active_modality = value
-        self._pixmaps[self.active_modality].setFocus()
-        print(self._pixmaps[self.active_modality])
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -327,7 +325,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
                 data = self.model.data(index, DATA_ROLE)
                 q_img = qimage2ndarray.array2qimage(data)
                 gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-                gp_item.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable)
+                gp_item.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
+                                QtWidgets.QGraphicsItem.ItemIsFocusable)
                 self._pixmaps[QtCore.QPersistentModelIndex(index)] = gp_item
                 self.graphicsView2D.scene.addItem(gp_item)
                 self.active_modality = QtCore.QPersistentModelIndex(index)
@@ -337,7 +336,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
             else:
                 self._pixmaps[QtCore.QPersistentModelIndex(index)].hide()
 
-            #self.graphicsView2D.fitInView()
+        self.graphicsView2D.scene.setFocusItem(
+            self._pixmaps[self.active_modality])
 
 
 
@@ -346,13 +346,13 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         super().__init__(parent)
         self._visible = None
 
-    def paint(self, painter, option, index):
+    def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> None:
         if isinstance(self.parent(), QtWidgets.QAbstractItemView) or \
                 isinstance(self.parent(), ModalityTreeItem):
             self.parent().openPersistentEditor(index)
         super().paint(painter, option, index)
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> QWidget:
         if not index.model().itemFromIndex(index).parent():
             editor = ModalityEntry(parent)
         else:
@@ -368,7 +368,7 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         editor = self.sender().parent().parent()
         self.commitData.emit(editor)
 
-    def setEditorData(self, editor, index):
+    def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         editor.label.setText(index.model().data(index, Qt.UserRole+2))
 
         icon = QtGui.QIcon()
@@ -383,8 +383,16 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
             editor.hideButton.setIcon(icon)
             self._visible = False
 
-    def setModelData(self, editor, model, index):
+    def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex) -> None:
         model.setData(index, self._visible, Qt.UserRole+1)
+
+    def sizeHint(self, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> QtCore.QSize:
+        if not index.model().itemFromIndex(index).parent():
+            size = ModalityEntry(None).size()
+        else:
+            size = SegmentationEntry(None).size()
+
+        return size
 
 
 class ModalityEntry(QWidget, Ui_ModalityEntry):
@@ -411,12 +419,14 @@ class Toolbox(QWidget, Ui_Toolbox):
         self.ModalityTreeView_2d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_2d))
         self.ModalityTreeView_2d.setHeaderHidden(True)
         self.ModalityTreeView_2d.setRootIndex(QtCore.QModelIndex(parent.data_2D_index))
-
+        self.ModalityTreeView_2d.setUniformRowHeights(False)
 
         self.ModalityTreeView_3d.setModel(parent.data_model)
         self.ModalityTreeView_3d.setItemDelegate(TreeItemDelegate(self.ModalityTreeView_3d))
         self.ModalityTreeView_3d.setHeaderHidden(True)
         self.ModalityTreeView_3d.setRootIndex(QtCore.QModelIndex(parent.data_3D_index))
+        self.ModalityTreeView_3d.setUniformRowHeights(False)
+
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)
@@ -424,13 +434,6 @@ class Toolbox(QWidget, Ui_Toolbox):
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
-
-    def update_layer_entries(self, layers_2d, layers_3d):
-        for key in layers_2d:
-            self.add_layer(layers_2d[key])
-
-        for key in layers_3d:
-            self.add_layer(layers_3d[key])
 
     def add_modality(self):
         pass
