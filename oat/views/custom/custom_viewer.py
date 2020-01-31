@@ -4,6 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from collections import defaultdict
 
 class CustomGraphicsView(QGraphicsView):
+    cursorChanged = QtCore.pyqtSignal(QtCore.QPointF)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -26,9 +27,7 @@ class CustomGraphicsView(QGraphicsView):
         self.line1.setZValue(10)
         self.line2.setZValue(10)
 
-
-
-        #self.setCursor(QtCore.Qt.CrossCursor)
+        self.setCursor(QtCore.Qt.BlankCursor)
 
     def hasPhoto(self):
         return not self._empty
@@ -77,16 +76,24 @@ class CustomGraphicsView(QGraphicsView):
             else:
                 super().mousePressEvent(event)
 
-
-    def move_cross_cursor(self, pos):
+    def set_cursor_cross(self, pos):
         pos = self.mapToScene(pos)
-        line1 = QtCore.QLineF(0, pos.y(), self.rect().width(), pos.y())
-        line2 = QtCore.QLineF(pos.x(), 0, pos.x(), self.rect().height())
+
+        # Map viewport size to scene
+        pos_end = self.mapToScene(self.viewport().rect().width()-1, self.viewport().rect().height()-1).toPoint()
+        pos_start = self.mapToScene(1, 1).toPoint()
+
+        # Create new line and set it.
+        # Todo: Maybe you can only set the points of the original lines here for better performance
+        line1 = QtCore.QLineF(pos_start.x(), int(pos.y())+0.5, pos_end.x(), int(pos.y())+0.5)
+        line2 = QtCore.QLineF(int(pos.x())+0.5, pos_start.y(), int(pos.x())+0.5, pos_end.y())
         self.line1.setLine(line1)
         self.line2.setLine(line2)
 
     def mouseMoveEvent(self, event):
-        self.move_cross_cursor(event.pos())
+        self.set_cursor_cross(event.pos())
+        self.cursorChanged.emit(event.pos())
+        print(self.scene.focusItem())
 
         if self._mouse_pressed and event.modifiers() and QtCore.Qt.ControlModifier:
             newPos = event.pos()
@@ -104,7 +111,7 @@ class CustomGraphicsView(QGraphicsView):
             if event.modifiers() & QtCore.Qt.ControlModifier:
                 self.setCursor(QtCore.Qt.OpenHandCursor)
             else:
-                self.setCursor(QtCore.Qt.ArrowCursor)
+                self.setCursor(QtCore.Qt.BlankCursor)
             self._mouse_pressed = False
         else:
             super().mouseReleaseEvent(event)

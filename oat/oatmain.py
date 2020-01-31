@@ -295,6 +295,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         self.model: QtGui.QStandardItemModel = model
         self.model.dataChanged.connect(self.refresh)
 
+        #self.graphicsView2D.cursorChanged.connect(parent.)
+
         self._root_index = QtCore.QModelIndex()
 
         self._pixmaps = {}
@@ -307,6 +309,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     @active_modality.setter
     def active_modality(self, value):
         self._active_modality = value
+        self._pixmaps[self.active_modality].setFocus()
+        print(self._pixmaps[self.active_modality])
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -323,6 +327,7 @@ class Viewer2D(QWidget, Ui_Viewer2D):
                 data = self.model.data(index, DATA_ROLE)
                 q_img = qimage2ndarray.array2qimage(data)
                 gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
+                gp_item.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable)
                 self._pixmaps[QtCore.QPersistentModelIndex(index)] = gp_item
                 self.graphicsView2D.scene.addItem(gp_item)
                 self.active_modality = QtCore.QPersistentModelIndex(index)
@@ -331,6 +336,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
                 self._pixmaps[QtCore.QPersistentModelIndex(index)].show()
             else:
                 self._pixmaps[QtCore.QPersistentModelIndex(index)].hide()
+
+            #self.graphicsView2D.fitInView()
 
 
 
