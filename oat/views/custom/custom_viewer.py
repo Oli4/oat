@@ -89,15 +89,13 @@ class CustomGraphicsView(QGraphicsView):
 
     def set_cursor_cross(self, pos):
         pos = pos.toPoint()
-        pos = self.mapToScene(pos)
 
         # Map viewport size to scene
-        pos_end = self.mapToScene(self.viewport().rect().width() - 1,
-                                  self.viewport().rect().height() - 1).toPoint()
-        pos_start = self.mapToScene(1, 1).toPoint()
+        pos_end = self.mapToScene(self.viewport().rect().width(),
+                                  self.viewport().rect().height()).toPoint()
+        pos_start = self.mapToScene(0, 0).toPoint()
 
         # Create new line and set it.
-        # Todo: Maybe you can only set the points of the original lines here for better performance
         line1 = QtCore.QLineF(int(pos_start.x()), int(pos.y()) + 0.5,
                               int(pos.x()) - 1.5,
                               int(pos.y()) + 0.5)
@@ -116,8 +114,17 @@ class CustomGraphicsView(QGraphicsView):
         self.line4.setLine(line4)
 
     def mouseMoveEvent(self, event):
-        self.cursorPosChanged.emit(event.pos())
-        print(self.scene.itemAt(event.pos(), QtGui.QTransform()))
+        scene_pos = self.mapToScene(event.pos())
+        self.cursorPosChanged.emit(scene_pos)
+
+        # Compute position on current item
+        item = self.scene.itemAt(event.pos(), QtGui.QTransform())
+        if item:
+            # Item pos is currently always 0, 0 since items are only images which were never moved
+            # The top left pixel has pos (0<1, 0<1)
+            item_pos = scene_pos - item.pos()
+            print(item_pos.x(), item_pos.y())
+
 
         if self._mouse_pressed and event.modifiers() and QtCore.Qt.ControlModifier:
             newPos = event.pos()

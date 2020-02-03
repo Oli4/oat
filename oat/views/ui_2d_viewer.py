@@ -16,6 +16,8 @@ class Ui_Viewer2D(object):
         self.verticalLayout = QtWidgets.QVBoxLayout(Viewer2D)
         self.verticalLayout.setObjectName("verticalLayout")
         self.graphicsView2D = CustomGraphicsView(Viewer2D)
+        self.graphicsView2D.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.graphicsView2D.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsView2D.setObjectName("graphicsView2D")
         self.verticalLayout.addWidget(self.graphicsView2D)
 

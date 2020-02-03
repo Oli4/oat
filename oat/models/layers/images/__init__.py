@@ -49,12 +49,6 @@ class NirLayer(ImageLayer2D):
     def __init__(self, data, name='NIR'):
         super().__init__(data, name)
 
-    @classmethod
-    def import_vol(cls, filepath):
-        # SLO is Scanning Laser Ophthalmoskopie -> NIR
-        slo = get_slo_image(filepath)
-        return cls(slo)
-
 class CfpLayer(ImageLayer2D):
     def __init__(self, data, name='CFP'):
         super().__init__(data, name)

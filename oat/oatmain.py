@@ -276,7 +276,7 @@ class Viewer3D(QWidget, Ui_Viewer3D):
             # Set last active slice hidden
             self._pixmaps[QtCore.QPersistentModelIndex(index), self._last_active_slice].hide()
 
-            # Se modality visibility
+            # Set modality visibility
             if self.model.data(index, VISIBILITY_ROLE):
                 self._pixmaps[QtCore.QPersistentModelIndex(index), self.active_slice].show()
             else:
@@ -298,6 +298,7 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         #self.graphicsView2D.cursorChanged.connect(parent.)
 
         self._root_index = QtCore.QModelIndex()
+        self._overlays = []
 
         self._pixmaps = {}
         self._active_modality = None
@@ -309,6 +310,17 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     @active_modality.setter
     def active_modality(self, value):
         self._active_modality = value
+
+    def add_overlay(self, index, func):
+        pass
+        # Create overlay with func and data at index
+
+        # Add to overlay menu
+
+        # Show overlay?
+
+    def oct_overlay(self, index):
+        self.model.data(index, )
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -325,8 +337,7 @@ class Viewer2D(QWidget, Ui_Viewer2D):
                 data = self.model.data(index, DATA_ROLE)
                 q_img = qimage2ndarray.array2qimage(data)
                 gp_item = QtWidgets.QGraphicsPixmapItem(QtGui.QPixmap().fromImage(q_img))
-                gp_item.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
-                                QtWidgets.QGraphicsItem.ItemIsFocusable)
+                gp_item.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable)
                 self._pixmaps[QtCore.QPersistentModelIndex(index)] = gp_item
                 self.graphicsView2D.scene.addItem(gp_item)
                 self.active_modality = QtCore.QPersistentModelIndex(index)
@@ -336,10 +347,37 @@ class Viewer2D(QWidget, Ui_Viewer2D):
             else:
                 self._pixmaps[QtCore.QPersistentModelIndex(index)].hide()
 
-        self.graphicsView2D.scene.setFocusItem(
-            self._pixmaps[self.active_modality])
+        #for overlay_key in self._overlays:
+        #    if overlay_key
+        #    if overlay.visible:
+        #        overlay.show()
+        #    else:
+        #        overlay.hide()
 
+from abc import ABC
 
+class Overlay(QtWidgets.QGraphicsItemGroup):
+    def __init__(self, name, model, index):
+        self.name = name
+        self.model = model
+        self.index = index
+
+    @ABC.abstractmethod
+    def create_overlay(self):
+        pass
+
+class OctOverlay(Overlay):
+    def __init__(self, model, index):
+        super().__init__(model=model, index=index, name="OCT")
+
+    def create_overlay(self):
+        # Get Bscan Positions
+
+        # Add line for every Bscan position
+
+        # Draw rectangle around lines
+
+        pass
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
