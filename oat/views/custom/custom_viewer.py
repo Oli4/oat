@@ -123,7 +123,6 @@ class CustomGraphicsView(QGraphicsView):
             # Item pos is currently always 0, 0 since items are only images which were never moved
             # The top left pixel has pos (0<1, 0<1)
             item_pos = scene_pos - item.pos()
-            print(item_pos.x(), item_pos.y())
 
 
         if self._mouse_pressed and event.modifiers() and QtCore.Qt.ControlModifier:

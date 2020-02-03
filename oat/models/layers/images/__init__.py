@@ -8,8 +8,8 @@ class ImageLayer3D(_Layer3D):
     For example the original data.
 
     """
-    def __init__(self, data, name, type='image', editable=False):
-        super().__init__(data, name, type, editable)
+    def __init__(self, data, name):
+        super().__init__(data, name, type='image', editable=False)
 
     @_BaseLayer.editable.setter
     def editable(self, value):
@@ -26,8 +26,8 @@ class ImageLayer2D(_Layer2D):
     For example the original data.
 
     """
-    def __init__(self, data, name, type='image', editable=False):
-        super().__init__(data, name, type, editable)
+    def __init__(self, data, name):
+        super().__init__(data, name, type='image', editable=False)
 
     @_BaseLayer.editable.setter
     def editable(self, value):
@@ -40,18 +40,36 @@ class ImageLayer2D(_Layer2D):
         pass
 
 
-
 class OctLayer(ImageLayer3D):
-    def __init__(self, data, name='OCT'):
-        super().__init__(data, name)
+    def __init__(self, data, meta, bscan_meta):
+        super().__init__(data, name='OCT')
+        self._meta = meta
+        self._bscan_meta = bscan_meta
+
+    @property
+    def slice_positions(self):
+        return [((x["StartX"], x["StartY"]), (x["EndX"], x["EndY"]))
+                for x in self._bscan_meta]
+
+    @property
+    def x_scaling(self):
+        return self._meta["ScaleX"]
+
+    @property
+    def y_scaling(self):
+        return self._meta["ScaleY"]
+
+    @property
+    def z_scaling(self):
+        return self._meta["ScaleZ"]
 
 class NirLayer(ImageLayer2D):
-    def __init__(self, data, name='NIR'):
-        super().__init__(data, name)
+    def __init__(self, data):
+        super().__init__(data, name='NIR')
 
 class CfpLayer(ImageLayer2D):
-    def __init__(self, data, name='CFP'):
-        super().__init__(data, name)
+    def __init__(self, data):
+        super().__init__(data, name='CFP')
 
     @classmethod
     def import_cfp(cls, filepath):

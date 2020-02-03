@@ -3,6 +3,8 @@ import os
 import qimage2ndarray
 import numpy as np
 
+import typing
+
 
 import pkg_resources
 
@@ -16,7 +18,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
 
 from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
-from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE, SHAPE_ROLE
+from oat.models import *
 from oat.utils import DisjointSetForest
 from oat.io import OCT
 
@@ -112,7 +114,8 @@ class oat(QMainWindow, Ui_MainWindow):
             oct_data = OCT.read_vol(fname)
 
             #Add OCT
-            oct_layer = OctLayer(oct_data.volume)
+            oct_layer = OctLayer(oct_data.volume, oct_data.meta,
+                                 oct_data.bscan_meta)
 
             # Store references to the Layers in data_model
             oct_TreeItem = ModalityTreeItem(oct_layer)
@@ -127,6 +130,12 @@ class oat(QMainWindow, Ui_MainWindow):
             nir_layer = NirLayer(oct_data.nir)
             nir_TreeItem = ModalityTreeItem(nir_layer)
             self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_2D_index)).appendRow(nir_TreeItem)
+
+            # Add 2D Slices Overlay
+            overlay = OctOverlay(self.data_model,
+                                 self.data_model.indexFromItem(oct_TreeItem))
+            self.subwindows['viewer2d'].widget().add_overlay(overlay)
+
 
             self.update_viewer2d()
             self.update_viewer3d()
@@ -311,16 +320,8 @@ class Viewer2D(QWidget, Ui_Viewer2D):
     def active_modality(self, value):
         self._active_modality = value
 
-    def add_overlay(self, index, func):
-        pass
-        # Create overlay with func and data at index
-
-        # Add to overlay menu
-
-        # Show overlay?
-
-    def oct_overlay(self, index):
-        self.model.data(index, )
+    def add_overlay(self, overlay):
+        self._overlays.append(overlay)
 
     def closeEvent(self, evnt):
         evnt.ignore()
@@ -354,30 +355,33 @@ class Viewer2D(QWidget, Ui_Viewer2D):
         #    else:
         #        overlay.hide()
 
-from abc import ABC
-
 class Overlay(QtWidgets.QGraphicsItemGroup):
     def __init__(self, name, model, index):
+        super().__init__()
         self.name = name
         self.model = model
         self.index = index
 
-    @ABC.abstractmethod
-    def create_overlay(self):
-        pass
-
 class OctOverlay(Overlay):
     def __init__(self, model, index):
         super().__init__(model=model, index=index, name="OCT")
+        self.setZValue(5)
 
     def create_overlay(self):
         # Get Bscan Positions
+        slice_positions = self.model.data(self.index, role=SLICEPOSITIONS_ROLE)
+        x_scaling = self.model.data(self.index, role=XSCALING_ROLE)
+        y_scaling = self.model.data(self.index, role=YSCALING_ROLE)
+        active_slice = self.model.data(self.index, role=ACTIVESLICE_ROLE)
 
         # Add line for every Bscan position
-
-        # Draw rectangle around lines
-
-        pass
+        for slice_pos in slice_positions:
+            start = QtCore.QPointF(slice_pos[0][0]*x_scaling, slice_pos[0][1]*y_scaling)
+            end = QtCore.QPointF(slice_pos[1][0] * x_scaling,
+                                   slice_pos[1][1] * y_scaling)
+            line_item = QtWidgets.QGraphicsLineItem(QtCore.QLineF(start, end))
+            line_item.setPen(QtGui.QPen().setColor("lawngreen"))
+            self.addToGroup(line_item)
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
@@ -466,43 +470,13 @@ class Toolbox(QWidget, Ui_Toolbox):
         self.ModalityTreeView_3d.setUniformRowHeights(False)
 
 
-        self.addButton_2d.clicked.connect(self.create_layer_2d)
-        self.addButton_3d.clicked.connect(self.create_layer_3d)
+        #self.addButton_2d.clicked.connect(self.create_layer_2d)
+        #self.addButton_3d.clicked.connect(self.create_layer_3d)
 
     def closeEvent(self, evnt):
         evnt.ignore()
         self.setWindowState(QtCore.Qt.WindowMinimized)
 
-    def add_modality(self):
-        pass
-
-    def add_segmentation(self):
-        pass
-
-
-    def add_layer(self, layer_obj):
-        new_entry = LayerEntry(self, layer_obj)
-        if layer_obj.dimension == 2:
-            self.ScrollAreaLayout_2d.addWidget(new_entry)
-        else:
-            self.ScrollAreaLayout_3d.addWidget(new_entry)
-
-    def create_layer_2d(self):
-        #layer_type, layer_name = self.new_layer_dialog(dimension=2)
-        layer_type, layer_name = 'Area Layer', 'Test'
-        layer_obj = layer_types_2d[layer_type](data=None, name=layer_name)
-        # Add Layer to mainwindow layer list
-        self.add_layer(layer_obj)
-
-    def create_layer_3d(self):
-        #layer_type, layer_name = self.new_layer_dialog(dimension=3)
-        layer_type, layer_name = 'Area Layer', 'Test'
-        layer_obj = layer_types_3d[layer_type](data=None, name=layer_name)
-        self.add_layer(layer_obj)
-
-    def new_layer_dialog(self, dimenson):
-        # return layer_type, layer_name
-        pass
 
 class LayerTreeView(QtWidgets.QTreeView):
     def  __init__(self, model, parent):
@@ -512,66 +486,6 @@ class LayerTreeView(QtWidgets.QTreeView):
         root = model.index(0, 0)
         self.setCurrentIndex(root)
         self.setHeaderHidden(True)
-
-        #self.setIndexWidget(root, root_widget)
-
-
-
-'''
-class LayerEntry(QWidget, Ui_LayerEntry):
-    def __init__(self, parent, layer_obj):
-        """Initialize the components of an LayerEntry."""
-        super().__init__(parent)
-        self.setupUi(self)
-
-        self.main_window = parent.main_window
-
-        self.layer_obj = layer_obj
-        self.LayerName.setText(self.layer_obj.name)
-        self.set_layer_visibility(self.layer_obj.visible)
-
-        self.hideButton.clicked.connect(self.toogle_visibility)
-
-    def set_layer_visibility(self, visible):
-        if visible:
-            self.show_layer()
-        else:
-            self.hide_layer()
-
-    def toogle_visibility(self):
-        if self.layer_obj.visible:
-            self.hide_layer()
-        else:
-            self.show_layer()
-
-    def hide_layer(self):
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility_off-24px.svg"), QtGui.QIcon.Normal,
-                       QtGui.QIcon.Off)
-        self.hideButton.setIcon(icon)
-        self.layer_obj.visible = False
-
-        if self.layer_obj.dimension == 2:
-            self.main_window.update_viewer2d()
-        else:
-            self.main_window.update_viewer3d()
-
-    def show_layer(self):
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"), QtGui.QIcon.Normal,
-                       QtGui.QIcon.Off)
-        self.hideButton.setIcon(icon)
-
-        self.layer_obj.visible = True
-
-        if self.layer_obj.dimension == 2:
-            self.main_window.update_viewer2d()
-        else:
-            self.main_window.update_viewer3d()
-
-'''
-
-
 
 
 def main():

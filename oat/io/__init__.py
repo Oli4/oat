@@ -30,7 +30,13 @@ class OCT():
         # return {k: segmentations[:, seg_mapping[k], :] for k in seg_mapping}
         return {"{}".format(i): segmentations[:, i, :] for i in range(segmentations.shape[1])}
 
+    @property
+    def meta(self):
+        return self._meta
 
+    @property
+    def bscan_meta(self):
+        return [bs._meta for bs in self._bscans]
     @property
     def volume(self):
         return np.stack([x._scan for x in self._bscans], axis=-1)
