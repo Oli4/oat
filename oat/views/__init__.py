@@ -5,3 +5,4 @@ from .ui_main_window import Ui_MainWindow
 from .ui_layer_entry import Ui_LayerEntry
 from .ui_modality_entry import Ui_ModalityEntry
 from .ui_segmentation_entry import Ui_SegmentationEntry
+from .ui_registration_manual import Ui_RegistrationManual

@@ -14,12 +14,23 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
-from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D
+from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D, Ui_RegistrationManual
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
 from oat.models import DataModel, ModalityTreeItem, SegmentationTreeItem, VISIBILITY_ROLE, DATA_ROLE, NAME_ROLE, SHAPE_ROLE
 from oat.utils import DisjointSetForest
 from oat.io import OCT
 
+
+class RegistrationManual(QWidget, Ui_RegistrationManual):
+    def __init__(self, model, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+
+        self.model: QtGui.QStandardItemModel = model
+        #self.model.dataChanged.connect(self.refresh)
+
+        self._root_index = QtCore.QModelIndex()
+        print("test")
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -148,6 +159,12 @@ class oat(QMainWindow, Ui_MainWindow):
             self.data_model.itemFromIndex(QtCore.QModelIndex(self.data_2D_index)).appendRow(cfp_TreeItem)
 
             self.statusbar.showMessage(self.import_path)
+
+    def create_registration_view(self):
+        self.subwindows['registration'] = self.mdiArea.addSubWindow(RegistrationManual(self.data_model, self))
+        #self.subwindow_visibility['registration'] = True
+        #self.toggle_subwindow('registration')
+        self.subwindows['registration'].show()
 
     def update_toolbox_layer_entries(self):
         self.subwindows['toolbox'].widget().update_layer_entries(self.layers_2d, self.layers_3d)
@@ -362,7 +379,7 @@ class Overlay(QtWidgets.QGraphicsItemGroup):
         self.model = model
         self.index = index
 
-    @ABC.abstractmethod
+    #@ABC.abstractmethod
     def create_overlay(self):
         pass
 
@@ -468,6 +485,8 @@ class Toolbox(QWidget, Ui_Toolbox):
 
         self.addButton_2d.clicked.connect(self.create_layer_2d)
         self.addButton_3d.clicked.connect(self.create_layer_3d)
+
+        self.registerButton_2d.clicked.connect(self.main_window.create_registration_view)
 
     def closeEvent(self, evnt):
         evnt.ignore()

@@ -9,11 +9,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_RegistrationManualView(object):
-    def setupUi(self, RegistrationManualView):
-        RegistrationManualView.setObjectName("RegistrationManualView")
-        RegistrationManualView.resize(1381, 421)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(RegistrationManualView)
+class Ui_RegistrationManual(object):
+    def setupUi(self, RegistrationManual):
+        RegistrationManual.setObjectName("RegistrationManual")
+        RegistrationManual.resize(1381, 421)
+        self.horizontalLayoutWidget = QtWidgets.QWidget(RegistrationManual)
         self.horizontalLayoutWidget.setGeometry(QtCore.QRect(0, 0, 1381, 421))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
@@ -58,6 +58,7 @@ class Ui_RegistrationManualView(object):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-navigate-before-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.backButton.setIcon(icon)
+        self.backButton.setIconSize(QtCore.QSize(24, 24))
         self.backButton.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.backButton.setObjectName("backButton")
         self.horizontalLayout_3.addWidget(self.backButton)
@@ -65,6 +66,7 @@ class Ui_RegistrationManualView(object):
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-save-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.saveButton.setIcon(icon1)
+        self.saveButton.setIconSize(QtCore.QSize(24, 24))
         self.saveButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         self.saveButton.setObjectName("saveButton")
         self.horizontalLayout_3.addWidget(self.saveButton)
@@ -72,6 +74,7 @@ class Ui_RegistrationManualView(object):
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-navigate-next-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.nextButton.setIcon(icon2)
+        self.nextButton.setIconSize(QtCore.QSize(24, 24))
         self.nextButton.setToolButtonStyle(QtCore.Qt.ToolButtonIconOnly)
         self.nextButton.setObjectName("nextButton")
         self.horizontalLayout_3.addWidget(self.nextButton)
@@ -111,25 +114,25 @@ class Ui_RegistrationManualView(object):
         self.verticalLayout_2.addWidget(self.gridSizeSlider)
         self.horizontalLayout.addLayout(self.verticalLayout_2)
 
-        self.retranslateUi(RegistrationManualView)
-        QtCore.QMetaObject.connectSlotsByName(RegistrationManualView)
+        self.retranslateUi(RegistrationManual)
+        QtCore.QMetaObject.connectSlotsByName(RegistrationManual)
 
-    def retranslateUi(self, RegistrationManualView):
+    def retranslateUi(self, RegistrationManual):
         _translate = QtCore.QCoreApplication.translate
-        RegistrationManualView.setWindowTitle(_translate("RegistrationManualView", "Form"))
-        self.backButton.setText(_translate("RegistrationManualView", "Back"))
-        self.backButton.setShortcut(_translate("RegistrationManualView", "Backspace"))
-        self.saveButton.setText(_translate("RegistrationManualView", "Save"))
-        self.saveButton.setShortcut(_translate("RegistrationManualView", "Ctrl+S"))
-        self.nextButton.setText(_translate("RegistrationManualView", "Next"))
-        self.nextButton.setShortcut(_translate("RegistrationManualView", "Return"))
-        self.label_2.setText(_translate("RegistrationManualView", "Transformation Model"))
-        self.transformationDropdown.setItemText(0, _translate("RegistrationManualView", "Affine"))
-        self.transformationDropdown.setItemText(1, _translate("RegistrationManualView", "Similarity"))
-        self.transformationDropdown.setItemText(2, _translate("RegistrationManualView", "Quadratic"))
-        self.transformationDropdown.setItemText(3, _translate("RegistrationManualView", "Moving Least Squares"))
-        self.transformationDropdown.setItemText(4, _translate("RegistrationManualView", "Deformable"))
-        self.label.setText(_translate("RegistrationManualView", "Gridsize"))
+        RegistrationManual.setWindowTitle(_translate("RegistrationManual", "Form"))
+        self.backButton.setText(_translate("RegistrationManual", "Back"))
+        self.backButton.setShortcut(_translate("RegistrationManual", "Backspace"))
+        self.saveButton.setText(_translate("RegistrationManual", "Save"))
+        self.saveButton.setShortcut(_translate("RegistrationManual", "Ctrl+S"))
+        self.nextButton.setText(_translate("RegistrationManual", "Next"))
+        self.nextButton.setShortcut(_translate("RegistrationManual", "Return"))
+        self.label_2.setText(_translate("RegistrationManual", "Transformation Model"))
+        self.transformationDropdown.setItemText(0, _translate("RegistrationManual", "Affine"))
+        self.transformationDropdown.setItemText(1, _translate("RegistrationManual", "Similarity"))
+        self.transformationDropdown.setItemText(2, _translate("RegistrationManual", "Quadratic"))
+        self.transformationDropdown.setItemText(3, _translate("RegistrationManual", "Moving Least Squares"))
+        self.transformationDropdown.setItemText(4, _translate("RegistrationManual", "Deformable"))
+        self.label.setText(_translate("RegistrationManual", "Gridsize"))
 
 
 from . import resources_rc
