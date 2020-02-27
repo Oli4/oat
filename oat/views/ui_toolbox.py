@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Toolbox(object):
     def setupUi(self, Toolbox):
         Toolbox.setObjectName("Toolbox")
-        Toolbox.resize(250, 505)
+        Toolbox.resize(296, 505)
         Toolbox.setMinimumSize(QtCore.QSize(250, 470))
         Toolbox.setAccessibleName("")
         self.verticalLayout = QtWidgets.QVBoxLayout(Toolbox)
@@ -75,6 +75,12 @@ class Ui_Toolbox(object):
         self.deleteButton_2d.setIconSize(QtCore.QSize(24, 24))
         self.deleteButton_2d.setObjectName("deleteButton_2d")
         self.horizontalLayout_2d.addWidget(self.deleteButton_2d)
+        self.registerButton_2d = QtWidgets.QToolButton(self.layers2d)
+        icon4 = QtGui.QIcon()
+        icon4.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-filter-none-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.registerButton_2d.setIcon(icon4)
+        self.registerButton_2d.setObjectName("registerButton_2d")
+        self.horizontalLayout_2d.addWidget(self.registerButton_2d)
         self.verticalLayout_3.addLayout(self.horizontalLayout_2d)
         self.tabWidget.addTab(self.layers2d, "")
         self.layers3d = QtWidgets.QWidget()
@@ -149,9 +155,9 @@ class Ui_Toolbox(object):
         self.toolButton_11.setObjectName("toolButton_11")
         self.gridLayout.addWidget(self.toolButton_11, 2, 2, 1, 1)
         self.penButton = QtWidgets.QToolButton(self.widget_2)
-        icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-edit-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.penButton.setIcon(icon4)
+        icon5 = QtGui.QIcon()
+        icon5.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-edit-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.penButton.setIcon(icon5)
         self.penButton.setIconSize(QtCore.QSize(24, 24))
         self.penButton.setObjectName("penButton")
         self.gridLayout.addWidget(self.penButton, 1, 0, 1, 1)
@@ -179,7 +185,7 @@ class Ui_Toolbox(object):
         self.verticalLayout.addWidget(self.widget_3, 0, QtCore.Qt.AlignTop)
 
         self.retranslateUi(Toolbox)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Toolbox)
 
     def retranslateUi(self, Toolbox):
@@ -191,6 +197,7 @@ class Ui_Toolbox(object):
         self.upButton_2d.setText(_translate("Toolbox", "..."))
         self.downButton_2d.setText(_translate("Toolbox", "..."))
         self.deleteButton_2d.setText(_translate("Toolbox", "..."))
+        self.registerButton_2d.setText(_translate("Toolbox", "..."))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.layers2d), _translate("Toolbox", "2D"))
         self.opacitySliderLabel_3d.setText(_translate("Toolbox", "Opacity"))
         self.addButton_3d.setText(_translate("Toolbox", "..."))

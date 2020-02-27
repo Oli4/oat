@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/icons">
+    <file>icons/baseline-filter-none-24px.svg</file>
+    <file>icons/baseline-navigate-before-24px.svg</file>
+    <file>icons/baseline-navigate-next-24px.svg</file>
     <file>icons/baseline-add_circle-24px.svg</file>
     <file>icons/baseline-arrow_downward-24px.svg</file>
     <file>icons/baseline-arrow_upward-24px.svg</file>
