@@ -112,6 +112,17 @@ class _BaseLayer(object):
 class _Layer3D(_BaseLayer):
     def __init__(self, data, name, type=None, editable=None, dimension=3):
         super().__init__(data, name, type, editable, dimension)
+        self._active_slice = 0
+
+    @property
+    def active_slice(self):
+        return self._active_slice
+
+    @active_slice.setter
+    def active_slice(self, value):
+        if value in range(0, self.shape[-1]):
+            self._active_slice = value
+
 
 class _Layer2D(_BaseLayer):
     def __init__(self, data, name, type=None, editable=None, dimension=2):
