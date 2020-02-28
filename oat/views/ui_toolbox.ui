@@ -67,7 +67,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeView" name="ModalityTreeView_2d"/>
+           <widget class="QTreeView" name="ModalityTreeView_2d">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2d">
@@ -183,7 +187,11 @@
            </widget>
           </item>
           <item>
-           <widget class="QTreeView" name="ModalityTreeView_3d"/>
+           <widget class="QTreeView" name="ModalityTreeView_3d">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::ExtendedSelection</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_3d">

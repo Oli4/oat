@@ -113,12 +113,18 @@ class oat(QMainWindow, Ui_MainWindow):
         self.subwindows[name].close()
 
 
-    def import_vol(self):
+    def import_vol(self, filename=None):
         """ Imports HE OCT raw file (.vol ending)
 
         """
-        fname, _ = QFileDialog.getOpenFileName(self, "Import Heidelberg Engineering OCT raw files (.vol ending)",
-                                           self.import_path, "HE OCT raw files (*.vol)")
+        if not filename:
+            fname, _ = QFileDialog.getOpenFileName(self, "Import Heidelberg Engineering OCT raw files (.vol ending)",
+                                               self.import_path, "HE OCT raw files (*.vol)")
+            print(fname)
+        else:
+            fname = filename
+
+
         if fname:
             self.import_path = os.path.dirname(fname)
 
@@ -152,13 +158,17 @@ class oat(QMainWindow, Ui_MainWindow):
             self.update_viewer3d()
             self.statusbar.showMessage(self.import_path)
 
-    def import_cfp(self):
+    def import_cfp(self, filename=None):
         """ Imports CFP
 
         :return:
         """
-        fname, _ = QFileDialog.getOpenFileName(self, "Import Color Fundus Photography",
-                                               self.import_path, "CFP files (*.bmp *.BMP *.tif *.TIF *.tiff *.TIFF)")
+        if not filename:
+            fname, _ = QFileDialog.getOpenFileName(self, "Import Color Fundus Photography",
+                                                 self.import_path, "CFP files (*.bmp *.BMP *.tif *.TIF *.tiff *.TIFF)")
+            print(fname)
+        else:
+            fname = filename
         if fname:
             self.import_path = os.path.dirname(fname)
 
@@ -378,7 +388,7 @@ class Overlay(QtWidgets.QGraphicsItemGroup):
         self.name = name
         self.model = model
         self.index = index
-        
+
 class OctOverlay(Overlay):
     def __init__(self, model, index):
         super().__init__(model=model, index=index, name="OCT")
@@ -515,6 +525,13 @@ def main():
     height = (desktop.height() - window.height()) / 2
     window.show()
     window.move(width, height)
+
+    debug = True
+
+    if debug:
+        window.import_vol("/run/user/1000/doc/5575ed92/67007_20190515.vol")
+        window.import_cfp("/run/user/1000/doc/b1a09644/HS00+0EZ.003.BMP")
+
     sys.exit(application.exec_())
 
 if __name__ == '__main__':

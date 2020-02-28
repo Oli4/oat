@@ -12,7 +12,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Viewer2D(object):
     def setupUi(self, Viewer2D):
         Viewer2D.setObjectName("Viewer2D")
-        Viewer2D.resize(400, 300)
+        Viewer2D.resize(400, 400)
+        Viewer2D.setMinimumSize(QtCore.QSize(400, 400))
         self.verticalLayout = QtWidgets.QVBoxLayout(Viewer2D)
         self.verticalLayout.setObjectName("verticalLayout")
         self.graphicsView2D = CustomGraphicsView(Viewer2D)

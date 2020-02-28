@@ -16,6 +16,12 @@
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="CustomGraphicsView" name="graphicsView3D">
+     <property name="minimumSize">
+      <size>
+       <width>400</width>
+       <height>400</height>
+      </size>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>

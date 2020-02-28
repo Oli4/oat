@@ -16,6 +16,7 @@ class Ui_Viewer3D(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(Viewer3D)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.graphicsView3D = CustomGraphicsView(Viewer3D)
+        self.graphicsView3D.setMinimumSize(QtCore.QSize(400, 400))
         self.graphicsView3D.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsView3D.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsView3D.setObjectName("graphicsView3D")
