@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_layer_entry.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -57,6 +58,4 @@ class Ui_LayerEntry(object):
         self.LayerName.setText(_translate("LayerEntry", "New Layer"))
         self.settingButton.setText(_translate("LayerEntry", "..."))
         self.saveButton.setText(_translate("LayerEntry", "..."))
-
-
 from . import resources_rc

@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_2d_viewer.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -28,6 +29,4 @@ class Ui_Viewer2D(object):
     def retranslateUi(self, Viewer2D):
         _translate = QtCore.QCoreApplication.translate
         Viewer2D.setWindowTitle(_translate("Viewer2D", "Form"))
-
-
 from oat.views.custom import CustomGraphicsView

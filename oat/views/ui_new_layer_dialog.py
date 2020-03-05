@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_new_layer_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -71,5 +72,3 @@ class Ui_NewLayerDialog(object):
         self.comboBox.setItemText(8, _translate("NewLayerDialog", "RPE Layer"))
         self.comboBox.setItemText(9, _translate("NewLayerDialog", "BM Layer"))
         self.comboBox.setItemText(10, _translate("NewLayerDialog", "EZ Layer"))
-
-

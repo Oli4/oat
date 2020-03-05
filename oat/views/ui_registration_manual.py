@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_registration_manual.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -144,6 +145,4 @@ class Ui_RegistrationManual(object):
         self.transformationDropdown.setItemText(3, _translate("RegistrationManual", "Moving Least Squares"))
         self.transformationDropdown.setItemText(4, _translate("RegistrationManual", "Deformable"))
         self.label.setText(_translate("RegistrationManual", "Gridsize"))
-
-
 from . import resources_rc

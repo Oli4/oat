@@ -16,7 +16,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFileDialog,
                              QHBoxLayout, QLabel, QMainWindow, QToolBar, QVBoxLayout, QWidget, QMdiSubWindow)
 
-from oat.views import Ui_MainWindow, Ui_Toolbox, Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Viewer3D, Ui_Viewer2D, Ui_RegistrationManual
+from oat.views import *
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
 from oat.models import *
 from oat.utils import DisjointSetForest
@@ -516,23 +516,78 @@ class LayerTreeView(QtWidgets.QTreeView):
         self.setCurrentIndex(root)
         self.setHeaderHidden(True)
 
+import hashlib, binascii, os
+from sqlalchemy.orm.exc import NoResultFound
+
+class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        _translate = QtCore.QCoreApplication.translate
+
+        db_dict = {"New": None,
+                   "Local SQLite": "path",
+                   "UKB Patients": "path"}
+
+
+
+        for i, key in enumerate(db_dict.keys()):
+            self.dbDropdown.setItemText(i, _translate("LoginDialog", key))
+
+        self.buttonBox.accepted.connect(self.handleLogin)
+        self.buttonBox.rejected.connect(self.close)
+
+    def handleLogin(self):
+        # query selected DB for user:
+        query = session.query(User).filter(User.name == self.username)
+
+        try:
+            stored_hash = query.one().password_hash
+            # Compare hash of password field to password_hash in DB
+            if self.verify_password(stored_hash, self.password):
+                self.accept()
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Error', 'Wrong password')
+        except NoResultFound:
+            QtWidgets.QMessageBox.warning(self, 'Error', 'Username not found')
+
+    def hash_password(password):
+        """Hash a password for storing."""
+        salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+        pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
+                                      salt, 100000)
+        pwdhash = binascii.hexlify(pwdhash)
+        return (salt + pwdhash).decode('ascii')
+
+    def verify_password(stored_password, provided_password):
+        """Verify a stored password against one provided by user"""
+        salt = stored_password[:64]
+        stored_password = stored_password[64:]
+        pwdhash = hashlib.pbkdf2_hmac('sha512',
+                                      provided_password.encode('utf-8'),
+                                      salt.encode('ascii'),
+                                      100000)
+        pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+        return pwdhash == stored_password
 
 def main():
     application = QApplication(sys.argv)
-    window = oat()
-    desktop = QDesktopWidget().availableGeometry()
-    width = (desktop.width() - window.width()) / 2
-    height = (desktop.height() - window.height()) / 2
-    window.show()
-    window.move(width, height)
+    login = LoginDialog()
 
-    debug = True
+    if login.exec_() == QtWidgets.QDialog.Accepted:
+        window = oat()
+        desktop = QDesktopWidget().availableGeometry()
+        width = (desktop.width() - window.width()) / 2
+        height = (desktop.height() - window.height()) / 2
+        window.show()
+        window.move(width, height)
 
-    if debug:
-        window.import_vol("/run/user/1000/doc/5575ed92/67007_20190515.vol")
-        window.import_cfp("/run/user/1000/doc/b1a09644/HS00+0EZ.003.BMP")
+        debug = False
 
-    sys.exit(application.exec_())
+        if debug:
+            window.import_vol("/run/user/1000/doc/5575ed92/67007_20190515.vol")
+            window.import_cfp("/run/user/1000/doc/b1a09644/HS00+0EZ.003.BMP")
+
+        sys.exit(application.exec_())
 
 if __name__ == '__main__':
     main()

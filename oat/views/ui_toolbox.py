@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_toolbox.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -218,6 +219,4 @@ class Ui_Toolbox(object):
         self.toolButton_7.setText(_translate("Toolbox", "..."))
         self.toolButton_6.setText(_translate("Toolbox", "..."))
         self.toolButton_12.setText(_translate("Toolbox", "..."))
-
-
 from . import resources_rc

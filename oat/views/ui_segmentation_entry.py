@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'ui_segmentation_entry.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.14.1
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -62,6 +63,4 @@ class Ui_SegmentationEntry(object):
         SegmentationEntry.setWindowTitle(_translate("SegmentationEntry", "Form"))
         self.hideButton.setText(_translate("SegmentationEntry", "..."))
         self.label.setText(_translate("SegmentationEntry", "New Segmentation"))
-
-
 from . import resources_rc
