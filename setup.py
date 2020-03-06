@@ -1,7 +1,7 @@
 from setuptools import setup
 
 requirements = [
-    'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio'
+    'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio', 'sqlalchemy'
 ]
 
 test_requirements = [

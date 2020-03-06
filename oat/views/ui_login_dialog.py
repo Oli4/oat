@@ -23,7 +23,6 @@ class Ui_LoginDialog(object):
         self.horizontalLayout_3.addWidget(self.label_3)
         self.dbDropdown = QtWidgets.QComboBox(LoginDialog)
         self.dbDropdown.setObjectName("dbDropdown")
-        self.dbDropdown.addItem("")
         self.horizontalLayout_3.addWidget(self.dbDropdown)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -51,7 +50,6 @@ class Ui_LoginDialog(object):
         self.verticalLayout.addWidget(self.buttonBox)
 
         self.retranslateUi(LoginDialog)
-        self.buttonBox.accepted.connect(LoginDialog.accept)
         self.buttonBox.rejected.connect(LoginDialog.reject)
         QtCore.QMetaObject.connectSlotsByName(LoginDialog)
 
@@ -59,6 +57,5 @@ class Ui_LoginDialog(object):
         _translate = QtCore.QCoreApplication.translate
         LoginDialog.setWindowTitle(_translate("LoginDialog", "Dialog"))
         self.label_3.setText(_translate("LoginDialog", "Database"))
-        self.dbDropdown.setItemText(0, _translate("LoginDialog", "Local SQLite"))
         self.label.setText(_translate("LoginDialog", "Username:"))
         self.label_2.setText(_translate("LoginDialog", "Password:"))

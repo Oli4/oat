@@ -19,6 +19,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QDesktopWidget, QDialog, QFi
 from oat.views import *
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, layer_types_2d, layer_types_3d, CfpLayer
 from oat.models import *
+from oat.models.db import orm
+
 from oat.utils import DisjointSetForest
 from oat.io import OCT
 
@@ -518,39 +520,55 @@ class LayerTreeView(QtWidgets.QTreeView):
 
 import hashlib, binascii, os
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         _translate = QtCore.QCoreApplication.translate
 
-        db_dict = {"New": None,
-                   "Local SQLite": "path",
-                   "UKB Patients": "path"}
+        self.db_dict = { "Local SQLite": "/home/morelle/DBs/test.db",
+                         "UKB Patients": "path"}
+
+        self.setupUi(self)
 
 
 
-        for i, key in enumerate(db_dict.keys()):
-            self.dbDropdown.setItemText(i, _translate("LoginDialog", key))
+        for i, key in enumerate(self.db_dict.keys()):
+            self.dbDropdown.addItem(key)
 
         self.buttonBox.accepted.connect(self.handleLogin)
         self.buttonBox.rejected.connect(self.close)
 
     def handleLogin(self):
         # query selected DB for user:
-        query = session.query(User).filter(User.name == self.username)
+        db_key = self.dbDropdown.currentText()
 
-        try:
-            stored_hash = query.one().password_hash
-            # Compare hash of password field to password_hash in DB
-            if self.verify_password(stored_hash, self.password):
-                self.accept()
-            else:
-                QtWidgets.QMessageBox.warning(self, 'Error', 'Wrong password')
-        except NoResultFound:
-            QtWidgets.QMessageBox.warning(self, 'Error', 'Username not found')
 
-    def hash_password(password):
+
+        if db_key == "Add new DB":
+            return
+            #self.create_new_db()
+        else:
+            engine = create_engine("sqlite:///"+self.db_dict[db_key])
+            Session = sessionmaker(bind=engine)
+            session = Session()
+            query = session.query(orm.User).filter(orm.User.username == self.username.text())
+
+            try:
+                stored_hash = query.one().password_hash
+                # Compare hash of password field to password_hash in DB
+                if self.verify_password(stored_hash, self.password.text()):
+                    self.accept()
+                else:
+                    QtWidgets.QMessageBox.warning(self, 'Error', 'Wrong password')
+            except NoResultFound:
+                QtWidgets.QMessageBox.warning(self, 'Error', 'Username not found')
+
+
+
+    def hash_password(self, password):
         """Hash a password for storing."""
         salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
         pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'),
@@ -558,7 +576,7 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         pwdhash = binascii.hexlify(pwdhash)
         return (salt + pwdhash).decode('ascii')
 
-    def verify_password(stored_password, provided_password):
+    def verify_password(self, stored_password, provided_password):
         """Verify a stored password against one provided by user"""
         salt = stored_password[:64]
         stored_password = stored_password[64:]
