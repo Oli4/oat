@@ -7,3 +7,4 @@ from .ui_modality_entry import Ui_ModalityEntry
 from .ui_segmentation_entry import Ui_SegmentationEntry
 from .ui_registration_manual import Ui_RegistrationManual
 from .ui_login_dialog import Ui_LoginDialog
+from .ui_data_table_view import Ui_DataTableView

@@ -587,6 +587,15 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         pwdhash = binascii.hexlify(pwdhash).decode('ascii')
         return pwdhash == stored_password
 
+class DataTableView(QWidget, Ui_DataTableView):
+    def __init__(self, model, parent=None):
+        """Initialize the components of the Toolbox subwindow."""
+        super().__init__(parent)
+        self.setupUi(self)
+
+        self.PatientView.setModel(model)
+
+
 def main():
     application = QApplication(sys.argv)
     login = LoginDialog()
