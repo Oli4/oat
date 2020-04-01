@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'ui_3d_viewer.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_Viewer3D(object):
@@ -32,4 +31,6 @@ class Ui_Viewer3D(object):
     def retranslateUi(self, Viewer3D):
         _translate = QtCore.QCoreApplication.translate
         Viewer3D.setWindowTitle(_translate("Viewer3D", "Form"))
+
+
 from oat.views.custom import CustomGraphicsView

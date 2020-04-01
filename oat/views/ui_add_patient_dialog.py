@@ -1,0 +1,101 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui_add_patient_dialog.ui'
+#
+# Created by: PyQt5 UI code generator 5.12.1
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+class Ui_AddPatientDialog(object):
+    def setupUi(self, AddPatientDialog):
+        AddPatientDialog.setObjectName("AddPatientDialog")
+        AddPatientDialog.resize(321, 160)
+        self.verticalLayout = QtWidgets.QVBoxLayout(AddPatientDialog)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.label = QtWidgets.QLabel(AddPatientDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.verticalLayout_2.addWidget(self.label)
+        self.pseudonymEdit = QtWidgets.QLineEdit(AddPatientDialog)
+        self.pseudonymEdit.setObjectName("pseudonymEdit")
+        self.verticalLayout_2.addWidget(self.pseudonymEdit)
+        self.horizontalLayout.addLayout(self.verticalLayout_2)
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.label_2 = QtWidgets.QLabel(AddPatientDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName("label_2")
+        self.verticalLayout_3.addWidget(self.label_2)
+        self.genderBox = QtWidgets.QComboBox(AddPatientDialog)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.genderBox.sizePolicy().hasHeightForWidth())
+        self.genderBox.setSizePolicy(sizePolicy)
+        self.genderBox.setObjectName("genderBox")
+        self.genderBox.addItem("")
+        self.genderBox.addItem("")
+        self.genderBox.addItem("")
+        self.verticalLayout_3.addWidget(self.genderBox)
+        self.horizontalLayout.addLayout(self.verticalLayout_3)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.label_3 = QtWidgets.QLabel(AddPatientDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_3.setFont(font)
+        self.label_3.setObjectName("label_3")
+        self.verticalLayout_4.addWidget(self.label_3)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.birthdayRadioButton = QtWidgets.QRadioButton(AddPatientDialog)
+        self.birthdayRadioButton.setChecked(True)
+        self.birthdayRadioButton.setObjectName("birthdayRadioButton")
+        self.horizontalLayout_2.addWidget(self.birthdayRadioButton)
+        self.birthdayEdit = QtWidgets.QDateEdit(AddPatientDialog)
+        self.birthdayEdit.setEnabled(False)
+        self.birthdayEdit.setObjectName("birthdayEdit")
+        self.horizontalLayout_2.addWidget(self.birthdayEdit)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_2)
+        self.verticalLayout.addLayout(self.verticalLayout_4)
+        self.buttonBox = QtWidgets.QDialogButtonBox(AddPatientDialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName("buttonBox")
+        self.verticalLayout.addWidget(self.buttonBox)
+
+        self.retranslateUi(AddPatientDialog)
+        self.buttonBox.accepted.connect(AddPatientDialog.accept)
+        self.buttonBox.rejected.connect(AddPatientDialog.reject)
+        QtCore.QMetaObject.connectSlotsByName(AddPatientDialog)
+
+    def retranslateUi(self, AddPatientDialog):
+        _translate = QtCore.QCoreApplication.translate
+        AddPatientDialog.setWindowTitle(
+            _translate("AddPatientDialog", "Dialog"))
+        self.label.setText(_translate("AddPatientDialog", "Pseudonym"))
+        self.label_2.setText(_translate("AddPatientDialog", "Gender"))
+        self.genderBox.setItemText(0, _translate("AddPatientDialog", "Unknown"))
+        self.genderBox.setItemText(1, _translate("AddPatientDialog", "Female"))
+        self.genderBox.setItemText(2, _translate("AddPatientDialog", "Male"))
+        self.label_3.setText(_translate("AddPatientDialog", "Birthday"))
+        self.birthdayRadioButton.setText(
+            _translate("AddPatientDialog", "Unknown"))

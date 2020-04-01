@@ -2,12 +2,11 @@
 
 # Form implementation generated from reading ui file 'ui_login_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 
 class Ui_LoginDialog(object):
@@ -40,6 +39,7 @@ class Ui_LoginDialog(object):
         self.label_2.setObjectName("label_2")
         self.horizontalLayout_2.addWidget(self.label_2)
         self.password = QtWidgets.QLineEdit(LoginDialog)
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password.setObjectName("password")
         self.horizontalLayout_2.addWidget(self.password)
         self.verticalLayout.addLayout(self.horizontalLayout_2)

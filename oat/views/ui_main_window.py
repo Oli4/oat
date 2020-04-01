@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui_main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.1
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -114,4 +113,3 @@ class Ui_MainWindow(object):
         self.actionRedo.setText(_translate("MainWindow", "Redo"))
         self.actionRedo.setShortcut(_translate("MainWindow", "Ctrl+Y"))
         self.action_cfp.setText(_translate("MainWindow", "CFP (.bmp/.tif/.jpg)"))
-from . import resources_rc
