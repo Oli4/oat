@@ -45,7 +45,10 @@
       <item alignment="Qt::AlignTop">
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
+        </property>
+        <property name="elideMode">
+         <enum>Qt::ElideNone</enum>
         </property>
         <widget class="QWidget" name="layers2d">
          <attribute name="title">
@@ -81,7 +84,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-add_circle-24px.svg</normaloff>:/icons/icons/baseline-add_circle-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -98,7 +101,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -115,7 +118,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -132,7 +135,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-delete-24px.svg</normaloff>:/icons/icons/baseline-delete-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -152,7 +155,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-filter-none-24px.svg</normaloff>:/icons/icons/baseline-filter-none-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -201,7 +204,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-add_circle-24px.svg</normaloff>:/icons/icons/baseline-add_circle-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -221,7 +224,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</normaloff>:/icons/icons/baseline-arrow_upward-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -238,7 +241,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</normaloff>:/icons/icons/baseline-arrow_downward-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -255,7 +258,7 @@
                <string>...</string>
               </property>
               <property name="icon">
-               <iconset resource="resources.qrc">
+               <iconset>
                 <normaloff>:/icons/icons/baseline-delete-24px.svg</normaloff>:/icons/icons/baseline-delete-24px.svg</iconset>
               </property>
               <property name="iconSize">
@@ -342,7 +345,7 @@
             <string>...</string>
            </property>
            <property name="icon">
-            <iconset resource="resources.qrc">
+            <iconset>
              <normaloff>:/icons/icons/baseline-edit-24px.svg</normaloff>:/icons/icons/baseline-edit-24px.svg</iconset>
            </property>
            <property name="iconSize">
