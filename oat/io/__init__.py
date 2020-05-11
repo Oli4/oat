@@ -1,7 +1,9 @@
-import imageio
 import functools
-import numpy as np
 from struct import unpack
+
+import imageio
+import numpy as np
+
 
 def get_cfp(filepath):
     """
@@ -39,7 +41,7 @@ class OCT():
         return [bs._meta for bs in self._bscans]
     @property
     def volume(self):
-        return np.stack([x._scan for x in self._bscans], axis=-1)
+        return np.stack([x._scan_raw for x in self._bscans], axis=-1)
 
     @property
     def nir(self):

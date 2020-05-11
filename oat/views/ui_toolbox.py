@@ -30,6 +30,7 @@ class Ui_Toolbox(object):
         self.label_3.setObjectName("label_3")
         self.verticalLayout_2.addWidget(self.label_3)
         self.tabWidget = QtWidgets.QTabWidget(self.widget)
+        self.tabWidget.setElideMode(QtCore.Qt.ElideNone)
         self.tabWidget.setObjectName("tabWidget")
         self.layers2d = QtWidgets.QWidget()
         self.layers2d.setObjectName("layers2d")
@@ -188,7 +189,7 @@ class Ui_Toolbox(object):
         self.verticalLayout.addWidget(self.widget_3, 0, QtCore.Qt.AlignTop)
 
         self.retranslateUi(Toolbox)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Toolbox)
 
     def retranslateUi(self, Toolbox):

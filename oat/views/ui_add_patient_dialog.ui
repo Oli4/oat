@@ -109,9 +109,15 @@
        </item>
        <item>
         <widget class="QDateEdit" name="birthdayEdit">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <property name="currentSection">
+                <enum>QDateTimeEdit::DaySection</enum>
+            </property>
+            <property name="calendarPopup">
+                <bool>true</bool>
+            </property>
         </widget>
        </item>
       </layout>

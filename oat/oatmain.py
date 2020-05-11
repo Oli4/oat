@@ -1,13 +1,13 @@
-import os
-import sys
-
 import pandas as pd
 import qimage2ndarray
 import requests
+import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QFileDialog,
                              QMainWindow, QWidget)
 
+from oat.config import *
+from oat.core.security import get_fernet, get_local_patient_info
 from oat.io import OCT
 from oat.models import *
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, CfpLayer
@@ -221,7 +221,12 @@ class PatientsModel(QtCore.QAbstractTableModel):
             "{}/patients/all".format(oat_config['api_server']),
             headers=oat_config["auth_header"])
 
-        self.data = pd.DataFrame.from_records(response.json())
+        data = pd.DataFrame.from_records(response.json())
+        local_data = get_local_patient_info(
+            oat_config["local_patient_info_file"],
+            oat_config["fernet"])
+
+        self.data = data.merge(local_data, on="pseudonym", how="left")
         self.data.set_index("id", inplace=True)
 
         self.layoutChanged.emit()
@@ -588,14 +593,12 @@ class AddPatientDialog(QtWidgets.QDialog, Ui_AddPatientDialog):
         self.buttonBox.rejected.connect(self.close)
 
     def add_patient(self):
-        pd = {"pseudonym": self.pseudonymEdit.text(),
-              "gender": self.genderBox.currentText().lower(),
-              "birtday": None}
-        patient_data = {key: pd[key] for key in pd if pd[key]}
+        pseudonym = {"pseudonym": self.pseudonymEdit.text()}
 
+        # Only pseudonym is uploaded
         r = requests.post("{}/patients/".format(oat_config["api_server"]),
                           headers=oat_config["auth_header"],
-                          json=patient_data)
+                          json=pseudonym)
 
         if r.status_code != 200:
             print(r.json())
@@ -605,7 +608,29 @@ class AddPatientDialog(QtWidgets.QDialog, Ui_AddPatientDialog):
                 QtWidgets.QMessageBox.warning(self, 'Error',
                                               "Patient could not be added to the database")
         else:
+            # Save additional information to local patients file
+            pd = {"pseudonym": self.pseudonymEdit.text(),
+                  "gender": self.genderBox.currentText().lower(),
+                  "birthday": self.birthdayEdit.date().toString(Qt.ISODate)}
+            patient_data = {key: pd[key] for key in pd if pd[key]}
+
+            self.add_local_patient_info(patient_data)
             self.accept()
+
+    def add_local_patient_info(self, patient_data: dict):
+        try:
+            patients_info = get_local_patient_info(
+                oat_config["local_patient_info_file"],
+                oat_config["fernet"])
+        except Exception as e:
+            raise e
+
+        if patient_data["pseudonym"] not in patients_info.pseudonym:
+            patients_info = patients_info.append(patient_data,
+                                                 ignore_index=True)
+            with open(oat_config["local_patient_info_file"], "wb") as myfile:
+                myfile.write(oat_config["fernet"].encrypt(
+                    patients_info.to_csv(index=False).encode('utf8')))
 
 
 class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
@@ -633,6 +658,7 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
             "password": self.password.text(),
         }
         if True:
+            pass
             login_data = {
                 "username": "oli4morelle@gmail.com",
                 "password": "testpw",
@@ -641,6 +667,7 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         r = requests.post(f"{api_server}/login/access-token", data=login_data)
 
         if r.status_code != 200:
+            print(r.status_code)
             QtWidgets.QMessageBox.warning(self, 'Error',
                                           'Wrong username or password')
         else:
@@ -649,7 +676,20 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
             oat_config["auth_header"] = {
                 "Authorization": f"Bearer {auth_token}"}
             oat_config["api_server"] = api_server
+            oat_config["local_patient_info_file"] = \
+                Path.home() / ".oat" / f"{login_data['username']}_patients.csv"
+            oat_config["fernet"] = get_fernet(login_data['password'])
+
+            # Create local patients info if not existing
+            if not oat_config["local_patient_info_file"].exists():
+                columns = ["pseudonym"]
+                patients_info = pd.DataFrame(columns=columns)
+                with open(oat_config["local_patient_info_file"],
+                          "wb") as myfile:
+                    myfile.write(oat_config["fernet"].encrypt(
+                        patients_info.to_csv(index=False).encode('utf8')))
             self.accept()
+
 
 def main():
     application = QApplication(sys.argv)
