@@ -11,7 +11,7 @@ def upload_vol(filepath, patient_id):
                           "multipart/form-data"),
              "patient_id": (None, patient_id)}
 
-    return requests.post(f"{config.api_server}/volumeimages/",
+    return requests.post(f"{config.api_server}/upload/vol",
                          files=files,
                          headers=config.auth_header)
 
@@ -23,6 +23,6 @@ def upload_enface(filepath, patient_id, modality):
              "patient_id": (None, patient_id),
              "modality": (None, modality)}
 
-    return requests.post(f"{config.api_server}/enfaceimages/",
+    return requests.post(f"{config.api_server}/upload/enfaceimage",
                          files=files,
                          headers=config.auth_header)
