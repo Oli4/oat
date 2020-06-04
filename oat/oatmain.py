@@ -1,10 +1,13 @@
 from functools import partial
 
 import sys
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
-from oat.views import *
+from oat.models import RegistrationModel
 from oat.views.dialogs import LoginDialog, UploadCfpDialog, UploadVolDialog
+from oat.views.registration.registration_view import RegistrationView
+from oat.views.ui import Ui_MainWindow
 
 
 class oat(QMainWindow, Ui_MainWindow):
@@ -19,6 +22,10 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionUploadCfp.triggered.connect(partial(self.upload, type="cfp"))
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
+
+        registration_view = RegistrationView(model=RegistrationModel(2, 1),
+                                             parent=self)
+        self.mdiArea.addSubWindow(registration_view)
 
     def upload(self, type):
 

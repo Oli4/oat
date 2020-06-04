@@ -1,1 +1,1 @@
-from .custom_viewer import CustomGraphicsView
+# from .registration_view import RegistrationView

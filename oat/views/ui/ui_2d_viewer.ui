@@ -36,7 +36,7 @@
   <customwidget>
    <class>CustomGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>oat.views.custom</header>
+   <header>oat.views</header>
   </customwidget>
  </customwidgets>
  <resources/>

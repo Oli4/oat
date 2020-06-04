@@ -1,31 +1,51 @@
 from collections import defaultdict
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QGraphicsView
 
 
-class CustomGraphicsView(QGraphicsView):
+class FeatureSelectionView(QGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.model = parent.model
+        self._selectionModel = None
 
         self._zoom = 0
-        self._empty = True
+        # self._empty = True
 
         self._pressed_keys = defaultdict(lambda: False)
         self._mouse_pressed = False
+        self._dragging = False
 
-        self.scene = QtWidgets.QGraphicsScene(self)
-        self.setScene(self.scene)
+        # self.scene = QtWidgets.QGraphicsScene(self)
+        # self.setScene(self.scene)
 
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setMouseTracking(True)
 
-        self.create_cursor_cross()
-        self.cursorPosChanged.connect(self.set_cursor_cross)
-        self.setCursor(QtCore.Qt.BlankCursor)
+        # self.create_cursor_cross()
+        # self.cursorPosChanged.connect(self.set_cursor_cross)
+        # self.setCursor(QtCore.Qt.BlankCursor)
+
+    @property
+    def selectionModel(self):
+        return self._selectionModel
+
+    @selectionModel.setter
+    def selectionModel(self, value):
+        self._selectionModel = value
+
+    @property
+    def _empty(self):
+        if len(self.scene().items()) == 0:
+            return True
+        else:
+            return False
 
     def hasPhoto(self):
         return not self._empty
@@ -38,22 +58,20 @@ class CustomGraphicsView(QGraphicsView):
         self._zoom -= 1
         self.scale(0.8, 0.8)
 
-
     def keyPressEvent(self, event):
-        if not self._mouse_pressed:
-            if int(event.key()) == int(QtCore.Qt.Key_Control):
-                self.setCursor(QtCore.Qt.OpenHandCursor)
-            event.accept()
+        super().keyPressEvent(event)
+        if event.key() == Qt.Key_Control:
+            self.setCursor(Qt.OpenHandCursor)
 
     def keyReleaseEvent(self, event):
-        if int(event.key()) == int(QtCore.Qt.Key_Control):
-            self.setCursor(QtCore.Qt.ArrowCursor)
-        else:
-            super().keyReleaseEvent((event))
+        super().keyReleaseEvent(event)
+        if not self._mouse_pressed:
+            if event.key() == Qt.Key_Control:
+                self.setCursor(Qt.ArrowCursor)
 
     def wheelEvent(self, event):
         if self.hasPhoto():
-            if event.modifiers() == (QtCore.Qt.ControlModifier):
+            if event.modifiers() == (Qt.ControlModifier):
                 self.parent().wheelEvent(event)
                 # Ask the parent to change the data -> change slice
             else:
@@ -65,14 +83,18 @@ class CustomGraphicsView(QGraphicsView):
         event.accept()
 
     def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
+        super().mousePressEvent(event)
+        if event.button() == Qt.LeftButton:
             self._mouse_pressed = True
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                self.setCursor(QtCore.Qt.ClosedHandCursor)
+            if event.modifiers() & Qt.ControlModifier:
+                self.setCursor(Qt.ClosedHandCursor)
+                self._dragging = True
                 self._dragPos = event.pos()
                 event.accept()
             else:
-                super().mousePressEvent(event)
+                point = self.mapToScene(event.pos())
+                point = QPoint(int(point.x()), int(point.y()))
+                self.model.setData(self.selectionModel.currentIndex(), point)
 
     def create_cursor_cross(self):
         line1 = QtCore.QLineF()
@@ -80,10 +102,10 @@ class CustomGraphicsView(QGraphicsView):
         line3 = QtCore.QLineF()
         line4 = QtCore.QLineF()
 
-        self.line1 = self.scene.addLine(line1)
-        self.line2 = self.scene.addLine(line2)
-        self.line3 = self.scene.addLine(line3)
-        self.line4 = self.scene.addLine(line4)
+        self.line1 = self.scene().addLine(line1)
+        self.line2 = self.scene().addLine(line2)
+        self.line3 = self.scene().addLine(line3)
+        self.line4 = self.scene().addLine(line4)
         [line.setZValue(10) for line in
          [self.line1, self.line2, self.line3, self.line4]]
 
@@ -117,15 +139,8 @@ class CustomGraphicsView(QGraphicsView):
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos)
 
-        # Compute position on current item
-        item = self.scene.itemAt(event.pos(), QtGui.QTransform())
-        if item:
-            # Item pos is currently always 0, 0 since items are only images which were never moved
-            # The top left pixel has pos (0<1, 0<1)
-            item_pos = scene_pos - item.pos()
-
-
-        if self._mouse_pressed and event.modifiers() and QtCore.Qt.ControlModifier:
+        super().mouseMoveEvent(event)
+        if self._mouse_pressed and self._dragging:
             newPos = event.pos()
             diff = newPos - self._dragPos
             self._dragPos = newPos
@@ -133,23 +148,13 @@ class CustomGraphicsView(QGraphicsView):
                 self.horizontalScrollBar().value() - diff.x())
             self.verticalScrollBar().setValue(
                 self.verticalScrollBar().value() - diff.y())
-            event.accept()
-        else:
-            super().mouseMoveEvent(event)
-
 
     def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton:
-            if event.modifiers() & QtCore.Qt.ControlModifier:
-                self.setCursor(QtCore.Qt.OpenHandCursor)
+        super().mouseReleaseEvent(event)
+        if event.button() == Qt.LeftButton:
+            if event.modifiers() & Qt.ControlModifier:
+                self.setCursor(Qt.OpenHandCursor)
             else:
-                self.setCursor(QtCore.Qt.BlankCursor)
+                self.setCursor(Qt.ArrowCursor)
+                self._dragging = False
             self._mouse_pressed = False
-        else:
-            super().mouseReleaseEvent(event)
-
-
-
-
-
-

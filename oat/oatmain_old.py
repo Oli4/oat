@@ -1,7 +1,5 @@
-import sys
-
 import qimage2ndarray
-from PyQt5 import QtWidgets
+import sys
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QFileDialog,
                              QMainWindow, QWidget)
 
@@ -10,9 +8,9 @@ from oat.models import *
 from oat.models.db import orm
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, CfpLayer
 from oat.views import *
-
-
 # from oat.views import main_window, toolbox
+from oat.views.toolbox import TreeItemDelegate, ModalityEntry, \
+    SegmentationEntry, Toolbox
 
 
 class RegistrationManual(QWidget, Ui_RegistrationManual):

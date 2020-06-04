@@ -1,0 +1,3 @@
+from .featureselection_view import FeatureSelectionView
+from .featuretable_view import FeatureTableView
+from .registration_view import RegistrationView

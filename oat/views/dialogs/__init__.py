@@ -8,7 +8,7 @@ from oat import config
 from oat.core.security import get_local_patient_info, get_fernet
 from oat.models.patients import PatientsModel
 from oat.utils.api import upload_enface, upload_vol
-from oat.views import Ui_AddPatientDialog, Ui_LoginDialog, Ui_UploadDialog
+from oat.views.ui import Ui_AddPatientDialog, Ui_LoginDialog, Ui_UploadDialog
 
 
 class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
@@ -145,6 +145,10 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
             login_data = {
                 "username": "oli4morelle@gmail.com",
                 "password": "testpw",
+            }
+            login_data = {
+                "username": "admin@retina-annotation-tool.com",
+                "password": "4dc86c90f921dfd3727c99893b17dcf36a84642a332da52d626fd3573e171d98",
             }
 
         r = requests.post(f"{api_server}/login/access-token", data=login_data)
