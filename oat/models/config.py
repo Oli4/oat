@@ -12,6 +12,8 @@ ACTIVESLICE_ROLE = Qt.UserRole + 8
 
 FEATUREID_ROLE = Qt.UserRole + 9
 MATCHID_ROLE = Qt.UserRole + 10
+SCENE_ROLE = Qt.UserRole + 11
+POINT_ROLE = Qt.UserRole + 12
 
 role_mapping = {VISIBILITY_ROLE: "visible", NAME_ROLE: "name",
                 DATA_ROLE: "data", None: "data", SHAPE_ROLE: "shape",

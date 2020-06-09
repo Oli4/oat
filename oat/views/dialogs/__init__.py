@@ -1,14 +1,20 @@
+import logging
 from pathlib import Path
 
 import pandas as pd
 import requests
-from PyQt5 import QtWidgets, Qt, QtCore
+from PyQt5 import QtWidgets, QtCore
 
 from oat import config
 from oat.core.security import get_local_patient_info, get_fernet
 from oat.models.patients import PatientsModel
 from oat.utils.api import upload_enface, upload_vol
-from oat.views.ui import Ui_AddPatientDialog, Ui_LoginDialog, Ui_UploadDialog
+# from oat.views.ui import Ui_AddPatientDialog, Ui_LoginDialog, Ui_UploadDialog
+from oat.views.ui.ui_add_patient_dialog import Ui_AddPatientDialog
+from oat.views.ui.ui_login_dialog import Ui_LoginDialog
+from oat.views.ui.ui_upload_dialog import Ui_UploadDialog
+
+logger = logging.getLogger(__name__)
 
 
 class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
@@ -18,12 +24,19 @@ class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
         self.filefilter = filefilter
 
-        self.patientDropdown.setModel(PatientsModel())
+        self.model = PatientsModel()
+        self.patientDropdown.setModel(self.model)
+        self.addPatientButton.clicked.connect(self.add_patient)
         self.fileSelectButton.clicked.connect(self.select_file)
         self.buttonBox.accepted.connect(self.check_upload)
 
         self.fname = ''
         self.patient_id = None
+
+    def add_patient(self):
+        dialog = AddPatientDialog()
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.model.reload_data()
 
     def select_file(self):
         self.fname, _ = QtWidgets.QFileDialog.getOpenFileName(self,
@@ -94,7 +107,8 @@ class AddPatientDialog(QtWidgets.QDialog, Ui_AddPatientDialog):
             # Save additional information to local patients file
             pd = {"pseudonym": self.pseudonymEdit.text(),
                   "gender": self.genderBox.currentText().lower(),
-                  "birthday": self.birthdayEdit.date().toString(Qt.ISODate)}
+                  "birthday": self.birthdayEdit.date().toString(
+                      QtCore.Qt.ISODate)}
             patient_data = {key: pd[key] for key in pd if pd[key]}
 
             self.add_local_patient_info(patient_data)
@@ -119,6 +133,7 @@ class AddPatientDialog(QtWidgets.QDialog, Ui_AddPatientDialog):
 class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+        logger.info("Login dialog initialization.")
         _translate = QtCore.QCoreApplication.translate
 
         self.db_dict = {"Default DB": "http://localhost/api/v1"}
@@ -154,13 +169,15 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         r = requests.post(f"{api_server}/login/access-token", data=login_data)
 
         if r.status_code != 200:
-            QtWidgets.QMessageBox.warning(self, 'Error',
-                                          'Wrong username or password')
+            msg = 'Wrong username or password'
+            logger.warning(msg)
+            QtWidgets.QMessageBox.warning(self, 'Error', msg)
         else:
             response = r.json()
             auth_token = response["access_token"]
             config.auth_header = {
                 "Authorization": f"Bearer {auth_token}"}
+            logging.info("Authentication token received")
             config.api_server = api_server
             config.local_patient_info_file = \
                 Path.home() / ".oat" / f"{login_data['username']}_patients.csv"
@@ -174,4 +191,7 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
                           "wb") as myfile:
                     myfile.write(config.fernet.encrypt(
                         patients_info.to_csv(index=False).encode('utf8')))
+                logging.info(f"Local patient info created for user "
+                             f"{login_data['username']}")
+
             self.accept()

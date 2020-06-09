@@ -14,7 +14,8 @@ from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
 from pydantic import BaseModel
 
 from oat import config
-from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE
+from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
+    POINT_ROLE
 
 
 class EnfaceImage(BaseModel):
@@ -94,23 +95,23 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         # img is 0 for the fixed image and increases by one for every additional
         # moving image
         pos = self._get_marker_pos(index)
-        try:
-            self.markers[(index.row(), index.column())].setPos(pos)
-        except KeyError:
-            marker = self._marker_1(pos)
-            self.markers[(index.row(), index.column())] = marker
-            self.scenes[index.column()].addItem(marker)
-        # self.markers[(scene_id, row)] = self._marker_1(pos)
+        if pos:
+            try:
+                self.markers[(index.row(), index.column())].setPos(pos)
+            except KeyError:
+                marker = self._marker_1(pos)
+                self.markers[(index.row(), index.column())] = marker
+                self.scenes[index.column()].addItem(marker)
 
-        self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,))
+            self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,))
 
     def _get_marker_pos(self, index):
         try:
-            point = self.data(index, role=QtCore.Qt.EditRole)
+            point = self.data(index, role=POINT_ROLE)
             return QtCore.QPointF(0.5, 0.5) + point
         except:
-            # If no marker set
-            raise ValueError()
+            raise ValueError(f"No feature position set at index"
+                             f" ({index.row(), index.column()})")
 
     def _marker_1(self, pos):
         pos = QPoint(int(pos.x()), int(pos.y())) + QPointF(0.5, 0.5)
@@ -235,12 +236,22 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.DisplayRole:
             return str(self._data.iloc[index.row(), (1 + index.column()) * 2])
         elif role == QtCore.Qt.EditRole:
-            return QPoint(
-                *self._data.iloc[index.row(), (1 + index.column()) * 2])
+            raise ValueError("Test if needed")
+
+        elif role == POINT_ROLE:
+            try:
+                return QPointF(
+                    *self._data.iloc[index.row(), (1 + index.column()) * 2])
+            except:
+                return False
+
+
         elif role == FEATUREID_ROLE:
             return self._data.iloc[index.row(), 1 + index.column() * 2]
         elif role == MATCHID_ROLE:
             return self._data.iloc[index.row(), 0]
+        elif role == SCENE_ROLE:
+            return self.scenes[index.column()]
 
     def insertRows(self, row: int, count: int,
                    parent: QModelIndex = ...) -> bool:

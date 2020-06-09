@@ -23,7 +23,12 @@ class PatientsModel(QtCore.QAbstractTableModel):
             config.local_patient_info_file,
             config.fernet)
 
-        self.data = data.merge(local_data, on="pseudonym", how="left")
+        try:
+            self.data = data.merge(local_data, on="pseudonym", how="left")
+        except KeyError:  # Produce empty patient model if no patients available
+            self.data = pd.DataFrame(columns=["pseudonym", "id", "gender",
+                                              "birthday"])
+
         self.data.set_index("id", inplace=True)
 
         self.layoutChanged.emit()

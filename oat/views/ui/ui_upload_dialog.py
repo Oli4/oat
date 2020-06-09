@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_UploadDialog(object):
@@ -19,9 +19,21 @@ class Ui_UploadDialog(object):
         self.label = QtWidgets.QLabel(UploadDialog)
         self.label.setObjectName("label")
         self.verticalLayout.addWidget(self.label)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.patientDropdown = QtWidgets.QComboBox(UploadDialog)
         self.patientDropdown.setObjectName("patientDropdown")
-        self.verticalLayout.addWidget(self.patientDropdown)
+        self.horizontalLayout_2.addWidget(self.patientDropdown)
+        self.addPatientButton = QtWidgets.QToolButton(UploadDialog)
+        icon = QtGui.QIcon()
+        icon.addPixmap(
+            QtGui.QPixmap(":/icons/icons/baseline-add_circle-24px.svg"),
+            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.addPatientButton.setIcon(icon)
+        self.addPatientButton.setIconSize(QtCore.QSize(24, 24))
+        self.addPatientButton.setObjectName("addPatientButton")
+        self.horizontalLayout_2.addWidget(self.addPatientButton)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.label_2 = QtWidgets.QLabel(UploadDialog)
         self.label_2.setObjectName("label_2")
         self.verticalLayout.addWidget(self.label_2)
@@ -60,5 +72,6 @@ class Ui_UploadDialog(object):
         _translate = QtCore.QCoreApplication.translate
         UploadDialog.setWindowTitle(_translate("UploadDialog", "Dialog"))
         self.label.setText(_translate("UploadDialog", "Patient:"))
+        self.addPatientButton.setText(_translate("UploadDialog", "+"))
         self.label_2.setText(_translate("UploadDialog", "File:"))
         self.fileSelectButton.setText(_translate("UploadDialog", "Select"))

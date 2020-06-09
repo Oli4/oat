@@ -65,7 +65,7 @@ class Ui_RegistrationManual(object):
         self.horizontalLayout_4.addItem(spacerItem)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.graphicsViewPatch = QtWidgets.QGraphicsView(RegistrationManual)
+        self.graphicsViewPatch = CustomGraphicsView(RegistrationManual)
         self.graphicsViewPatch.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.MinimumExpanding,
@@ -83,8 +83,7 @@ class Ui_RegistrationManual(object):
             QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsViewPatch.setObjectName("graphicsViewPatch")
         self.verticalLayout_2.addWidget(self.graphicsViewPatch)
-        self.graphicsViewCheckerboard = QtWidgets.QGraphicsView(
-            RegistrationManual)
+        self.graphicsViewCheckerboard = CustomGraphicsView(RegistrationManual)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.MinimumExpanding,
             QtWidgets.QSizePolicy.MinimumExpanding)
@@ -135,4 +134,5 @@ class Ui_RegistrationManual(object):
         self.label.setText(_translate("RegistrationManual", "Gridsize"))
 
 
+from oat.views.custom import CustomGraphicsView
 from oat.views.registration import FeatureSelectionView, FeatureTableView

@@ -1,9 +1,14 @@
+import logging
+
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
 from oat.models import RegistrationModel
-from oat.views.ui import Ui_RegistrationManual
+from oat.models.config import POINT_ROLE
+from oat.views.ui.ui_registration_manual import Ui_RegistrationManual
+
+logger = logging.getLogger(__name__)
 
 
 class RegistrationView(QWidget, Ui_RegistrationManual):
@@ -30,28 +35,85 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
         self.scenes = self.model.scenes
 
-        self.graphicsViewPointSelection.setScene(self.scenes[0])
-        self.graphicsViewPatch.setScene(self.scenes[1])
+        # Set scenes: The first image is in the selection view and second in
+        # patch view
+        self.show()
+        self.set_scenes(self.model.createIndex(0, 0),
+                        self.model.createIndex(0, 1))
+
+    def showEvent(self, a0: QtGui.QShowEvent) -> None:
+        # Make sure images are filling the view when Widget is opened
+        self.graphicsViewPointSelection.zoomToFit()
+        self.graphicsViewPatch.zoomToFit()
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        self.graphicsViewPointSelection.zoomToFit()
+        self.graphicsViewPatch.zoomToFit()
+
+    def center_PointSelection(self, point):
+        if point:
+            self.graphicsViewPointSelection.zoomToFeature()
+            self.graphicsViewPointSelection.centerOn(point)
+        else:
+            self.graphicsViewPointSelection.zoomToFit()
+
+    def center_Patch(self, point):
+        if point:
+            self.graphicsViewPatch.zoomToFeature()
+            self.graphicsViewPatch.centerOn(point)
+        else:
+            self.graphicsViewPatch.zoomToFit()
+
+    def match_changed(self, current_index, previous_index):
+        """ Return False if model row is the same and True otherwise"""
+        if previous_index.row() == current_index.row():
+            return False
+        else:
+            return True
+
+    def modality_changed(self, current_index, previous_index):
+        """ Return False if model column is the same and True otherwise"""
+        if previous_index.column() == current_index.column():
+            return False
+        else:
+            return True
 
     @QtCore.pyqtSlot(QModelIndex, QModelIndex)
     def set_scenes(self, current_index: QModelIndex,
                    previous_index: QModelIndex):
+        """
+        :param current_index: The new model index.
+        :param previous_index:
+        :return:
+        """
+        feat1_index = current_index
+
+        # Find out which image to show in the patch view
+        if self.match_changed(current_index, previous_index):
+            if self.modality_changed(current_index, previous_index):
+                feat2_index = self.model.createIndex(current_index.row(),
+                                                     previous_index.column())
+            else:
+                feat2_index = self.model.createIndex(
+                    current_index.row(),
+                    self.scenes.index(self.graphicsViewPatch.scene()))
+        else:
+            feat2_index = previous_index
+
+        # Set GraphicsViewPointSelection to current Index
         self.graphicsViewPointSelection.setScene(
-            self.scenes[current_index.column()])
+            self.scenes[feat1_index.column()])
+        self.graphicsViewPointSelection.show()
+        self.center_PointSelection(self.model.data(feat1_index,
+                                                   role=POINT_ROLE))
+
         self.graphicsViewPatch.setScene(
-            self.scenes[previous_index.column()])
+            self.scenes[feat2_index.column()])
+        self.graphicsViewPatch.show()
+        self.center_Patch(self.model.data(feat2_index,
+                                          role=POINT_ROLE))
 
-        try:
-            self.graphicsViewPointSelection.centerOn(
-                self.model.data(current_index, role=QtCore.Qt.EditRole))
-        except:
-            pass
 
-        try:
-            self.graphicsViewPatch.centerOn(
-                self.model.data(previous_index, role=QtCore.Qt.EditRole))
-        except:
-            pass
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         try:

@@ -1,13 +1,15 @@
+import logging
 from functools import partial
 
 import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
+from oat.config import OAT_FOLDER
 from oat.models import RegistrationModel
-from oat.views.dialogs import LoginDialog, UploadCfpDialog, UploadVolDialog
-from oat.views.registration.registration_view import RegistrationView
-from oat.views.ui import Ui_MainWindow
+from oat.views import LoginDialog, UploadCfpDialog, UploadVolDialog, \
+    RegistrationView
+from oat.views.ui.ui_main_window import Ui_MainWindow
 
 
 class oat(QMainWindow, Ui_MainWindow):
@@ -23,7 +25,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        registration_view = RegistrationView(model=RegistrationModel(2, 1),
+        registration_view = RegistrationView(model=RegistrationModel(1, 2),
                                              parent=self)
         self.mdiArea.addSubWindow(registration_view)
 
@@ -45,7 +47,27 @@ class oat(QMainWindow, Ui_MainWindow):
     def export(self):
         pass
 
-def main():
+
+def main(log_level=logging.DEBUG):
+    # create logger for "oat" application
+    logger = logging.getLogger("oat")
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs debug messages
+    fh = logging.FileHandler(OAT_FOLDER / 'oat.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(log_level)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    logger.info("Starting Application.")
     application = QApplication(sys.argv)
     login = LoginDialog()
 

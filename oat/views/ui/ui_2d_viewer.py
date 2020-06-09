@@ -29,6 +29,4 @@ class Ui_Viewer2D(object):
     def retranslateUi(self, Viewer2D):
         _translate = QtCore.QCoreApplication.translate
         Viewer2D.setWindowTitle(_translate("Viewer2D", "Form"))
-
-
 from oat.views import CustomGraphicsView
