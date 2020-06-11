@@ -1,5 +1,6 @@
 from PyQt5 import QtGui
 
+from .patients import PatientsModel
 from .registration_model import RegistrationModel
 
 

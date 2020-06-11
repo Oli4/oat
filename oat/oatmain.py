@@ -7,8 +7,9 @@ from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
 from oat.models import RegistrationModel
-from oat.views import LoginDialog, UploadCfpDialog, UploadVolDialog, \
-    RegistrationView
+from oat.views import RegistrationView
+from oat.views.dialogs.login import LoginDialog
+from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
 from oat.views.ui.ui_main_window import Ui_MainWindow
 
 

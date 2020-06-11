@@ -17,8 +17,6 @@ class FeatureSelectionView(CustomGraphicsView):
         self._dragging = False
 
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-        self.setMouseTracking(True)
 
     @property
     def selectionModel(self):
@@ -29,16 +27,12 @@ class FeatureSelectionView(CustomGraphicsView):
         self._selectionModel = value
 
     def wheelEvent(self, event):
-        if self.hasPhoto():
-            if event.modifiers() == (Qt.ControlModifier):
-                self.parent().wheelEvent(event)
-                # Ask the parent to change the data -> change slice
-            else:
-                if event.angleDelta().y() > 0:
-                    self.zoom_in()
-                else:
-                    self.zoom_out()
-        event.accept()
+        if event.modifiers() == (Qt.ControlModifier):
+            self.parent().wheelEvent(event)
+            # Ask the parent to change the data -> change slice
+            event.accept()
+        else:
+            super().wheelEvent(event)
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)

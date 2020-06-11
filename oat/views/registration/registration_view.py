@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtWidgets import QWidget
 
@@ -37,18 +37,35 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
         # Set scenes: The first image is in the selection view and second in
         # patch view
-        self.show()
+
         self.set_scenes(self.model.createIndex(0, 0),
                         self.model.createIndex(0, 1))
+
+        self.graphicsViewCheckerboard.setTransformationAnchor(
+            QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+        self.transformationDropdown.currentTextChanged.connect(
+            self.change_tmodel)
+        self.gridSizeSlider.valueChanged.connect(self.change_checkerboard_size)
+        self.gridSizeSlider.value
 
     def showEvent(self, a0: QtGui.QShowEvent) -> None:
         # Make sure images are filling the view when Widget is opened
         self.graphicsViewPointSelection.zoomToFit()
         self.graphicsViewPatch.zoomToFit()
+        self.graphicsViewCheckerboard.zoomToFit()
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         self.graphicsViewPointSelection.zoomToFit()
         self.graphicsViewPatch.zoomToFit()
+
+    @QtCore.pyqtSlot(int)
+    def change_checkerboard_size(self, size):
+        self.model.checkerboard_size = size
+
+    @QtCore.pyqtSlot(str)
+    def change_tmodel(self, tmodel):
+        self.model.tmodel = tmodel.lower()
 
     def center_PointSelection(self, point):
         if point:
@@ -86,6 +103,9 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         :param previous_index:
         :return:
         """
+        self.graphicsViewCheckerboard.setScene(self.scenes[-1])
+        self.graphicsViewCheckerboard.zoomToFit()
+
         feat1_index = current_index
 
         # Find out which image to show in the patch view
@@ -96,20 +116,20 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
             else:
                 feat2_index = self.model.createIndex(
                     current_index.row(),
-                    self.scenes.index(self.graphicsViewPatch.scene()))
+                    self.graphicsViewPatch.scene().scene_id)
         else:
             feat2_index = previous_index
 
         # Set GraphicsViewPointSelection to current Index
         self.graphicsViewPointSelection.setScene(
             self.scenes[feat1_index.column()])
-        self.graphicsViewPointSelection.show()
+        # self.graphicsViewPointSelection.show()
         self.center_PointSelection(self.model.data(feat1_index,
                                                    role=POINT_ROLE))
 
         self.graphicsViewPatch.setScene(
             self.scenes[feat2_index.column()])
-        self.graphicsViewPatch.show()
+        #self.graphicsViewPatch.show()
         self.center_Patch(self.model.data(feat2_index,
                                           role=POINT_ROLE))
 

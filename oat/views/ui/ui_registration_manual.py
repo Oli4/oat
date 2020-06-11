@@ -29,8 +29,9 @@ class Ui_RegistrationManual(object):
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.graphicsViewPointSelection = FeatureSelectionView(
             RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                           QtWidgets.QSizePolicy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
@@ -112,10 +113,15 @@ class Ui_RegistrationManual(object):
         self.label.setObjectName("label")
         self.verticalLayout_2.addWidget(self.label)
         self.gridSizeSlider = QtWidgets.QSlider(RegistrationManual)
-        self.gridSizeSlider.setMinimum(10)
-        self.gridSizeSlider.setMaximum(200)
-        self.gridSizeSlider.setProperty("value", 50)
+        self.gridSizeSlider.setMinimum(50)
+        self.gridSizeSlider.setMaximum(400)
+        self.gridSizeSlider.setSingleStep(10)
+        self.gridSizeSlider.setProperty("value", 200)
+        self.gridSizeSlider.setSliderPosition(200)
+        self.gridSizeSlider.setTracking(True)
         self.gridSizeSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.gridSizeSlider.setInvertedAppearance(False)
+        self.gridSizeSlider.setInvertedControls(False)
         self.gridSizeSlider.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.gridSizeSlider.setTickInterval(10)
         self.gridSizeSlider.setObjectName("gridSizeSlider")
@@ -127,12 +133,16 @@ class Ui_RegistrationManual(object):
 
     def retranslateUi(self, RegistrationManual):
         _translate = QtCore.QCoreApplication.translate
-        RegistrationManual.setWindowTitle(_translate("RegistrationManual", "Form"))
-        self.label_2.setText(_translate("RegistrationManual", "Transformation Model"))
-        self.transformationDropdown.setItemText(0, _translate("RegistrationManual", "Affine"))
-        self.transformationDropdown.setItemText(1, _translate("RegistrationManual", "Similarity"))
+        RegistrationManual.setWindowTitle(
+            _translate("RegistrationManual", "Form"))
+        self.label_2.setText(
+            _translate("RegistrationManual", "Transformation Model"))
+        self.transformationDropdown.setItemText(0,
+                                                _translate("RegistrationManual",
+                                                           "Similarity"))
+        self.transformationDropdown.setItemText(1,
+                                                _translate("RegistrationManual",
+                                                           "Affine"))
         self.label.setText(_translate("RegistrationManual", "Gridsize"))
-
-
 from oat.views.custom import CustomGraphicsView
 from oat.views.registration import FeatureSelectionView, FeatureTableView

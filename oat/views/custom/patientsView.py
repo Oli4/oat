@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
 
+from oat import AddPatientDialog
 from oat.views import Ui_DataTableView
-from oat.views.dialogs import AddPatientDialog
 
 
 class DataTableView(QWidget, Ui_DataTableView):

@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_UploadDialog(object):
     def setupUi(self, UploadDialog):
         UploadDialog.setObjectName("UploadDialog")
-        UploadDialog.resize(400, 153)
+        UploadDialog.resize(400, 161)
         self.verticalLayout = QtWidgets.QVBoxLayout(UploadDialog)
         self.verticalLayout.setObjectName("verticalLayout")
         self.label = QtWidgets.QLabel(UploadDialog)

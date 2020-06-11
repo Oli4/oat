@@ -7,8 +7,8 @@ from oat.io import OCT
 from oat.models import *
 from oat.models.db import orm
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, CfpLayer
-from oat.views import *
 # from oat.views import main_window, toolbox
+from oat.views.dialogs.login import LoginDialog
 from oat.views.toolbox import TreeItemDelegate, ModalityEntry, \
     SegmentationEntry, Toolbox
 

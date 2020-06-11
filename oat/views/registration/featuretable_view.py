@@ -1,9 +1,12 @@
-from PyQt5.QtWidgets import QTableView
+from PyQt5 import QtWidgets
 
 
-class FeatureTableView(QTableView):
+class FeatureTableView(QtWidgets.QTableView):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+
+        self.horizontalHeader().setSectionResizeMode(
+            QtWidgets.QHeaderView.Stretch)
 
     def next(self):
         """ Select next item """

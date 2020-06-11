@@ -1,5 +1,7 @@
 import logging
 
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsView
 
@@ -10,6 +12,22 @@ class CustomGraphicsView(QGraphicsView):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self._zoom = 0
+
+        # How to position the scene when transformed (eg zoom)
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        # How to position the scene when resizing the widget
+        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        # Get Move events even if no button is pressed
+        self.setMouseTracking(True)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        if self.hasPhoto():
+            if event.angleDelta().y() > 0:
+                self.zoom_in()
+            else:
+                self.zoom_out()
+        else:
+            super().wheelEvent(event)
 
     def zoomToFit(self):
         rect = self.scene().sceneRect()

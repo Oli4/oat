@@ -4,14 +4,18 @@ from typing import Optional
 
 import imageio
 import itertools
+import numpy as np
 import pandas as pd
 import qimage2ndarray
 import requests
+import skimage.segmentation as skiseg
+import skimage.transform as skitrans
 from PyQt5 import QtCore
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QPoint, QPointF, QModelIndex
 from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
 from pydantic import BaseModel
+from skimage.color import gray2rgb
 
 from oat import config
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
@@ -61,10 +65,12 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         self.images, self.images_meta = zip(*[get_enface_by_id(i)
                                               for i in self.image_ids])
 
-        self.scenes = [SceneModel(self, scene_id=i)
-                       for i in range(len(self.image_ids))]
-        for i, scene in enumerate(self.scenes):
+        self.scenes = {i: SceneModel(self, scene_id=i)
+                       for i in range(len(self.image_ids))}
+        # self.reg_scene = SceneModel(self, )
+        for i, scene in self.scenes.items():
             scene.addItem(self.array2qgraphicspixmapitem(self.images[i]))
+        self.scenes[-1] = SceneModel(self, scene_id=-1)
 
         self._data = None
         self.markers = {}
@@ -72,7 +78,70 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         self.markerChanged.connect(self.set_marker)
         self.markersChanged.connect(self.set_markers_from_model)
 
+        self.markerChanged.connect(self.estimate_transformation)
+
         self.reload_data()
+
+        self._tmodel = "similarity"
+        self._checkerboard_size = 200
+        self._tmodel_choices = ["similarity", "affine"]
+
+    @property
+    def tmodel(self):
+        return self._tmodel
+
+    @tmodel.setter
+    def tmodel(self, value):
+        if value in self._tmodel_choices:
+            self._tmodel = value
+            self.estimate_transformation()
+        else:
+            raise ValueError(f"'{value}' not available as a transformation"
+                             f" model")
+
+    @property
+    def checkerboard_size(self):
+        return self._checkerboard_size
+
+    @checkerboard_size.setter
+    def checkerboard_size(self, value):
+        self._checkerboard_size = value
+        self.update_checkerboard()
+
+    @QtCore.pyqtSlot(QModelIndex)
+    def estimate_transformation(self, index: QModelIndex = None):
+        matches = self._data.iloc[:, [2, 4]]
+        dst = np.array([*matches.iloc[:-1, 0]])
+        src = np.array([*matches.iloc[:-1, 1]])
+
+        if dst.shape[0] >= 3:
+            tform = skitrans.estimate_transform(self.tmodel, src, dst)
+            reg_img = skitrans.warp(self.images[1], inverse_map=tform.inverse,
+                                    output_shape=self.images[0].shape,
+                                    preserve_range=True)
+
+            self.reg_img = reg_img
+            self.update_checkerboard()
+
+    def update_checkerboard(self):
+        img1 = self.images[0]
+        img2 = self.reg_img
+        size = self.checkerboard_size
+
+        mask = skiseg.checkerboard_level_set(
+            img1.shape[:2], size).astype(bool)
+
+        if len(img1.shape) == 2:
+            img1 = gray2rgb(img1)
+
+        if len(img2.shape) == 2:
+            img2 = gray2rgb(img2)
+
+        checkerboard = np.copy(img1)
+        checkerboard[np.where(mask)] = img2[np.where(mask)]
+
+        self.scenes[-1].clear()
+        self.scenes[-1].addItem(self.array2qgraphicspixmapitem(checkerboard))
 
     @QtCore.pyqtSlot()
     def set_markers_from_model(self):
@@ -103,8 +172,6 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                 self.markers[(index.row(), index.column())] = marker
                 self.scenes[index.column()].addItem(marker)
 
-            self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,))
-
     def _get_marker_pos(self, index):
         try:
             point = self.data(index, role=POINT_ROLE)
@@ -129,9 +196,6 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         marker_group.addToGroup(QGraphicsLineItem(2, 0, 3, 0))
 
         return marker_group
-
-    def update_markers(self):
-        pass
 
     def array2qgraphicspixmapitem(self, image):
         return QtWidgets.QGraphicsPixmapItem(
@@ -315,27 +379,3 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         else:
             return False
         return True
-
-    def setMarker(self, scene_id: int, point: QtCore.QPoint,
-                  row: Optional[int] = None):
-        if row is None:
-            row = self.rowCount() - 1
-        x_col = self.scene_columns[scene_id][0]
-        y_col = self.scene_columns[scene_id][1]
-        index_x = self.createIndex(row, x_col)
-        index_y = self.createIndex(row, y_col)
-
-        if index_x.isValid() and index_y.isValid():
-            x_val, y_val = point.x(), point.y()
-
-            self._data.iloc[row, x_col] = x_val
-            self._data.iloc[row, y_col] = y_val
-
-            col = self._data.columns.get_loc(f"Image {scene_id}")
-
-            self._data.iloc[row, col] = (self._data.iloc[row, x_col],
-                                         self._data.iloc[row, y_col])
-
-            self.markerChanged.emit(row, scene_id)
-            return True
-        return False
