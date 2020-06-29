@@ -8,20 +8,22 @@ class FeatureTableView(QtWidgets.QTableView):
         self.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)
 
+
     def next(self):
         """ Select next item """
         index = self.currentIndex()
         if index.column() < self.model().columnCount() - 1:
             new_index = self.model().createIndex(index.row(),
                                                  index.column() + 1)
-            self.setCurrentIndex(new_index)
         elif index.column() == self.model().columnCount() - 1:
             # Create new row if needed
             if index.row() + 1 == self.model().rowCount():
+                if self.model().match_is_empty(index.row()):
+                    return False
                 self.model().insertRow(self.model().rowCount())
             # Set the new index
             new_index = self.model().createIndex(index.row() + 1, 0)
-            self.setCurrentIndex(new_index)
+        self.setCurrentIndex(new_index)
 
     def last(self):
         """ Select last item """
@@ -48,6 +50,8 @@ class FeatureTableView(QtWidgets.QTableView):
         """ Select next feature on same image """
         index = self.currentIndex()
         if index.row() + 1 == self.model().rowCount():
+            if self.model().match_is_empty(index.row()):
+                return False
             self.model().insertRow(self.model().rowCount())
         new_index = self.model().createIndex(index.row() + 1, index.column())
         self.setCurrentIndex(new_index)

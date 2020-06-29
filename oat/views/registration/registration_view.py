@@ -32,6 +32,8 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         self.graphicsViewPointSelection.selectionModel = self.selectionModel
         self.tableViewPoints.selectionModel().currentChanged.connect(
             self.set_scenes)
+        self.tableViewPoints.selectionModel().currentChanged.connect(
+            self.model.upload_data)
 
         self.scenes = self.model.scenes
 

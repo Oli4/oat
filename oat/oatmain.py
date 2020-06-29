@@ -26,7 +26,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        registration_view = RegistrationView(model=RegistrationModel(1, 2),
+        registration_view = RegistrationView(model=RegistrationModel(592, 593),
                                              parent=self)
         self.mdiArea.addSubWindow(registration_view)
 

@@ -10,6 +10,7 @@ XSCALING_ROLE = Qt.UserRole + 6
 YSCALING_ROLE = Qt.UserRole + 7
 ACTIVESLICE_ROLE = Qt.UserRole + 8
 
+FEATURE_DICT_ROLE = Qt.UserRole + 13
 FEATUREID_ROLE = Qt.UserRole + 9
 MATCHID_ROLE = Qt.UserRole + 10
 SCENE_ROLE = Qt.UserRole + 11

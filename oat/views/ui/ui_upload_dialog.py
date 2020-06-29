@@ -26,9 +26,9 @@ class Ui_UploadDialog(object):
         self.horizontalLayout_2.addWidget(self.patientDropdown)
         self.addPatientButton = QtWidgets.QToolButton(UploadDialog)
         icon = QtGui.QIcon()
-        icon.addPixmap(
-            QtGui.QPixmap(":/icons/icons/baseline-add_circle-24px.svg"),
-            QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap("ui/\n"
+                                     "                                        :/icons/icons/baseline-add_circle-24px.svg"),
+                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addPatientButton.setIcon(icon)
         self.addPatientButton.setIconSize(QtCore.QSize(24, 24))
         self.addPatientButton.setObjectName("addPatientButton")

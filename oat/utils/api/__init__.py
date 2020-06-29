@@ -23,6 +23,6 @@ def upload_enface(filepath, patient_id, modality):
              "patient_id": (None, patient_id),
              "modality": (None, modality)}
 
-    return requests.post(f"{config.api_server}/upload/enfaceimage",
+    return requests.post(f"{config.api_server}/enfaceimages",
                          files=files,
                          headers=config.auth_header)
