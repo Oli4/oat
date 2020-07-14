@@ -1,50 +1,25 @@
-import io
-from collections import defaultdict
-from datetime import datetime
-from typing import Optional
+import copy
+import logging
+from typing import Iterable
 
-import imageio
 import numpy as np
-import qimage2ndarray
 import requests
 import skimage.segmentation as skiseg
 import skimage.transform as skitrans
 from PyQt5 import QtCore
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import QPoint, QPointF, QModelIndex
 from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
-from pydantic import BaseModel
 from skimage.color import gray2rgb
 
 from oat import config
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
-    POINT_ROLE, FEATURE_DICT_ROLE
+    POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
+from oat.models.utils import get_enface_by_id, array2qgraphicspixmapitem, \
+    qgraphicspixmapitem2array
 
+logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
-
-class EnfaceImage(BaseModel):
-    created_by: int
-    visit_date: Optional[datetime] = None
-    modality: str
-    patient_id: int
-
-    size_x: int
-    size_y: int
-    scale_x: Optional[float] = None
-    scale_y: Optional[float] = None
-    field_size: int = None
-
-
-def get_enface_by_id(img_id):
-    response = requests.get(
-        f"{config.api_server}/enfaceimages/data/tiff/{img_id}",
-        headers=config.auth_header)
-    if response.status_code == 200:
-        meta = {k.lower(): v for k, v in response.headers.items()}
-        img = imageio.imread(io.BytesIO(response.content), format="tiff")
-        return img, meta
-    else:
-        raise ValueError(f"Status Code: {response.status_code}")
 
 
 class SceneModel(QtWidgets.QGraphicsScene):
@@ -54,41 +29,32 @@ class SceneModel(QtWidgets.QGraphicsScene):
 
 
 class RegistrationModel(QtCore.QAbstractTableModel):
-    # Changing the marker does not trigger an DB update
-    markerChanged = QtCore.pyqtSignal(QModelIndex)
-    markersChanged = QtCore.pyqtSignal()
-
     def __init__(self, *args):
         super().__init__()
 
         self.image_ids = args
-        self.images, self.images_meta = zip(*[get_enface_by_id(i)
-                                              for i in self.image_ids])
+        self.pixmap_items, self.images_meta = zip(*[get_enface_by_id(i)
+                                                    for i in self.image_ids])
         self.checker_images, self.checker_scale = \
-            zip(*[self.img_rescale(img, 300) for img in self.images])
+            zip(*[self.img_rescale(qgraphicspixmapitem2array(img), 300)
+                  for img in self.pixmap_items])
 
         self.scenes = {i: SceneModel(self, scene_id=i)
                        for i in range(len(self.image_ids))}
         # self.reg_scene = SceneModel(self, )
         for i, scene in self.scenes.items():
-            scene.addItem(self.array2qgraphicspixmapitem(self.images[i]))
+            scene.addItem(self.pixmap_items[i])
         self.scenes[-1] = SceneModel(self, scene_id=-1)
 
         self._data = None
         self.markers = {}
 
-        self.markerChanged.connect(self.set_marker)
-        self.markersChanged.connect(self.set_markers_from_model)
-        self.markersChanged.connect(self.estimate_transformation)
-
-        self.markerChanged.connect(self.estimate_transformation)
-
-        self._changed_localy = defaultdict(lambda: False)
+        self.dataChanged.connect(self.update_markers)
+        self.dataChanged.connect(self.update_checkerboard)
 
         self._tmodel = "similarity"
         self._checkerboard_size = 60
         self._tmodel_choices = ["similarity", "affine"]
-        self.reload_data()
 
     def img_rescale(self, img, height):
         scale = height / img.shape[0]
@@ -114,6 +80,10 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                              f" model")
 
     @property
+    def tform(self):
+        return self.estimate_transformation()
+
+    @property
     def checkerboard_size(self):
         return self._checkerboard_size
 
@@ -122,10 +92,9 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         self._checkerboard_size = value
         self.update_checkerboard()
 
-    @QtCore.pyqtSlot()
-    @QtCore.pyqtSlot(QModelIndex)
-    def estimate_transformation(self, index: QModelIndex = None):
-        matches = self._data["enfacefeaturematchs"][:-1]
+    def estimate_transformation(self):
+        matches = [m for i, m in enumerate(self._data["enfacefeaturematchs"])
+                   if self.match_is_complete(i)]
         dst = np.array([[m["feature1"]["x"], m["feature1"]["y"]]
                         for m in matches])
         src = np.array([[m["feature2"]["x"], m["feature2"]["y"]]
@@ -135,17 +104,21 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             tform = skitrans.estimate_transform(
                 self.tmodel, src * self.checker_scale[1],
                              dst * self.checker_scale[0])
-            reg_img = skitrans.warp(self.checker_images[1],
-                                    inverse_map=tform.inverse,
-                                    output_shape=self.checker_images[0].shape,
-                                    preserve_range=True)
 
-            self.reg_img = reg_img
-            self.update_checkerboard()
+        else:
+            matrix = np.array([1, 0, 0, 0, 1, 0, 0, 0, 1]).reshape((3, 3))
+            tform = skitrans.ProjectiveTransform(matrix)
+        self._data[self.tmodel] = [int(p) for p in tform.params.flatten()]
+        return tform
 
     def update_checkerboard(self):
+        print(self.checker_images[0].min())
         img1 = self.checker_images[0]
-        img2 = self.reg_img
+        img2 = skitrans.warp(self.checker_images[1],
+                             inverse_map=self.tform.inverse,
+                             output_shape=self.checker_images[0].shape,
+                             preserve_range=True)
+
         size = self.checkerboard_size
 
         mask = skiseg.checkerboard_level_set(
@@ -160,45 +133,32 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         checkerboard = np.copy(img1)
         checkerboard[np.where(mask)] = img2[np.where(mask)]
 
+        print(checkerboard.shape, checkerboard.min(), checkerboard.max())
+
         self.scenes[-1].clear()
-        self.scenes[-1].addItem(self.array2qgraphicspixmapitem(checkerboard))
+        self.scenes[-1].addItem(array2qgraphicspixmapitem(checkerboard))
 
-    @QtCore.pyqtSlot()
-    def set_markers_from_model(self):
-        for col in range(self.columnCount()):
-            for row in range(self.rowCount()):
+    def update_markers(self, topLeft: QtCore.QModelIndex,
+                       bottomRight: QtCore.QModelIndex,
+                       roles: Iterable[int]):
+        for col in range(topLeft.column(), bottomRight.column() + 1):
+            for row in range(topLeft.row(), bottomRight.row() + 1):
                 index = self.createIndex(row, col)
-                try:
-                    pos = self._get_marker_pos(index)
-                except ValueError:
-                    continue
-                try:
-                    self.markers[(index.row(), index.column())].setPos(pos)
-                except KeyError:
-                    marker = self._marker_1(pos)
-                    self.markers[(index.row(), index.column())] = marker
-                    self.scenes[index.column()].addItem(marker)
-
-    @QtCore.pyqtSlot(QModelIndex)
-    def set_marker(self, index: QModelIndex):
-        # img is 0 for the fixed image and increases by one for every additional
-        # moving image
-        pos = self._get_marker_pos(index)
-        if pos:
-            try:
-                self.markers[(index.row(), index.column())].setPos(pos)
-            except KeyError:
-                marker = self._marker_1(pos)
-                self.markers[(index.row(), index.column())] = marker
-                self.scenes[index.column()].addItem(marker)
-
-    def _get_marker_pos(self, index):
-        try:
-            point = self.data(index, role=POINT_ROLE)
-            return QtCore.QPointF(0.5, 0.5) + point
-        except:
-            raise ValueError(f"No feature position set at index"
-                             f" ({index.row(), index.column()})")
+                point = self.data(index, role=POINT_ROLE)
+                if point:
+                    pos = QtCore.QPointF(0.5, 0.5) + point
+                    try:
+                        self.markers[row, col].setPos(pos)
+                    except KeyError:
+                        marker = self._marker_1(pos)
+                        self.markers[row, col] = marker
+                        self.scenes[index.column()].addItem(marker)
+                else:
+                    try:
+                        self.scenes[col].removeItem(self.markers[row, col])
+                        del self.markers[row, col]
+                    except KeyError:
+                        pass
 
     def _marker_1(self, pos):
         pos = QPoint(int(pos.x()), int(pos.y())) + QPointF(0.5, 0.5)
@@ -217,70 +177,87 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
         return marker_group
 
-    def array2qgraphicspixmapitem(self, image):
-        return QtWidgets.QGraphicsPixmapItem(
-            QtGui.QPixmap().fromImage(qimage2ndarray.array2qimage(image)))
+    def delete_enfacefeature(self, id):
+        logger.debug(f"Delete feature with id '{id}'")
+        return requests.delete(
+            f"{config.api_server}/enfacefeatures/{id}",
+            headers=config.auth_header).json()
 
-    @QtCore.pyqtSlot(QModelIndex, QModelIndex)
-    def upload_data(self, current_index, previous_index):
-        index = previous_index
-        if not self._changed_localy[index]:
-            return None
-        elif not self.data(index, POINT_ROLE):
+    def create_enfacefeature(self, data):
+        logger.debug(f"Create feature: {data}")
+        return requests.post(
+            f"{config.api_server}/enfacefeatures/",
+            json=data,
+            headers=config.auth_header).json()
+
+    def update_enfacfeature(self, data):
+        logger.debug(f"Updated feature: {data}")
+        return requests.put(
+            f"{config.api_server}/enfacefeatures/",
+            json=data,
+            headers=config.auth_header).json()
+
+    def create_enfacefeaturematch(self, data):
+        logger.debug(f"Create EnfaceFeatureMatch: {data}")
+        return requests.post(
+            f"{config.api_server}/enfacefeaturematches/",
+            json=data,
+            headers=config.auth_header).json()
+
+    def delete_enfacefeaturematch(self, id):
+        logger.debug(f"Delete EnfaceFeatureMatch with id '{id}'")
+        return requests.delete(
+            f"{config.api_server}/enfacefeaturematches/{id}",
+            headers=config.auth_header).json()
+
+    def upload_data(self, index):
+        if not self.data(index, POINT_ROLE):
             # Delete feature on server
-            response = requests.delete(
-                f"{config.api_server}/enfacefeatures/"
-                f"{self.data(index, FEATUREID_ROLE)}",
-                headers=config.auth_header)
+            self.delete_enfacefeature(self.data(index, FEATUREID_ROLE))
             self._data["enfacefeaturematchs"][index.row()][
                 f_dict[index.column()]] \
-                = self._new_feature()
+                = self._new_feature(index.column())
+
         elif self.data(index, FEATUREID_ROLE) is None:
             # Create feature on server
-            response = requests.post(
-                f"{config.api_server}/enfacefeatures/",
-                json=self.data(index, FEATURE_DICT_ROLE),
-                headers=config.auth_header)
+            feat = self.create_enfacefeature(
+                self.data(index, FEATURE_DICT_ROLE))
             self._data["enfacefeaturematchs"][index.row()][
-                f_dict[index.column()]] \
-                = response.json()
+                f_dict[index.column()]] = feat
+
         else:
             # Update feature on server
-            response = requests.put(
-                f"{config.api_server}/enfacefeatures/",
-                json=self.data(index, FEATURE_DICT_ROLE),
-                headers=config.auth_header)
+            feat = self.update_enfacfeature(self.data(index, FEATURE_DICT_ROLE))
             self._data["enfacefeaturematchs"][index.row()][
-                f_dict[index.column()]] \
-                = response.json()
+                f_dict[index.column()]] = feat
+
         # Create new complete matches on server
-        if self._data["enfacefeaturematchs"][index.row()]["id"] is None:
-            if self.match_is_complete(index.row()):
-                # Create new match in DB
-                response = requests.post(
-                    f"{config.api_server}/enfacefeaturematches/",
-                    json=self._data["enfacefeaturematchs"][index.row()],
-                    headers=config.auth_header)
-                self._data["enfacefeaturematchs"][index.row()] = response.json()
-        else:
-            if not self.match_is_complete(index.row()):
-                # Delete Match from DB
-                response = requests.delete(
-                    f"{config.api_server}/enfacefeaturematches/",
-                    json=self._data["enfacefeaturematchs"][index.row()]["id"],
-                    headers=config.auth_header)
-                match = self._new_match()
-                match["feature1"] = \
-                    self._data["enfacefeaturematchs"][index.row()]["feature1"]
-                match["feature2"] = \
-                    self._data["enfacefeaturematchs"][index.row()]["feature2"]
+        current_match = self._data["enfacefeaturematchs"][index.row()]
+        if self.match_is_complete(index.row()):
+            # Create new match in DB
+            if current_match["id"] is None:
+                match = self.create_enfacefeaturematch(current_match)
                 self._data["enfacefeaturematchs"][index.row()] = match
+        else:
+            if current_match["id"]:
+                # Delete Match from DB when id exists but not complete
+                self.delete_enfacefeaturematch(current_match["id"])
+                # Keep remaining feature
+                match = self._new_match()
+                if "id" in current_match["feature1"]:
+                    match["feature1"] = current_match["feature1"]
+                    match["feature2"] = self._new_feature(1)
+                    self._data["enfacefeaturematchs"][index.row()] = match
+                elif "id" in current_match["feature2"]:
+                    match["feature1"] = self._new_feature(0)
+                    match["feature2"] = current_match["feature2"]
+                    self._data["enfacefeaturematchs"][index.row()] = match
 
         # Add complete matches to registration
         matches = self._data["enfacefeaturematchs"]
         complete = [m for i, m in enumerate(matches)
                     if self.match_is_complete(i)]
-        data = self._data
+        data = copy.copy(self._data)
         data["enfacefeaturematchs"] = complete
         if self._data["id"] is None:
             # Create new registration
@@ -300,16 +277,15 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             new_data = response.json()
             new_data["enfacefeaturematchs"] = matches
             self._data = new_data
-        self._changed_localy[index] = False
 
     def _new_feature(self, n):
         return {"x": None, "y": None, "id": None,
-                "enfaceimage_id": self.image_ids[n - 1]}
+                "enfaceimage_id": self.image_ids[n]}
 
     def _new_match(self):
         return {"id": None,
-                "feature1": self._new_feature(1),
-                "feature2": self._new_feature(2),
+                "feature1": self._new_feature(0),
+                "feature2": self._new_feature(1),
                 "enfaceimage1_id": self.image_ids[0],
                 "enfaceimage2_id": self.image_ids[1]
                 }
@@ -338,14 +314,16 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             self._data = self.new()
 
         self.dataChanged.emit(self.createIndex(0, 0),
-                              self.createIndex(self.rowCount(),
-                                               self.columnCount()),
+                              self.createIndex(self.rowCount() - 1,
+                                               self.columnCount() - 1),
                               (QtCore.Qt.DisplayRole,))
-        self.markersChanged.emit()
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
-
+        if self._data is None:
+            self.reload_data()
         row, col = (index.row(), index.column())
+        if row < 0 or col < 0:
+            return False
         match = self._data["enfacefeaturematchs"][row]
         feat = match[f_dict[col]]
         if role == QtCore.Qt.DisplayRole:
@@ -363,6 +341,17 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             return match["id"]
         elif role == SCENE_ROLE:
             return self.scenes[col]
+
+    def removeRows(self, row: int, count: int,
+                   parent: QModelIndex = ...) -> bool:
+        self.beginRemoveRows(parent, row, row + count)
+        for i in range(row, row + count):
+            self.setData(self.index(i, 0), None, role=DELETE_ROLE)
+            self.setData(self.index(i, 1), None, role=DELETE_ROLE)
+        self.endRemoveRows()
+        self.dataChanged.emit(self.index(row, 0),
+                              self.index(row + count - 1, 1))
+        return True
 
     def match_is_empty(self, row):
         match = self._data["enfacefeaturematchs"][row]
@@ -391,7 +380,11 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
     def rowCount(self, index=None):
         # The length of the outer list.
-        return len(self._data["enfacefeaturematchs"])
+        try:
+            return len(self._data["enfacefeaturematchs"])
+        except TypeError:
+            self.reload_data()
+            return len(self._data["enfacefeaturematchs"])
 
     def columnCount(self, index=None):
         return 2
@@ -438,10 +431,14 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.EditRole:
             feat["x"], feat["y"] = (value.x(), value.y())
-            self._changed_localy[index] = True
+            self.upload_data(index)
             self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,
                                                  POINT_ROLE))
-            self.markerChanged.emit(index)
+        elif role == DELETE_ROLE:
+            feat["x"], feat["y"] = (None, None)
+            self.upload_data(index)
+            self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,
+                                                 POINT_ROLE))
         elif role == FEATUREID_ROLE:
             feat["id"] = value
         elif role == MATCHID_ROLE:

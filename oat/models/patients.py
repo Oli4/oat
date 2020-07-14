@@ -15,7 +15,7 @@ class PatientsModel(QtCore.QAbstractTableModel):
 
     def reload_data(self):
         response = requests.get(
-            f"{config.api_server}/patients/all",
+            f"{config.api_server}/patients/",
             headers=config.auth_header)
 
         data = pd.DataFrame.from_records(response.json())

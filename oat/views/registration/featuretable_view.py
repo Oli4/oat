@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets
 
+from oat.models.config import DELETE_ROLE
+
 
 class FeatureTableView(QtWidgets.QTableView):
     def __init__(self, parent, *args, **kwargs):
@@ -8,6 +10,13 @@ class FeatureTableView(QtWidgets.QTableView):
         self.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)
 
+    def delete_current_cell(self):
+        index = self.currentIndex()
+        self.model().setData(index, None, role=DELETE_ROLE)
+
+    def delete_current_row(self):
+        index = self.currentIndex()
+        self.model().removeRow(index.row())
 
     def next(self):
         """ Select next item """

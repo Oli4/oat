@@ -4,14 +4,13 @@ from PyQt5.QtCore import Qt, QPoint
 from oat.views.custom import CustomGraphicsView
 
 
-class FeatureSelectionView(CustomGraphicsView):
+class LocalizerView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    featureChanged = QtCore.pyqtSignal(QtCore.QPoint)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-
-        self.model = parent.model
 
         self._mouse_pressed = False
         self._dragging = False
@@ -49,11 +48,12 @@ class FeatureSelectionView(CustomGraphicsView):
             else:
                 point = self.mapToScene(event.pos())
                 point = QPoint(int(point.x()), int(point.y()))
-                self.featureChanged.emit(point)
+                self.pixelClicked.emit(point)
 
     def mouseMoveEvent(self, event):
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos)
+        self.localizerPosChanged.emit(scene_pos)
 
         super().mouseMoveEvent(event)
         if self._mouse_pressed and self._dragging:
@@ -75,43 +75,6 @@ class FeatureSelectionView(CustomGraphicsView):
                 self._dragging = False
             self._mouse_pressed = False
 
-    def create_cursor_cross(self):
-        line1 = QtCore.QLineF()
-        line2 = QtCore.QLineF()
-        line3 = QtCore.QLineF()
-        line4 = QtCore.QLineF()
-
-        self.line1 = self.scene().addLine(line1)
-        self.line2 = self.scene().addLine(line2)
-        self.line3 = self.scene().addLine(line3)
-        self.line4 = self.scene().addLine(line4)
-        [line.setZValue(10) for line in
-         [self.line1, self.line2, self.line3, self.line4]]
-
-    def set_cursor_cross(self, pos):
-        pos = pos.toPoint()
-
-        # Map viewport size to scene
-        pos_end = self.mapToScene(self.viewport().rect().width(),
-                                  self.viewport().rect().height()).toPoint()
-        pos_start = self.mapToScene(0, 0).toPoint()
-
-        # Create new line and set it.
-        line1 = QtCore.QLineF(int(pos_start.x()), int(pos.y()) + 0.5,
-                              int(pos.x()) - 1.5,
-                              int(pos.y()) + 0.5)
-        line2 = QtCore.QLineF(int(pos.x()) + 2.5, int(pos.y()) + 0.5,
-                              int(pos_end.x()),
-                              int(pos.y()) + 0.5)
-
-        line3 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos_start.y()),
-                              int(pos.x()) + 0.5, int(pos.y()) - 1.5)
-        line4 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos.y()) + 2.5,
-                              int(pos.x()) + 0.5, int(pos_end.y()))
-
-        self.line1.setLine(line1)
-        self.line2.setLine(line2)
-        self.line3.setLine(line3)
-        self.line4.setLine(line4)
-
-
+    def set_cursor(self, pos):
+        super().set_cursor(pos)
+        self.localizerPosChanged.emit(pos)

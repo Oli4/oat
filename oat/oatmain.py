@@ -6,8 +6,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
-from oat.models import RegistrationModel
-from oat.views import RegistrationView
+from oat.views.annotation.annotation_view import AnnotationView
 from oat.views.dialogs.login import LoginDialog
 from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
 from oat.views.ui.ui_main_window import Ui_MainWindow
@@ -26,12 +25,13 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        registration_view = RegistrationView(model=RegistrationModel(592, 593),
-                                             parent=self)
-        self.mdiArea.addSubWindow(registration_view)
+        # registration_view = RegistrationView(model=RegistrationModel(2, 3), parent=self)
+
+        annotation_view = AnnotationView(0, parent=self)
+        self.mdiArea.addSubWindow(annotation_view)
+        # self.mdiArea.addSubWindow(registration_view)
 
     def upload(self, type):
-
         if type == "cfp":
             dialog = UploadCfpDialog()
         elif type == "vol":
@@ -60,10 +60,12 @@ def main(log_level=logging.DEBUG):
     ch = logging.StreamHandler()
     ch.setLevel(log_level)
     # create formatter and add it to the handlers
-    formatter = logging.Formatter(
+    file_formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
+    cmd_formatter = logging.Formatter(
+        '%(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(file_formatter)
+    ch.setFormatter(cmd_formatter)
     # add the handlers to the logger
     logger.addHandler(fh)
     logger.addHandler(ch)

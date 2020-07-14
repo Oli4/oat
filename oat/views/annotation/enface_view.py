@@ -4,14 +4,13 @@ from PyQt5.QtCore import Qt, QPoint
 from oat.views.custom import CustomGraphicsView
 
 
-class FeatureSelectionView(CustomGraphicsView):
+class EnfaceView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    featureChanged = QtCore.pyqtSignal(QtCore.QPoint)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-
-        self.model = parent.model
 
         self._mouse_pressed = False
         self._dragging = False
@@ -49,11 +48,23 @@ class FeatureSelectionView(CustomGraphicsView):
             else:
                 point = self.mapToScene(event.pos())
                 point = QPoint(int(point.x()), int(point.y()))
-                self.featureChanged.emit(point)
+                self.pixelClicked.emit(point)
+
+    def map_to_localizer(self, pos):
+        return pos
+
+    def map_from_localizer(self, pos):
+        return pos
+
+    def set_cursor_from_localizer(self, pos):
+        pos = self.map_from_localizer(pos)
+        self.set_cursor(pos)
 
     def mouseMoveEvent(self, event):
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos)
+        localizer_pos = self.map_to_localizer(scene_pos)
+        self.localizerPosChanged.emit(localizer_pos)
 
         super().mouseMoveEvent(event)
         if self._mouse_pressed and self._dragging:
@@ -113,5 +124,3 @@ class FeatureSelectionView(CustomGraphicsView):
         self.line2.setLine(line2)
         self.line3.setLine(line3)
         self.line4.setLine(line4)
-
-

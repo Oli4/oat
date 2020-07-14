@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsView
 
 
@@ -10,9 +10,6 @@ class PatchView(QGraphicsView):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-
-        self.model = parent.model
-        self._selectionModel = None
 
         self._zoom = 0
         # self._empty = True
@@ -86,10 +83,6 @@ class PatchView(QGraphicsView):
                 self._dragging = True
                 self._dragPos = event.pos()
                 event.accept()
-            else:
-                point = self.mapToScene(event.pos())
-                point = QPoint(int(point.x()), int(point.y()))
-                self.model.setData(self.selectionModel.currentIndex(), point)
 
     def create_cursor_cross(self):
         line1 = QtCore.QLineF()

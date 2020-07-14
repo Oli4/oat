@@ -1,17 +1,15 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QPointF
 
 from oat.views.custom import CustomGraphicsView
 
 
-class FeatureSelectionView(CustomGraphicsView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    featureChanged = QtCore.pyqtSignal(QtCore.QPoint)
+class BscanView(CustomGraphicsView):
+    pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-
-        self.model = parent.model
 
         self._mouse_pressed = False
         self._dragging = False
@@ -20,11 +18,21 @@ class FeatureSelectionView(CustomGraphicsView):
 
     def wheelEvent(self, event):
         if event.modifiers() == (Qt.ControlModifier):
+            if event.angleDelta().y() > 0:
+                self.next_slice()
+            else:
+                self.last_slice()
             self.parent().wheelEvent(event)
             # Ask the parent to change the data -> change slice
             event.accept()
         else:
             super().wheelEvent(event)
+
+    def next_slice(self):
+        self.scene().next_slice()
+
+    def last_slice(self):
+        self.scene().last_slice()
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
@@ -49,10 +57,27 @@ class FeatureSelectionView(CustomGraphicsView):
             else:
                 point = self.mapToScene(event.pos())
                 point = QPoint(int(point.x()), int(point.y()))
-                self.featureChanged.emit(point)
+                self.pixelClicked.emit(point)
+
+    def map_to_localizer(self, pos):
+        return QPointF(pos.x() * 1.5, pos.y() * 30)
+
+    def map_from_localizer(self, pos):
+        return QPointF(pos.x() / 1.5, pos.y() / 30)
+
+    def set_cursor_from_localizer(self, pos):
+        pos = self.map_from_localizer(pos)
+        # set slice
+        self.scene().set_slice(int(pos.y() - 0.5))
+        # set cursor x position
+        self.set_cursor(QPointF(pos.x(), -100))
 
     def mouseMoveEvent(self, event):
         scene_pos = self.mapToScene(event.pos())
+
+        localizer_pos = self.map_to_localizer(
+            QPointF(scene_pos.x(), self.scene().current_slice + 0.5))
+        self.localizerPosChanged.emit(localizer_pos)
         self.cursorPosChanged.emit(scene_pos)
 
         super().mouseMoveEvent(event)
@@ -74,44 +99,3 @@ class FeatureSelectionView(CustomGraphicsView):
                 self.setCursor(Qt.ArrowCursor)
                 self._dragging = False
             self._mouse_pressed = False
-
-    def create_cursor_cross(self):
-        line1 = QtCore.QLineF()
-        line2 = QtCore.QLineF()
-        line3 = QtCore.QLineF()
-        line4 = QtCore.QLineF()
-
-        self.line1 = self.scene().addLine(line1)
-        self.line2 = self.scene().addLine(line2)
-        self.line3 = self.scene().addLine(line3)
-        self.line4 = self.scene().addLine(line4)
-        [line.setZValue(10) for line in
-         [self.line1, self.line2, self.line3, self.line4]]
-
-    def set_cursor_cross(self, pos):
-        pos = pos.toPoint()
-
-        # Map viewport size to scene
-        pos_end = self.mapToScene(self.viewport().rect().width(),
-                                  self.viewport().rect().height()).toPoint()
-        pos_start = self.mapToScene(0, 0).toPoint()
-
-        # Create new line and set it.
-        line1 = QtCore.QLineF(int(pos_start.x()), int(pos.y()) + 0.5,
-                              int(pos.x()) - 1.5,
-                              int(pos.y()) + 0.5)
-        line2 = QtCore.QLineF(int(pos.x()) + 2.5, int(pos.y()) + 0.5,
-                              int(pos_end.x()),
-                              int(pos.y()) + 0.5)
-
-        line3 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos_start.y()),
-                              int(pos.x()) + 0.5, int(pos.y()) - 1.5)
-        line4 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos.y()) + 2.5,
-                              int(pos.x()) + 0.5, int(pos_end.y()))
-
-        self.line1.setLine(line1)
-        self.line2.setLine(line2)
-        self.line3.setLine(line3)
-        self.line4.setLine(line4)
-
-

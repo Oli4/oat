@@ -18,38 +18,39 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.grabKeyboard()
-        self.key_actions = {QtCore.Qt.Key_W: self.tableViewPoints.up,
-                            QtCore.Qt.Key_A: self.tableViewPoints.last,
-                            QtCore.Qt.Key_S: self.tableViewPoints.down,
-                            QtCore.Qt.Key_D: self.tableViewPoints.next,
-                            QtCore.Qt.Key_Tab: self.tableViewPoints.next}
+        self.key_actions = {
+            QtCore.Qt.Key_W: self.tableViewPoints.up,
+            QtCore.Qt.Key_A: self.tableViewPoints.last,
+            QtCore.Qt.Key_S: self.tableViewPoints.down,
+            QtCore.Qt.Key_D: self.tableViewPoints.next,
+            QtCore.Qt.Key_Tab: self.tableViewPoints.next,
+            QtCore.Qt.Key_Backspace: self.tableViewPoints.delete_current_cell,
+            QtCore.Qt.Key_Delete: self.tableViewPoints.delete_current_row,
+        }
 
-        # Set table model
+        # Connect the parts
         self.tableViewPoints.setModel(self.model)
         self.tableViewPoints.setCurrentIndex(self.model.createIndex(0, 0))
-        self.selectionModel = self.tableViewPoints.selectionModel()
-        self.graphicsViewPointSelection.selectionModel = self.selectionModel
         self.tableViewPoints.selectionModel().currentChanged.connect(
             self.set_scenes)
-        self.tableViewPoints.selectionModel().currentChanged.connect(
-            self.model.upload_data)
-
-        self.scenes = self.model.scenes
+        self.graphicsViewPointSelection.featureChanged.connect(
+            self.add_feature)
+        self.transformationDropdown.currentTextChanged.connect(
+            self.change_tmodel)
+        self.gridSizeSlider.valueChanged.connect(self.change_checkerboard_size)
 
         # Set scenes: The first image is in the selection view and second in
         # patch view
-
+        self.scenes = self.model.scenes
         self.set_scenes(self.model.createIndex(0, 0),
                         self.model.createIndex(0, 1))
 
         self.graphicsViewCheckerboard.setTransformationAnchor(
             QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-        self.transformationDropdown.currentTextChanged.connect(
-            self.change_tmodel)
-        self.gridSizeSlider.valueChanged.connect(self.change_checkerboard_size)
-        self.gridSizeSlider.value
+    def add_feature(self, feature: QtCore.QPoint):
+        self.model.setData(self.tableViewPoints.selectionModel().currentIndex(),
+                           feature, role=QtCore.Qt.EditRole)
 
     def showEvent(self, a0: QtGui.QShowEvent) -> None:
         # Make sure images are filling the view when Widget is opened
@@ -60,6 +61,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         self.graphicsViewPointSelection.zoomToFit()
         self.graphicsViewPatch.zoomToFit()
+        self.graphicsViewCheckerboard.zoomToFit()
 
     @QtCore.pyqtSlot(int)
     def change_checkerboard_size(self, size):

@@ -13,29 +13,32 @@ from PyQt5 import QtCore, QtWidgets
 class Ui_RegistrationManual(object):
     def setupUi(self, RegistrationManual):
         RegistrationManual.setObjectName("RegistrationManual")
-        RegistrationManual.resize(580, 350)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                           QtWidgets.QSizePolicy.Minimum)
+        RegistrationManual.resize(820, 490)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
             RegistrationManual.sizePolicy().hasHeightForWidth())
         RegistrationManual.setSizePolicy(sizePolicy)
-        RegistrationManual.setMinimumSize(QtCore.QSize(580, 350))
+        RegistrationManual.setMinimumSize(QtCore.QSize(820, 490))
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(RegistrationManual)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setObjectName("horizontalLayout")
         self.graphicsViewPointSelection = FeatureSelectionView(
             RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                           QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(50)
+        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
             self.graphicsViewPointSelection.sizePolicy().hasHeightForWidth())
         self.graphicsViewPointSelection.setSizePolicy(sizePolicy)
-        self.graphicsViewPointSelection.setMinimumSize(QtCore.QSize(200, 200))
+        self.graphicsViewPointSelection.setMinimumSize(QtCore.QSize(300, 300))
         self.graphicsViewPointSelection.setBaseSize(QtCore.QSize(200, 200))
         self.graphicsViewPointSelection.setVerticalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
@@ -43,34 +46,34 @@ class Ui_RegistrationManual(object):
             QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsViewPointSelection.setObjectName(
             "graphicsViewPointSelection")
-        self.verticalLayout_3.addWidget(self.graphicsViewPointSelection)
-        spacerItem = QtWidgets.QSpacerItem(20, 5, QtWidgets.QSizePolicy.Minimum,
+        self.horizontalLayout.addWidget(self.graphicsViewPointSelection)
+        spacerItem = QtWidgets.QSpacerItem(2, 20, QtWidgets.QSizePolicy.Minimum,
                                            QtWidgets.QSizePolicy.Minimum)
-        self.verticalLayout_3.addItem(spacerItem)
-        self.tableViewPoints = FeatureTableView(RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
-                                           QtWidgets.QSizePolicy.Minimum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(1)
+        self.horizontalLayout.addItem(spacerItem)
+        self.graphicsViewCheckerboard = CustomGraphicsView(RegistrationManual)
+        self.graphicsViewCheckerboard.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(50)
+        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
-            self.tableViewPoints.sizePolicy().hasHeightForWidth())
-        self.tableViewPoints.setSizePolicy(sizePolicy)
-        self.tableViewPoints.setMinimumSize(QtCore.QSize(100, 100))
-        self.tableViewPoints.setMaximumSize(QtCore.QSize(16777215, 16777215))
-        self.tableViewPoints.setBaseSize(QtCore.QSize(0, 0))
-        self.tableViewPoints.setSelectionMode(
-            QtWidgets.QAbstractItemView.SingleSelection)
-        self.tableViewPoints.setObjectName("tableViewPoints")
-        self.verticalLayout_3.addWidget(self.tableViewPoints)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_3)
-        spacerItem1 = QtWidgets.QSpacerItem(5, 20,
-                                            QtWidgets.QSizePolicy.Minimum,
+            self.graphicsViewCheckerboard.sizePolicy().hasHeightForWidth())
+        self.graphicsViewCheckerboard.setSizePolicy(sizePolicy)
+        self.graphicsViewCheckerboard.setMinimumSize(QtCore.QSize(300, 300))
+        self.graphicsViewCheckerboard.setMaximumSize(
+            QtCore.QSize(16777215, 16777215))
+        self.graphicsViewCheckerboard.setSizeIncrement(QtCore.QSize(0, 0))
+        self.graphicsViewCheckerboard.setBaseSize(QtCore.QSize(200, 200))
+        self.graphicsViewCheckerboard.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+        self.graphicsViewCheckerboard.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+        self.graphicsViewCheckerboard.setObjectName("graphicsViewCheckerboard")
+        self.horizontalLayout.addWidget(self.graphicsViewCheckerboard)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        spacerItem1 = QtWidgets.QSpacerItem(2, 2, QtWidgets.QSizePolicy.Minimum,
                                             QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_4.addItem(spacerItem1)
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setSizeConstraint(
-            QtWidgets.QLayout.SetMinimumSize)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout.addItem(spacerItem1)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.graphicsViewPatch = CustomGraphicsView(RegistrationManual)
@@ -79,12 +82,12 @@ class Ui_RegistrationManual(object):
             QtWidgets.QSizePolicy.MinimumExpanding,
             QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(200)
+        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
             self.graphicsViewPatch.sizePolicy().hasHeightForWidth())
         self.graphicsViewPatch.setSizePolicy(sizePolicy)
-        self.graphicsViewPatch.setMinimumSize(QtCore.QSize(160, 150))
-        self.graphicsViewPatch.setMaximumSize(QtCore.QSize(16777215, 16777215))
+        self.graphicsViewPatch.setMinimumSize(QtCore.QSize(150, 150))
+        self.graphicsViewPatch.setMaximumSize(QtCore.QSize(150, 150))
         self.graphicsViewPatch.setSizeIncrement(QtCore.QSize(0, 0))
         self.graphicsViewPatch.setBaseSize(QtCore.QSize(100, 100))
         self.graphicsViewPatch.setVerticalScrollBarPolicy(
@@ -93,68 +96,45 @@ class Ui_RegistrationManual(object):
             QtCore.Qt.ScrollBarAlwaysOff)
         self.graphicsViewPatch.setObjectName("graphicsViewPatch")
         self.horizontalLayout_5.addWidget(self.graphicsViewPatch)
-        spacerItem2 = QtWidgets.QSpacerItem(5, 40,
+        spacerItem2 = QtWidgets.QSpacerItem(2, 20,
                                             QtWidgets.QSizePolicy.Minimum,
                                             QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem2)
-        self.verticalLayout_5 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_5.setObjectName("verticalLayout_5")
-        self.label_3 = QtWidgets.QLabel(RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
-                                           QtWidgets.QSizePolicy.Minimum)
+        self.tableViewPoints = FeatureTableView(RegistrationManual)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(
-            self.label_3.sizePolicy().hasHeightForWidth())
-        self.label_3.setSizePolicy(sizePolicy)
-        self.label_3.setMinimumSize(QtCore.QSize(160, 0))
-        self.label_3.setText("")
-        self.label_3.setObjectName("label_3")
-        self.verticalLayout_5.addWidget(self.label_3)
-        self.horizontalLayout_5.addLayout(self.verticalLayout_5)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
-        spacerItem3 = QtWidgets.QSpacerItem(20, 5,
+            self.tableViewPoints.sizePolicy().hasHeightForWidth())
+        self.tableViewPoints.setSizePolicy(sizePolicy)
+        self.tableViewPoints.setMinimumSize(QtCore.QSize(300, 100))
+        self.tableViewPoints.setMaximumSize(QtCore.QSize(16777215, 150))
+        self.tableViewPoints.setBaseSize(QtCore.QSize(0, 0))
+        self.tableViewPoints.setSelectionMode(
+            QtWidgets.QAbstractItemView.SingleSelection)
+        self.tableViewPoints.setObjectName("tableViewPoints")
+        self.horizontalLayout_5.addWidget(self.tableViewPoints)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        self.horizontalLayout_4.addLayout(self.verticalLayout)
+        spacerItem3 = QtWidgets.QSpacerItem(2, 20,
                                             QtWidgets.QSizePolicy.Minimum,
                                             QtWidgets.QSizePolicy.Minimum)
-        self.verticalLayout_2.addItem(spacerItem3)
-        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        self.graphicsViewCheckerboard = CustomGraphicsView(RegistrationManual)
-        self.graphicsViewCheckerboard.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(200)
-        sizePolicy.setHeightForWidth(
-            self.graphicsViewCheckerboard.sizePolicy().hasHeightForWidth())
-        self.graphicsViewCheckerboard.setSizePolicy(sizePolicy)
-        self.graphicsViewCheckerboard.setMinimumSize(QtCore.QSize(160, 150))
-        self.graphicsViewCheckerboard.setMaximumSize(
-            QtCore.QSize(16777215, 16777215))
-        self.graphicsViewCheckerboard.setSizeIncrement(QtCore.QSize(0, 0))
-        self.graphicsViewCheckerboard.setBaseSize(QtCore.QSize(100, 100))
-        self.graphicsViewCheckerboard.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
-        self.graphicsViewCheckerboard.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
-        self.graphicsViewCheckerboard.setObjectName("graphicsViewCheckerboard")
-        self.horizontalLayout_3.addWidget(self.graphicsViewCheckerboard)
-        spacerItem4 = QtWidgets.QSpacerItem(5, 40,
-                                            QtWidgets.QSizePolicy.Minimum,
-                                            QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem4)
+        self.horizontalLayout_4.addItem(spacerItem3)
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
         self.verticalLayout_4.setObjectName("verticalLayout_4")
-        spacerItem5 = QtWidgets.QSpacerItem(20, 40,
-                                            QtWidgets.QSizePolicy.Minimum,
-                                            QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_4.addItem(spacerItem5)
         self.label = QtWidgets.QLabel(RegistrationManual)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.label.sizePolicy().hasHeightForWidth())
+        self.label.setSizePolicy(sizePolicy)
         self.label.setObjectName("label")
         self.verticalLayout_4.addWidget(self.label)
         self.gridSizeSlider = QtWidgets.QSlider(RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                            QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -186,7 +166,7 @@ class Ui_RegistrationManual(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout_4.addWidget(self.label_2)
         self.transformationDropdown = QtWidgets.QComboBox(RegistrationManual)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                            QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -197,9 +177,11 @@ class Ui_RegistrationManual(object):
         self.transformationDropdown.addItem("")
         self.transformationDropdown.addItem("")
         self.verticalLayout_4.addWidget(self.transformationDropdown)
-        self.horizontalLayout_3.addLayout(self.verticalLayout_4)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_3)
-        self.horizontalLayout_4.addLayout(self.verticalLayout_2)
+        spacerItem4 = QtWidgets.QSpacerItem(20, 40,
+                                            QtWidgets.QSizePolicy.Minimum,
+                                            QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_4.addItem(spacerItem4)
+        self.horizontalLayout_4.addLayout(self.verticalLayout_4)
 
         self.retranslateUi(RegistrationManual)
         QtCore.QMetaObject.connectSlotsByName(RegistrationManual)
