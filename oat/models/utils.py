@@ -19,6 +19,19 @@ def get_bscan_by_id(img_id, format="jpeg"):
     return get_img_by_id(img_id, type="bscan", format=format)
 
 
+def get_registration_from_enface_ids(id1, id2):
+    response = requests.get(
+        f"{config.api_server}/registrations/"
+        f"?enfaceimage1_id={id1}"
+        f"&enfaceimage2_id={id2}",
+        headers=config.auth_header)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        msg = f"Status {response.status_code}: {response.json()['detail']}"
+        raise ValueError(msg)
+
+
 def get_img_by_id(img_id, type, format):
     if type == "enface":
         path = "enfaceimages"

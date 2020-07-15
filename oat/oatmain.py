@@ -25,10 +25,10 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        # registration_view = RegistrationView(model=RegistrationModel(2, 3), parent=self)
-
         annotation_view = AnnotationView(0, parent=self)
         self.mdiArea.addSubWindow(annotation_view)
+
+        # registration_view = RegistrationView(model=RegistrationModel(2, 3), parent=self)
         # self.mdiArea.addSubWindow(registration_view)
 
     def upload(self, type):

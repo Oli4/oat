@@ -6,7 +6,7 @@ from oat.views.custom import CustomGraphicsView
 
 class LocalizerView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
     pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self, parent, *args, **kwargs):
@@ -53,7 +53,7 @@ class LocalizerView(CustomGraphicsView):
     def mouseMoveEvent(self, event):
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos)
-        self.localizerPosChanged.emit(scene_pos)
+        self.localizerPosChanged.emit(scene_pos, self)
 
         super().mouseMoveEvent(event)
         if self._mouse_pressed and self._dragging:
@@ -77,4 +77,11 @@ class LocalizerView(CustomGraphicsView):
 
     def set_cursor(self, pos):
         super().set_cursor(pos)
-        self.localizerPosChanged.emit(pos)
+        self.localizerPosChanged.emit(pos, self)
+
+    def set_cursor_remote(self, pos, sender):
+        self.centerOn(pos)
+        super().set_cursor(pos)
+        self.localizerPosChanged.emit(pos, sender)
+
+        self.viewport().update()

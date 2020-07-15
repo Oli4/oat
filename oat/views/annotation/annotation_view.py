@@ -1,9 +1,12 @@
 import logging
 
+import numpy as np
+import skimage.transform as skitrans
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget
 
 from oat.models.custom_scene import BscanGraphicsScene, EnfaceGraphicsScene
+from oat.models.utils import get_registration_from_enface_ids
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
 logger = logging.getLogger(__name__)
@@ -16,19 +19,22 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.setupUi(self)
 
         # self.collection = get_collection_by_id(collection_id)
-        volume_id = 1
-        localizer_id = 2
-        enface_id = 3
+        self.volume_id = 1
+        self.localizer_id = 2
+        self.enface_id = 3
 
         self.key_actions = {
             # QtCore.Qt.Key_W: self.tableViewPoints.up,
         }
 
         # Create scenes
-        self.bscan_scene = BscanGraphicsScene(parent=self, image_id=volume_id)
+        self.bscan_scene = BscanGraphicsScene(parent=self,
+                                              image_id=self.volume_id)
         self.localizer_scene = EnfaceGraphicsScene(parent=self,
-                                                   image_id=localizer_id)
-        self.enface_scene = EnfaceGraphicsScene(parent=self, image_id=enface_id)
+                                                   image_id=self.localizer_id)
+        self.enface_scene = EnfaceGraphicsScene(parent=self,
+                                                image_id=self.enface_id)
+        self.set_enface_tforms()
 
         self.scenes = [self.bscan_scene, self.localizer_scene,
                        self.enface_scene]
@@ -36,12 +42,19 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                               self.graphicsViewLocalizer,
                               self.graphicsViewEnface]
 
+        # Set Localizer from Bscan
         self.graphicsViewBscan.localizerPosChanged.connect(
-            self.graphicsViewLocalizer.set_cursor)
+            self.graphicsViewLocalizer.set_cursor_remote)
+
+        # Set Localizer from enface
         self.graphicsViewEnface.localizerPosChanged.connect(
-            self.graphicsViewLocalizer.set_cursor)
+            self.graphicsViewLocalizer.set_cursor_remote)
+
+        # set enface from localizer
         self.graphicsViewLocalizer.localizerPosChanged.connect(
             self.graphicsViewEnface.set_cursor_from_localizer)
+
+        # set bscan from localizer
         self.graphicsViewLocalizer.localizerPosChanged.connect(
             self.graphicsViewBscan.set_cursor_from_localizer)
 
@@ -52,26 +65,27 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.set_scenes()
         self.toggle_cursor_crosses()
 
-    def showEvent(self, a0: QtGui.QShowEvent) -> None:
-        # Make sure images are filling the view when Widget is opened
-        [view.zoomToFit() for view in self.graphic_views]
+    def set_enface_tforms(self):
+        registration_data = get_registration_from_enface_ids(
+            self.localizer_id, self.enface_id)
 
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        [view.zoomToFit() for view in self.graphic_views]
+        tmodel = "similarity"
+        matrix = np.array(registration_data[tmodel]).reshape((3, 3))
+        self.enface_scene.tform = skitrans.ProjectiveTransform(matrix)
 
-    def center_PointSelection(self, point):
-        if point:
-            self.graphicsViewPointSelection.zoomToFeature()
-            self.graphicsViewPointSelection.centerOn(point)
-        else:
-            self.graphicsViewPointSelection.zoomToFit()
+    # def center_PointSelection(self, point):
+    #    if point:
+    #        self.graphicsViewPointSelection.zoomToFeature()
+    #        self.graphicsViewPointSelection.centerOn(point)
+    #    else:
+    #        self.graphicsViewPointSelection.zoomToFit()
 
-    def center_Patch(self, point):
-        if point:
-            self.graphicsViewPatch.zoomToFeature()
-            self.graphicsViewPatch.centerOn(point)
-        else:
-            self.graphicsViewPatch.zoomToFit()
+    # def center_Patch(self, point):
+    #    if point:
+    # #       self.graphicsViewPatch.zoomToFeature()
+    #        self.graphicsViewPatch.centerOn(point)
+    #    else:
+    #        self.graphicsViewPatch.zoomToFit()
 
     def set_scenes(self):
         """ """
@@ -81,6 +95,9 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
     def toggle_cursor_crosses(self):
         [view.toggle_cursor_cross() for view in self.graphic_views]
+
+    def toogle_scroll_bars(self):
+        [view.toggle_scroll_bars() for view in self.graphic_views]
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         try:

@@ -1,12 +1,12 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QPointF
 
 from oat.views.custom import CustomGraphicsView
 
 
 class EnfaceView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
     pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
 
     def __init__(self, parent, *args, **kwargs):
@@ -51,20 +51,26 @@ class EnfaceView(CustomGraphicsView):
                 self.pixelClicked.emit(point)
 
     def map_to_localizer(self, pos):
-        return pos
+        result = self.scene().tform((pos.x(), pos.y()))[0]
+        return QPointF(*result)
 
     def map_from_localizer(self, pos):
-        return pos
+        result = self.scene().tform.inverse((pos.x(), pos.y()))[0]
+        return QPointF(*result)
 
-    def set_cursor_from_localizer(self, pos):
-        pos = self.map_from_localizer(pos)
-        self.set_cursor(pos)
+    def set_cursor_from_localizer(self, pos, sender):
+        if sender is not self:
+            pos = self.map_from_localizer(pos)
+            self.centerOn(pos)
+            self.set_cursor(pos)
+
+            self.viewport().update()
 
     def mouseMoveEvent(self, event):
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos)
         localizer_pos = self.map_to_localizer(scene_pos)
-        self.localizerPosChanged.emit(localizer_pos)
+        self.localizerPosChanged.emit(localizer_pos, self)
 
         super().mouseMoveEvent(event)
         if self._mouse_pressed and self._dragging:

@@ -6,7 +6,7 @@ from oat.views.custom import CustomGraphicsView
 
 class BscanView(CustomGraphicsView):
     pixelClicked = QtCore.pyqtSignal(QtCore.QPoint)
-    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    localizerPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -22,6 +22,11 @@ class BscanView(CustomGraphicsView):
                 self.next_slice()
             else:
                 self.last_slice()
+
+            localizer_pos = self.map_to_localizer(
+                QPointF(event.pos().x(), self.scene().current_slice_number))
+            self.localizerPosChanged.emit(localizer_pos, self)
+
             self.parent().wheelEvent(event)
             # Ask the parent to change the data -> change slice
             event.accept()
@@ -60,27 +65,55 @@ class BscanView(CustomGraphicsView):
                 self.pixelClicked.emit(point)
 
     def map_to_localizer(self, pos):
-        return QPointF(pos.x() * 1.5, pos.y() * 30)
+        # x = StartX + xpos
+        # y = StartY + StartY-EndY/lenx * xpos
+        slice_n = int(pos.y())
+        lclzr_scale_x = self.scene().volume_dict["localizer_image"]["scale_x"]
+        lclzr_scale_y = self.scene().volume_dict["localizer_image"]["scale_y"]
+        start_y = self.scene().slices[slice_n]["start_y"] / lclzr_scale_y
+        end_y = self.scene().slices[slice_n]["end_y"] / lclzr_scale_y
+        size_x = self.scene().volume_dict["size_x"]
+
+        x = self.scene().current_slice["start_x"] / lclzr_scale_x + pos.x()
+        y = start_y + (start_y - end_y) / size_x * pos.x()
+
+        return QPointF(x, y)
 
     def map_from_localizer(self, pos):
-        return QPointF(pos.x() / 1.5, pos.y() / 30)
+        lclzr_scale_x = self.scene().volume_dict["localizer_image"]["scale_x"]
+        x = pos.x() - self.scene().current_slice["start_x"] / lclzr_scale_x
+        y = self.scene().closest_slice(pos)
 
-    def set_cursor_from_localizer(self, pos):
-        pos = self.map_from_localizer(pos)
-        # set slice
-        self.scene().set_slice(int(pos.y() - 0.5))
-        # set cursor x position
-        self.set_cursor(QPointF(pos.x(), -100))
+        return QPointF(x, y)
+
+    def set_cursor_from_localizer(self, pos, sender):
+        if sender is not self:
+            # Turn localizer position to x pos and slice number for OCT
+            pos = self.map_from_localizer(pos)
+            # set slice
+            self.scene().set_slice(int(pos.y()))
+            # set cursor x position
+            # hide vertical line
+            self._line1.hide()
+            self._line2.hide()
+            pos = QPointF(pos.x(), 5)
+            self.set_cursor(pos)
+            self.centerOn(pos)
+
+            self.viewport().update()
 
     def mouseMoveEvent(self, event):
-        scene_pos = self.mapToScene(event.pos())
+        # Show vertical line
+        self._line1.show()
+        self._line2.show()
+        super().mouseMoveEvent(event)
 
+        scene_pos = self.mapToScene(event.pos())
         localizer_pos = self.map_to_localizer(
-            QPointF(scene_pos.x(), self.scene().current_slice + 0.5))
-        self.localizerPosChanged.emit(localizer_pos)
+            QPointF(scene_pos.x(), self.scene().current_slice_number))
+        self.localizerPosChanged.emit(localizer_pos, self)
         self.cursorPosChanged.emit(scene_pos)
 
-        super().mouseMoveEvent(event)
         if self._mouse_pressed and self._dragging:
             newPos = event.pos()
             diff = newPos - self._dragPos
@@ -99,3 +132,4 @@ class BscanView(CustomGraphicsView):
                 self.setCursor(Qt.ArrowCursor)
                 self._dragging = False
             self._mouse_pressed = False
+            self.viewport().update()

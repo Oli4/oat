@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AnnotationView(object):
     def setupUi(self, AnnotationView):
         AnnotationView.setObjectName("AnnotationView")
-        AnnotationView.resize(806, 407)
+        AnnotationView.resize(858, 452)
         self.horizontalLayout = QtWidgets.QHBoxLayout(AnnotationView)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.widget_5 = QtWidgets.QWidget(AnnotationView)
@@ -28,38 +28,66 @@ class Ui_AnnotationView(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.graphicsViewLocalizer = LocalizerView(self.widget_5)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.graphicsViewLocalizer.sizePolicy().hasHeightForWidth())
+        sizePolicy.setVerticalStretch(200)
+        sizePolicy.setHeightForWidth(
+            self.graphicsViewLocalizer.sizePolicy().hasHeightForWidth())
         self.graphicsViewLocalizer.setSizePolicy(sizePolicy)
+        self.graphicsViewLocalizer.setMinimumSize(QtCore.QSize(200, 200))
         self.graphicsViewLocalizer.setObjectName("graphicsViewLocalizer")
         self.horizontalLayout_2.addWidget(self.graphicsViewLocalizer)
+        spacerItem = QtWidgets.QSpacerItem(2, 20,
+                                           QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem)
         self.graphicsViewBscan = BscanView(self.widget_5)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.graphicsViewBscan.sizePolicy().hasHeightForWidth())
+        sizePolicy.setVerticalStretch(200)
+        sizePolicy.setHeightForWidth(
+            self.graphicsViewBscan.sizePolicy().hasHeightForWidth())
         self.graphicsViewBscan.setSizePolicy(sizePolicy)
+        self.graphicsViewBscan.setMinimumSize(QtCore.QSize(300, 200))
         self.graphicsViewBscan.setObjectName("graphicsViewBscan")
         self.horizontalLayout_2.addWidget(self.graphicsViewBscan)
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
+        spacerItem1 = QtWidgets.QSpacerItem(20, 2,
+                                            QtWidgets.QSizePolicy.Minimum,
+                                            QtWidgets.QSizePolicy.Preferred)
+        self.verticalLayout_5.addItem(spacerItem1)
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem)
+        spacerItem2 = QtWidgets.QSpacerItem(40, 20,
+                                            QtWidgets.QSizePolicy.Expanding,
+                                            QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem2)
         self.graphicsViewEnface = EnfaceView(self.widget_5)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred,
+                                           QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(50)
+        sizePolicy.setHeightForWidth(
+            self.graphicsViewEnface.sizePolicy().hasHeightForWidth())
+        self.graphicsViewEnface.setSizePolicy(sizePolicy)
+        self.graphicsViewEnface.setMinimumSize(QtCore.QSize(200, 200))
         self.graphicsViewEnface.setObjectName("graphicsViewEnface")
         self.horizontalLayout_3.addWidget(self.graphicsViewEnface)
-        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
-        self.horizontalLayout_3.addItem(spacerItem1)
+        spacerItem3 = QtWidgets.QSpacerItem(40, 20,
+                                            QtWidgets.QSizePolicy.Expanding,
+                                            QtWidgets.QSizePolicy.Minimum)
+        self.horizontalLayout_3.addItem(spacerItem3)
         self.verticalLayout_5.addLayout(self.horizontalLayout_3)
         self.horizontalLayout.addWidget(self.widget_5)
         self.widget = QtWidgets.QWidget(AnnotationView)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
+                                           QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy)
         self.widget.setObjectName("widget")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.widget)
@@ -73,19 +101,6 @@ class Ui_AnnotationView(object):
         self.widget_2.setObjectName("widget_2")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_2)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.label_3 = QtWidgets.QLabel(self.widget_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
-        self.label_3.setSizePolicy(sizePolicy)
-        font = QtGui.QFont()
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_3.setFont(font)
-        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_3.setObjectName("label_3")
-        self.verticalLayout_2.addWidget(self.label_3)
         self.tabWidget = QtWidgets.QTabWidget(self.widget_2)
         self.tabWidget.setElideMode(QtCore.Qt.ElideNone)
         self.tabWidget.setObjectName("tabWidget")
@@ -258,7 +273,6 @@ class Ui_AnnotationView(object):
     def retranslateUi(self, AnnotationView):
         _translate = QtCore.QCoreApplication.translate
         AnnotationView.setWindowTitle(_translate("AnnotationView", "Form"))
-        self.label_3.setText(_translate("AnnotationView", "Layers"))
         self.opacitySliderLabel_2d.setText(_translate("AnnotationView", "Opacity"))
         self.addButton_2d.setText(_translate("AnnotationView", "..."))
         self.upButton_2d.setText(_translate("AnnotationView", "..."))
@@ -282,6 +296,4 @@ class Ui_AnnotationView(object):
         self.toolButton_7.setText(_translate("AnnotationView", "..."))
         self.toolButton_6.setText(_translate("AnnotationView", "..."))
         self.toolButton_12.setText(_translate("AnnotationView", "..."))
-
 from oat.views.annotation import BscanView, EnfaceView, LocalizerView
-from . import resources_rc

@@ -70,6 +70,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
     @QtCore.pyqtSlot(str)
     def change_tmodel(self, tmodel):
         self.model.tmodel = tmodel.lower()
+        self.model.update_checkerboard()
 
     def center_PointSelection(self, point):
         if point:
@@ -119,24 +120,20 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
                                                      previous_index.column())
             else:
                 feat2_index = self.model.createIndex(
-                    current_index.row(),
-                    self.graphicsViewPatch.scene().scene_id)
+                    current_index.row(), -1)
         else:
             feat2_index = previous_index
 
         # Set GraphicsViewPointSelection to current Index
         self.graphicsViewPointSelection.setScene(
             self.scenes[feat1_index.column()])
-        # self.graphicsViewPointSelection.show()
         self.center_PointSelection(self.model.data(feat1_index,
                                                    role=POINT_ROLE))
 
-        self.graphicsViewPatch.setScene(
-            self.scenes[feat2_index.column()])
-        #self.graphicsViewPatch.show()
+        if not feat2_index.column() == -1:
+            self.graphicsViewPatch.setScene(self.scenes[feat2_index.column()])
         self.center_Patch(self.model.data(feat2_index,
                                           role=POINT_ROLE))
-
 
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:

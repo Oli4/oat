@@ -7,7 +7,6 @@ import requests
 import skimage.segmentation as skiseg
 import skimage.transform as skitrans
 from PyQt5 import QtCore
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import QPoint, QPointF, QModelIndex
 from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
 from skimage.color import gray2rgb
@@ -15,17 +14,12 @@ from skimage.color import gray2rgb
 from oat import config
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
     POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
-from oat.models.utils import get_enface_by_id, array2qgraphicspixmapitem, \
-    qgraphicspixmapitem2array
+from oat.models.custom_scene import EnfaceGraphicsScene
+from oat.models.utils import array2qgraphicspixmapitem, \
+    qgraphicspixmapitem2array, get_registration_from_enface_ids
 
 logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
-
-
-class SceneModel(QtWidgets.QGraphicsScene):
-    def __init__(self, parent, scene_id):
-        super().__init__(parent)
-        self.scene_id = scene_id
 
 
 class RegistrationModel(QtCore.QAbstractTableModel):
@@ -33,18 +27,16 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         super().__init__()
 
         self.image_ids = args
-        self.pixmap_items, self.images_meta = zip(*[get_enface_by_id(i)
-                                                    for i in self.image_ids])
-        self.checker_images, self.checker_scale = \
-            zip(*[self.img_rescale(qgraphicspixmapitem2array(img), 300)
-                  for img in self.pixmap_items])
 
-        self.scenes = {i: SceneModel(self, scene_id=i)
-                       for i in range(len(self.image_ids))}
-        # self.reg_scene = SceneModel(self, )
-        for i, scene in self.scenes.items():
-            scene.addItem(self.pixmap_items[i])
-        self.scenes[-1] = SceneModel(self, scene_id=-1)
+        self.scenes = {i: EnfaceGraphicsScene(self, image_id=image_id)
+                       for i, image_id in enumerate(self.image_ids)}
+
+        self.checker_images, self.checker_scale = \
+            zip(*[self.img_rescale(qgraphicspixmapitem2array(scene.items()[0]),
+                                   300)
+                  for scene in self.scenes.values()])
+
+        self.scenes[-1] = EnfaceGraphicsScene(self)
 
         self._data = None
         self.markers = {}
@@ -101,18 +93,20 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                         for m in matches])
 
         if dst.shape[0] >= 3:
-            tform = skitrans.estimate_transform(
+            local_tform = skitrans.estimate_transform(
                 self.tmodel, src * self.checker_scale[1],
                              dst * self.checker_scale[0])
+            tform = skitrans.estimate_transform(
+                self.tmodel, src, dst)
 
         else:
             matrix = np.array([1, 0, 0, 0, 1, 0, 0, 0, 1]).reshape((3, 3))
-            tform = skitrans.ProjectiveTransform(matrix)
-        self._data[self.tmodel] = [int(p) for p in tform.params.flatten()]
-        return tform
+            local_tform = skitrans.ProjectiveTransform(matrix)
+            tform = local_tform
+        self._data[self.tmodel] = [p for p in tform.params.flatten()]
+        return local_tform
 
     def update_checkerboard(self):
-        print(self.checker_images[0].min())
         img1 = self.checker_images[0]
         img2 = skitrans.warp(self.checker_images[1],
                              inverse_map=self.tform.inverse,
@@ -132,8 +126,6 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
         checkerboard = np.copy(img1)
         checkerboard[np.where(mask)] = img2[np.where(mask)]
-
-        print(checkerboard.shape, checkerboard.min(), checkerboard.max())
 
         self.scenes[-1].clear()
         self.scenes[-1].addItem(array2qgraphicspixmapitem(checkerboard))
@@ -301,16 +293,12 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         return data
 
     def reload_data(self):
-        response = requests.get(
-            f"{config.api_server}/registrations/"
-            f"?enfaceimage1_id={self.image_ids[0]}"
-            f"&enfaceimage2_id={self.image_ids[1]}",
-            headers=config.auth_header)
-        if response.status_code == 200:
-            self._data = response.json()
+        try:
+            self._data = get_registration_from_enface_ids(
+                self.image_ids[0], self.image_ids[1])
             if self._data["enfacefeaturematchs"] == []:
                 self._data["enfacefeaturematchs"].append(self._new_match())
-        else:
+        except ValueError:
             self._data = self.new()
 
         self.dataChanged.emit(self.createIndex(0, 0),

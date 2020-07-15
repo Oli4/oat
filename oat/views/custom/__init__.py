@@ -1,5 +1,6 @@
 import logging
 
+import math
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
@@ -24,7 +25,15 @@ class CustomGraphicsView(QGraphicsView):
         self.setMouseTracking(True)
 
         self._cursor_cross = False
+        self.deactivate_scroll_bars()
+
         self.cursorPosChanged.connect(self.set_cursor)
+
+    def hasWidthForHeight(self):
+        return True
+
+    def widthForHeight(self, height):
+        return math.ceil(height * self.scene()._widthForHeightFactor)
 
     def toggle_cursor_cross(self):
         if self._cursor_cross:
@@ -36,6 +45,22 @@ class CustomGraphicsView(QGraphicsView):
             # Enable cursor cross
             self.scene().addItem(self._create_cursor_cross())
             self._cursor_cross = True
+
+    def toggle_scroll_bars(self):
+        if self._scroll_bars:
+            self.deactivate_scroll_bars()
+        else:
+            self.activate_scroll_bars()
+
+    def deactivate_scroll_bars(self):
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._scroll_bars = False
+
+    def activate_scroll_bars(self):
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self._scroll_bars = True
 
     def _create_cursor_cross(self):
         line1 = QtCore.QLineF()
@@ -92,10 +117,16 @@ class CustomGraphicsView(QGraphicsView):
         else:
             super().wheelEvent(event)
 
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self.zoomToFit()
+        height = event.size().height()
+        width = self.widthForHeight(height)
+        self.setMinimumSize(width, height)
+
     def zoomToFit(self):
-        rect = self.scene().sceneRect()
-        self.fitInView(rect, Qt.KeepAspectRatio)
-        # self.fitInView(self.scene().itemsBoundingRect(), Qt.KeepAspectRatio)
+        self.fitInView(self.scene().sceneRect(), Qt.KeepAspectRatio)
+        self._zoom = 0
 
     def zoomToFeature(self):
         # Zoom in as long as more than 1/3 of width of the image is
@@ -117,5 +148,6 @@ class CustomGraphicsView(QGraphicsView):
         self.scale(1.25, 1.25)
 
     def zoom_out(self):
-        self._zoom -= 1
-        self.scale(0.8, 0.8)
+        if self._zoom > 0:
+            self._zoom -= 1
+            self.scale(0.8, 0.8)
