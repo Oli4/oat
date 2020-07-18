@@ -36,6 +36,9 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                                                 image_id=self.enface_id)
         self.set_enface_tforms()
 
+        # Add scenes to toolbox
+        # self.ModalityTreeView_2d.setModel()
+
         self.scenes = [self.bscan_scene, self.localizer_scene,
                        self.enface_scene]
         self.graphic_views = [self.graphicsViewBscan,

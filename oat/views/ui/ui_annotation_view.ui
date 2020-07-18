@@ -25,22 +25,22 @@
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-            <widget class="LocalizerView" name="graphicsViewLocalizer">
-                <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                        <horstretch>0</horstretch>
-                        <verstretch>200</verstretch>
-                    </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                    <size>
-                        <width>200</width>
-                        <height>200</height>
-                    </size>
-                </property>
-            </widget>
-        </item>
+           <item>
+               <widget class="LocalizerView" name="graphicsViewLocalizer">
+                   <property name="sizePolicy">
+                       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                           <horstretch>0</horstretch>
+                           <verstretch>200</verstretch>
+                       </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                       <size>
+                           <width>200</width>
+                           <height>200</height>
+                       </size>
+                   </property>
+               </widget>
+           </item>
            <item>
                <spacer name="horizontalSpacer_3">
                    <property name="orientation">

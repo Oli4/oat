@@ -4,7 +4,7 @@ import math
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsItemGroup
 
 logger = logging.getLogger(__name__)
@@ -25,6 +25,7 @@ class CustomGraphicsView(QGraphicsView):
         self.setMouseTracking(True)
 
         self._cursor_cross = False
+        self.cursor_pos = QPoint(-1, -1)
         self.deactivate_scroll_bars()
 
         self.cursorPosChanged.connect(self.set_cursor)
@@ -81,7 +82,7 @@ class CustomGraphicsView(QGraphicsView):
     def set_cursor(self, pos):
         if self._cursor_cross:
             self.setCursor(Qt.BlankCursor)
-            pos = pos.toPoint()
+            self.cursor_pos = pos.toPoint()
 
             # Map viewport size to scene
             pos_end = self.mapToScene(self.viewport().rect().width(),
@@ -89,17 +90,23 @@ class CustomGraphicsView(QGraphicsView):
             pos_start = self.mapToScene(0, 0).toPoint()
 
             # Create new line and set it.
-            line1 = QtCore.QLineF(int(pos_start.x()), int(pos.y()) + 0.5,
-                                  int(pos.x()) - 1.5,
-                                  int(pos.y()) + 0.5)
-            line2 = QtCore.QLineF(int(pos.x()) + 2.5, int(pos.y()) + 0.5,
+            line1 = QtCore.QLineF(int(pos_start.x()),
+                                  int(self.cursor_pos.y()) + 0.5,
+                                  int(self.cursor_pos.x()) - 1.5,
+                                  int(self.cursor_pos.y()) + 0.5)
+            line2 = QtCore.QLineF(int(self.cursor_pos.x()) + 2.5,
+                                  int(self.cursor_pos.y()) + 0.5,
                                   int(pos_end.x()),
-                                  int(pos.y()) + 0.5)
+                                  int(self.cursor_pos.y()) + 0.5)
 
-            line3 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos_start.y()),
-                                  int(pos.x()) + 0.5, int(pos.y()) - 1.5)
-            line4 = QtCore.QLineF(int(pos.x()) + 0.5, int(pos.y()) + 2.5,
-                                  int(pos.x()) + 0.5, int(pos_end.y()))
+            line3 = QtCore.QLineF(int(self.cursor_pos.x()) + 0.5,
+                                  int(pos_start.y()),
+                                  int(self.cursor_pos.x()) + 0.5,
+                                  int(self.cursor_pos.y()) - 1.5)
+            line4 = QtCore.QLineF(int(self.cursor_pos.x()) + 0.5,
+                                  int(self.cursor_pos.y()) + 2.5,
+                                  int(self.cursor_pos.x()) + 0.5,
+                                  int(pos_end.y()))
 
             self._line1.setLine(line1)
             self._line2.setLine(line2)
@@ -151,3 +158,6 @@ class CustomGraphicsView(QGraphicsView):
         if self._zoom > 0:
             self._zoom -= 1
             self.scale(0.8, 0.8)
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        self.zoomToFit()

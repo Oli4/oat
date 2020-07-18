@@ -22,13 +22,19 @@ logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
 
 
+class RegistrationGraphicsScene(EnfaceGraphicsScene):
+    def __init__(self, parent, column, *args, **kwargs):
+        super().__init__(*args, **kwargs, parent=parent)
+        self.column = column
+
+
 class RegistrationModel(QtCore.QAbstractTableModel):
     def __init__(self, *args):
         super().__init__()
 
         self.image_ids = args
 
-        self.scenes = {i: EnfaceGraphicsScene(self, image_id=image_id)
+        self.scenes = {i: RegistrationGraphicsScene(self, i, image_id=image_id)
                        for i, image_id in enumerate(self.image_ids)}
 
         self.checker_images, self.checker_scale = \
@@ -36,7 +42,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                                    300)
                   for scene in self.scenes.values()])
 
-        self.scenes[-1] = EnfaceGraphicsScene(self)
+        self.scenes[-1] = RegistrationGraphicsScene(self, -1)
 
         self._data = None
         self.markers = {}
@@ -103,7 +109,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             matrix = np.array([1, 0, 0, 0, 1, 0, 0, 0, 1]).reshape((3, 3))
             local_tform = skitrans.ProjectiveTransform(matrix)
             tform = local_tform
-        self._data[self.tmodel] = [p for p in tform.params.flatten()]
+        self._data[self.tmodel] = [float(p) for p in tform.params.flatten()]
         return local_tform
 
     def update_checkerboard(self):
@@ -285,8 +291,8 @@ class RegistrationModel(QtCore.QAbstractTableModel):
     def new(self):
         data = {"enfaceimage1_id": self.image_ids[0],
                 "enfaceimage2_id": self.image_ids[1],
-                "similarity": [0] * 9,
-                "affine": [0] * 9,
+                "similarity": [1, 0, 0, 0, 1, 0, 0, 0, 1],
+                "affine": [1, 0, 0, 0, 1, 0, 0, 0, 1],
                 "enfacefeaturematchs": [self._new_match()],
                 "id": None,
                 "created_by": None}
@@ -332,13 +338,20 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
     def removeRows(self, row: int, count: int,
                    parent: QModelIndex = ...) -> bool:
-        self.beginRemoveRows(parent, row, row + count)
+        self.beginRemoveRows(parent, row, row + count - 1)
         for i in range(row, row + count):
             self.setData(self.index(i, 0), None, role=DELETE_ROLE)
             self.setData(self.index(i, 1), None, role=DELETE_ROLE)
+            self.dataChanged.emit(self.index(row, 0),
+                                  self.index(row + count - 1, 1))
+            del self._data["enfacefeaturematchs"][i]
         self.endRemoveRows()
-        self.dataChanged.emit(self.index(row, 0),
-                              self.index(row + count - 1, 1))
+
+        # Make sure there is always a match you can add new features to
+        if len(self._data["enfacefeaturematchs"]) == 0:
+            self.beginInsertRows(parent, 0, 0)
+            self._data["enfacefeaturematchs"].append(self._new_match())
+            self.endInsertRows()
         return True
 
     def match_is_empty(self, row):
@@ -361,7 +374,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                    parent: QModelIndex = ...) -> bool:
         if row != self.rowCount() or count != 1 or self.match_is_empty(-1):
             return False
-        self.beginInsertRows(parent, row, row)
+        self.beginInsertRows(parent, row, row + count - 1)
         self._data["enfacefeaturematchs"].append(self._new_match())
         self.endInsertRows()
         return True
@@ -425,6 +438,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         elif role == DELETE_ROLE:
             feat["x"], feat["y"] = (None, None)
             self.upload_data(index)
+            # Remove row if all None
             self.dataChanged.emit(index, index, (QtCore.Qt.DisplayRole,
                                                  POINT_ROLE))
         elif role == FEATUREID_ROLE:

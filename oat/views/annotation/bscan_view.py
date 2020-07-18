@@ -96,7 +96,8 @@ class BscanView(CustomGraphicsView):
             # hide vertical line
             self._line1.hide()
             self._line2.hide()
-            pos = QPointF(pos.x(), 5)
+            current_center = self.mapToScene(self.rect().center()).y()
+            pos = QPointF(pos.x(), current_center)
             self.set_cursor(pos)
             self.centerOn(pos)
 

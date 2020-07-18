@@ -120,7 +120,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
                                                      previous_index.column())
             else:
                 feat2_index = self.model.createIndex(
-                    current_index.row(), -1)
+                    current_index.row(), self.graphicsViewPatch.scene().column)
         else:
             feat2_index = previous_index
 
@@ -130,8 +130,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         self.center_PointSelection(self.model.data(feat1_index,
                                                    role=POINT_ROLE))
 
-        if not feat2_index.column() == -1:
-            self.graphicsViewPatch.setScene(self.scenes[feat2_index.column()])
+        self.graphicsViewPatch.setScene(self.scenes[feat2_index.column()])
         self.center_Patch(self.model.data(feat2_index,
                                           role=POINT_ROLE))
 
