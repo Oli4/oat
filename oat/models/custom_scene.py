@@ -13,8 +13,12 @@ Point = namedtuple("Point", ["x", "y"])
 
 
 class CustomGrahpicsScene(QGraphicsScene):
+    number = 0
+    base_name = "Default"
+
     def __init__(self, parent, image_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=parent)
+        self._set_name()
 
         self.image = None
         self.image_meta = None
@@ -22,6 +26,14 @@ class CustomGrahpicsScene(QGraphicsScene):
         self._widthForHeightFactor = 1
         if image_id:
             self.add_image(image_id)
+
+    def _set_name(self):
+        if self.number == 0:
+            self.name = self.base_name
+            self.number += 1
+        else:
+            self.name = f"{self.base_name}_{self.number}"
+            self.number += 1
 
     def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
         raise NotImplementedError
@@ -38,8 +50,10 @@ class CustomGrahpicsScene(QGraphicsScene):
             self.addItem(pixmap_item)
 
 
+
 class BscanGraphicsScene(CustomGrahpicsScene):
-    def __init__(self, parent, image_id=None, *args, **kwargs):
+    def __init__(self, parent, image_id=None, base_name="OCT", *args, **kwargs):
+        self.base_name = base_name
         super().__init__(*args, **kwargs, parent=parent)
 
         # Fetch Volume image
@@ -118,7 +132,8 @@ class BscanGraphicsScene(CustomGrahpicsScene):
 
 
 class EnfaceGraphicsScene(CustomGrahpicsScene):
-    def __init__(self, parent, image_id=None, *args, **kwargs):
+    def __init__(self, parent, image_id=None, base_name="Enface", *args, **kwargs):
+        self.base_name=base_name
         super().__init__(*args, **kwargs, parent=parent, image_id=image_id)
 
     def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:

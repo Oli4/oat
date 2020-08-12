@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
 from oat.models.registration_model import RegistrationModel
+from oat.views.annotation.annotation_view import AnnotationView
 from oat.views.dialogs.login import LoginDialog
 from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
 from oat.views.registration.registration_view import RegistrationView
@@ -26,12 +27,12 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        registration_view = RegistrationView(model=RegistrationModel(2, 3),
-                                             parent=self)
-        self.mdiArea.addSubWindow(registration_view)
+        #registration_view = RegistrationView(model=RegistrationModel(2, 3),
+        #                                     parent=self)
+        #self.mdiArea.addSubWindow(registration_view)
 
-        # annotation_view = AnnotationView(0, parent=self)
-        # self.mdiArea.addSubWindow(annotation_view)
+        annotation_view = AnnotationView(0, parent=self)
+        self.mdiArea.addSubWindow(annotation_view)
 
 
 

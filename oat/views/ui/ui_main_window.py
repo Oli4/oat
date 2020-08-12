@@ -58,14 +58,12 @@ class Ui_MainWindow(object):
         self.actionToogleToolbox.setObjectName("actionToogleToolbox")
         self.actionUndo = QtWidgets.QAction(MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-undo-24px.svg"),
-                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-undo-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionUndo.setIcon(icon)
         self.actionUndo.setObjectName("actionUndo")
         self.actionRedo = QtWidgets.QAction(MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-redo-24px.svg"),
-                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-redo-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionRedo.setIcon(icon1)
         self.actionRedo.setObjectName("actionRedo")
         self.action_cfp = QtWidgets.QAction(MainWindow)
@@ -100,10 +98,8 @@ class Ui_MainWindow(object):
         self.menuUpload.setTitle(_translate("MainWindow", "Upload"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.actionSave_as.setText(_translate("MainWindow", "Save as"))
-        self.actionOpen_Project.setText(
-            _translate("MainWindow", "Open Project"))
-        self.action_vol.setText(
-            _translate("MainWindow", "HE raw Export (.vol )"))
+        self.actionOpen_Project.setText(_translate("MainWindow", "Open Project"))
+        self.action_vol.setText(_translate("MainWindow", "HE raw Export (.vol )"))
         self.actionToggle2D.setText(_translate("MainWindow", "2D Viewer"))
         self.actionToggle3D.setText(_translate("MainWindow", "3D Viewer"))
         self.actionToogleToolbox.setText(_translate("MainWindow", "Toolbox"))
@@ -111,11 +107,9 @@ class Ui_MainWindow(object):
         self.actionUndo.setShortcut(_translate("MainWindow", "Ctrl+Z"))
         self.actionRedo.setText(_translate("MainWindow", "Redo"))
         self.actionRedo.setShortcut(_translate("MainWindow", "Ctrl+Y"))
-        self.action_cfp.setText(
-            _translate("MainWindow", "CFP (.bmp/.tif/.jpg)"))
+        self.action_cfp.setText(_translate("MainWindow", "CFP (.bmp/.tif/.jpg)"))
         self.actionExport.setText(_translate("MainWindow", "Export"))
-        self.actionUploadVol.setText(
-            _translate("MainWindow", "Heyex Raw (.vol)"))
-        self.actionUploadCfp.setText(
-            _translate("MainWindow", "CFP (.tiff/.bmp)"))
+        self.actionUploadVol.setText(_translate("MainWindow", "Heyex Raw (.vol)"))
+        self.actionUploadCfp.setText(_translate("MainWindow", "CFP (.tiff/.bmp)"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
+from . import resources_rc

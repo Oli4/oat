@@ -63,3 +63,4 @@ class Ui_SegmentationEntry(object):
         SegmentationEntry.setWindowTitle(_translate("SegmentationEntry", "Form"))
         self.hideButton.setText(_translate("SegmentationEntry", "..."))
         self.label.setText(_translate("SegmentationEntry", "New Segmentation"))
+from . import resources_rc

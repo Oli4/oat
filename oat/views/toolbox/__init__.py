@@ -2,8 +2,20 @@ from PyQt5 import QtWidgets, QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QWidget
 
 from oat.models import ModalityTreeItem
-from oat.views import Ui_ModalityEntry, Ui_SegmentationEntry, Ui_Toolbox
 
+from oat.views.ui.ui_modality_entry import Ui_ModalityEntry
+from oat.views.ui.ui_segmentation_entry import Ui_SegmentationEntry
+from oat.views.ui.ui_toolbox import Ui_Toolbox
+
+
+from oat.views.ui.ui_scene_tab import Ui_SceneTab
+class SceneTab(QWidget, Ui_SceneTab):
+    def __init__(self, parent, scene):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.scene=scene
+        #self.ModalityTreeView.setModel()
+        #self.ModalityTreeView.setItemDelegate()
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):

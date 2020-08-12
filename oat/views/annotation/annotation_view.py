@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QWidget
 from oat.models.custom_scene import BscanGraphicsScene, EnfaceGraphicsScene
 from oat.models.utils import get_registration_from_enface_ids
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
+from oat.views.toolbox import SceneTab
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,14 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
         # Create scenes
         self.bscan_scene = BscanGraphicsScene(parent=self,
-                                              image_id=self.volume_id)
+                                              image_id=self.volume_id,
+                                              base_name="OCT")
         self.localizer_scene = EnfaceGraphicsScene(parent=self,
-                                                   image_id=self.localizer_id)
+                                                   image_id=self.localizer_id,
+                                                   base_name="NIR")
         self.enface_scene = EnfaceGraphicsScene(parent=self,
-                                                image_id=self.enface_id)
+                                                image_id=self.enface_id,
+                                                base_name="CFP")
         self.set_enface_tforms()
 
         # Add scenes to toolbox
@@ -44,6 +48,11 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.graphic_views = [self.graphicsViewBscan,
                               self.graphicsViewLocalizer,
                               self.graphicsViewEnface]
+
+        # Add toolbox entries
+        for scene in self.scenes:
+            self.layerOverview.addTab(SceneTab(self.layerOverview, scene),
+                                      scene.name)
 
         # Set Localizer from Bscan
         self.graphicsViewBscan.localizerPosChanged.connect(
@@ -61,8 +70,6 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.graphicsViewLocalizer.localizerPosChanged.connect(
             self.graphicsViewBscan.set_cursor_from_localizer)
 
-        # x position from x position in B-Scan
-        # y position from Bscan number
 
         # Set scenes
         self.set_scenes()

@@ -7,19 +7,17 @@
 # WARNING! All changes made in this file will be lost!
 
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_DataTableView(object):
     def setupUi(self, DataTableView):
         DataTableView.setObjectName("DataTableView")
         DataTableView.resize(520, 350)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                           QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            DataTableView.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(DataTableView.sizePolicy().hasHeightForWidth())
         DataTableView.setSizePolicy(sizePolicy)
         self.verticalLayout = QtWidgets.QVBoxLayout(DataTableView)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -27,16 +25,13 @@ class Ui_DataTableView(object):
         self.AddButton.setObjectName("AddButton")
         self.verticalLayout.addWidget(self.AddButton)
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_2.setSizeConstraint(
-            QtWidgets.QLayout.SetMaximumSize)
+        self.verticalLayout_2.setSizeConstraint(QtWidgets.QLayout.SetMaximumSize)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.PatientView = QtWidgets.QTableView(DataTableView)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                           QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.PatientView.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.PatientView.sizePolicy().hasHeightForWidth())
         self.PatientView.setSizePolicy(sizePolicy)
         self.PatientView.setMinimumSize(QtCore.QSize(480, 300))
         self.PatientView.setAutoFillBackground(True)

@@ -41,12 +41,10 @@ class Ui_AddPatientDialog(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout_3.addWidget(self.label_2)
         self.genderBox = QtWidgets.QComboBox(AddPatientDialog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                           QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.genderBox.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.genderBox.sizePolicy().hasHeightForWidth())
         self.genderBox.setSizePolicy(sizePolicy)
         self.genderBox.setObjectName("genderBox")
         self.genderBox.addItem("")
@@ -80,8 +78,7 @@ class Ui_AddPatientDialog(object):
         self.verticalLayout.addLayout(self.verticalLayout_4)
         self.buttonBox = QtWidgets.QDialogButtonBox(AddPatientDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(
-            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -92,13 +89,11 @@ class Ui_AddPatientDialog(object):
 
     def retranslateUi(self, AddPatientDialog):
         _translate = QtCore.QCoreApplication.translate
-        AddPatientDialog.setWindowTitle(
-            _translate("AddPatientDialog", "Dialog"))
+        AddPatientDialog.setWindowTitle(_translate("AddPatientDialog", "Dialog"))
         self.label.setText(_translate("AddPatientDialog", "Pseudonym"))
         self.label_2.setText(_translate("AddPatientDialog", "Gender"))
         self.genderBox.setItemText(0, _translate("AddPatientDialog", "Unknown"))
         self.genderBox.setItemText(1, _translate("AddPatientDialog", "Female"))
         self.genderBox.setItemText(2, _translate("AddPatientDialog", "Male"))
         self.label_3.setText(_translate("AddPatientDialog", "Birthday"))
-        self.birthdayRadioButton.setText(
-            _translate("AddPatientDialog", "Unknown"))
+        self.birthdayRadioButton.setText(_translate("AddPatientDialog", "Unknown"))

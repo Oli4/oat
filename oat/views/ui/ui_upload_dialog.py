@@ -27,8 +27,7 @@ class Ui_UploadDialog(object):
         self.addPatientButton = QtWidgets.QToolButton(UploadDialog)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ui/\n"
-                                     "                                        :/icons/icons/baseline-add_circle-24px.svg"),
-                       QtGui.QIcon.Normal, QtGui.QIcon.Off)
+"                                        :/icons/icons/baseline-add_circle-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addPatientButton.setIcon(icon)
         self.addPatientButton.setIconSize(QtCore.QSize(24, 24))
         self.addPatientButton.setObjectName("addPatientButton")
@@ -43,12 +42,10 @@ class Ui_UploadDialog(object):
         self.fileSelectButton.setObjectName("fileSelectButton")
         self.horizontalLayout.addWidget(self.fileSelectButton)
         self.fileName = QtWidgets.QLabel(UploadDialog)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding,
-                                           QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.fileName.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(self.fileName.sizePolicy().hasHeightForWidth())
         self.fileName.setSizePolicy(sizePolicy)
         self.fileName.setText("")
         self.fileName.setObjectName("fileName")
@@ -57,8 +54,7 @@ class Ui_UploadDialog(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(UploadDialog)
         self.buttonBox.setEnabled(True)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(
-            QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
@@ -75,3 +71,4 @@ class Ui_UploadDialog(object):
         self.addPatientButton.setText(_translate("UploadDialog", "+"))
         self.label_2.setText(_translate("UploadDialog", "File:"))
         self.fileSelectButton.setText(_translate("UploadDialog", "Select"))
+from . import resources_rc

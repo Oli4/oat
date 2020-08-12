@@ -58,3 +58,4 @@ class Ui_LayerEntry(object):
         self.LayerName.setText(_translate("LayerEntry", "New Layer"))
         self.settingButton.setText(_translate("LayerEntry", "..."))
         self.saveButton.setText(_translate("LayerEntry", "..."))
+from . import resources_rc

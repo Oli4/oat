@@ -73,3 +73,4 @@ class Ui_ModalityEntry(object):
         ModalityEntry.setWindowTitle(_translate("ModalityEntry", "Form"))
         self.hideButton.setText(_translate("ModalityEntry", "..."))
         self.label.setText(_translate("ModalityEntry", "New Modality"))
+from . import resources_rc
