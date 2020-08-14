@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QWidget
 
 from oat.models import ModalityTreeItem
 
-from oat.views.ui.ui_modality_entry import Ui_ModalityEntry
-from oat.views.ui.ui_segmentation_entry import Ui_SegmentationEntry
+from oat.views.ui.ui_layergroup_entry import Ui_LayerGroupEntry
+from oat.views.ui.ui_layer_entry import Ui_LayerEntry
 from oat.views.ui.ui_toolbox import Ui_Toolbox
 
 
@@ -32,9 +32,9 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
         if not index.model().itemFromIndex(index).parent():
-            editor = ModalityEntry(parent)
+            editor = LayerGroupEntry(parent)
         else:
-            editor = SegmentationEntry(parent)
+            editor = LayerEntry(parent)
 
         editor.hideButton.clicked.connect(self.visibilityChanged)
 
@@ -72,20 +72,18 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def sizeHint(self, option: 'QStyleOptionViewItem',
                  index: QtCore.QModelIndex) -> QtCore.QSize:
         if not index.model().itemFromIndex(index).parent():
-            size = ModalityEntry(None).size()
+            size = LayerGroupEntry(None).size()
         else:
-            size = SegmentationEntry(None).size()
+            size = LayerEntry(None).size()
 
         return size
 
-
-class ModalityEntry(QWidget, Ui_ModalityEntry):
+class LayerGroupEntry(QWidget, Ui_LayerGroupEntry):
     def __init__(self, parent):
         super().__init__(parent)
         self.setupUi(self)
 
-
-class SegmentationEntry(QWidget, Ui_SegmentationEntry):
+class LayerEntry(QWidget, Ui_LayerEntry):
     def __init__(self, parent):
         super().__init__(parent)
         self.setupUi(self)

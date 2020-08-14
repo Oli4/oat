@@ -24,8 +24,14 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.image_meta = None
 
         self._widthForHeightFactor = 1
+
+        self.area_annotations = []
         if image_id:
             self.add_image(image_id)
+
+            self.add_areaannotations(image_id)
+            # self.add_shapeannotations(image_id)
+            # self.add_overlays()
 
     def _set_name(self):
         if self.number == 0:
@@ -48,6 +54,8 @@ class CustomGrahpicsScene(QGraphicsScene):
                 1.0 * pixmap.size().width() / pixmap.size().height()
 
             self.addItem(pixmap_item)
+
+    def add_areaannotations(self, image_id):
 
 
 
