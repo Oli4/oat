@@ -135,8 +135,8 @@ class oat(QMainWindow, Ui_MainWindow):
             # Store references to the Layers in data_model
             oct_TreeItem = ModalityTreeItem(oct_layer)
 
-            for key in oct_data.segmentation:
-                seg_layer = LineLayer3D(oct_data.segmentation[key], name=key)
+            for key in oct_data.layers:
+                seg_layer = LineLayer3D(oct_data.layers[key], name=key)
                 seg_TreeItem = SegmentationTreeItem(seg_layer)
                 oct_TreeItem.appendRow(seg_TreeItem)
             self.data_model.itemFromIndex(
