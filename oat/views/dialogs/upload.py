@@ -4,34 +4,71 @@ from pathlib import Path
 from PyQt5 import QtWidgets, QtCore
 
 from oat import config
-from oat.models import PatientsModel
 from oat.utils.api import upload_vol, upload_enface
-from oat.views.dialogs import AddPatientDialog
+from oat.views.dialogs import AddPatientDialog, AddCollectionDialog
 from oat.views.ui.ui_upload_dialog import Ui_UploadDialog
 
 logger = logging.getLogger(__name__)
 
-
 class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
-    def __init__(self, parent=None, filefilter=None):
+    def __init__(self, models, parent=None, filefilter=None):
         super().__init__(parent)
         self.setupUi(self)
 
         self.filefilter = filefilter
 
-        self.model = PatientsModel()
-        self.patientDropdown.setModel(self.model)
+        self.patient_model = QtCore.QSortFilterProxyModel(self)
+        self.patient_model.setSourceModel(models["patients"])
+        self.patientDropdown.setModel(self.patient_model)
         self.addPatientButton.clicked.connect(self.add_patient)
+        self.patientDropdown.currentIndexChanged.connect(self.update_collections)
+
+        self.collection_model = QtCore.QSortFilterProxyModel(self)
+        self.collection_model.setSourceModel(models["collections"])
+        self.collectionDropdown.setModel(self.collection_model)
+        self.update_collections(0)
+        self.addCollectionButton.clicked.connect(self.add_collection)
+
+        # self.dataset_model = DatasetModel()
+        # self.datasetDropdown.setModel(self.dataset_model)
+        # self.addDatasetButton.clicked.connect(self.add_dataset)
+
         self.fileSelectButton.clicked.connect(self.select_file)
         self.buttonBox.accepted.connect(self.check_upload)
 
         self.fname = ''
-        self.patient_id = None
+
+    @property
+    def patient_id(self):
+        index = self.patientDropdown.currentIndex()
+        return self.patient_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
+
+    @property
+    def collection_id(self):
+        index = self.collectionDropdown.currentIndex()
+        return self.collection_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
+
+    @QtCore.pyqtSlot(int)
+    def update_collections(self, index):
+        filter_key_column = [x for x in range(self.collection_model.columnCount())
+                             if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
+                             == "patient_id"][0]
+        self.collection_model.setFilterRegExp(str(self.patient_id))
+        self.collection_model.setFilterKeyColumn(filter_key_column)
 
     def add_patient(self):
         dialog = AddPatientDialog()
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            self.model.reload_data()
+            self.patient_model.sourceModel().reload_data()
+            self.collection_model.sourceModel().reload_data()
+
+    def add_collection(self):
+        dialog = AddCollectionDialog(patient_id=self.patient_id)
+        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+            self.collection_model.sourceModel().reload_data()
+
+    def add_dataset(self):
+        pass
 
     def select_file(self):
         self.fname, _ = QtWidgets.QFileDialog.getOpenFileName(self,
@@ -42,15 +79,15 @@ class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
             self.fileName.setText(str(Path(self.fname).name))
 
     def check_upload(self):
-        patient_index = self.patientDropdown.currentIndex()
-        self.patient_id = self.patientDropdown.model().headerData(
-            patient_index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
         if self.fname == '':
             QtWidgets.QMessageBox.warning(self, 'Error',
                                           'No file selected for upload.')
         elif self.patientDropdown.currentText() == '':
             QtWidgets.QMessageBox.warning(self, 'Error',
                                           'No patient selected.')
+        elif self.collectionDropdown.currentText() == '':
+            QtWidgets.QMessageBox.warning(self, 'Error',
+                                          'No collection selected.')
         else:
             self.upload()
 
@@ -59,17 +96,19 @@ class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
 
 class UploadCfpDialog(UploadDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent, filefilter="CFP (*.bmp *.BMP *.tif *.TIF"
-                                            " *.tiff *.TIFF)")
+    def __init__(self, models, parent=None):
+        super().__init__(models, parent, filefilter="CFP (*.bmp *.BMP *.tif *.TIF"
+                                                    " *.tiff *.TIFF)")
 
     def upload(self):
-        return upload_enface(self.fname, self.patient_id, 'CFP')
+        return upload_enface(self.fname, self.patient_id, 'CFP',
+                             collection_id=self.collection_id)
 
 
 class UploadVolDialog(UploadDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent, filefilter="Heyex Raw (*.vol)")
+    def __init__(self, models, parent=None):
+        super().__init__(models, parent, filefilter="Heyex Raw (*.vol)")
 
     def upload(self):
-        return upload_vol(self.fname, self.patient_id)
+        return upload_vol(self.fname, self.patient_id,
+                          collection_id=self.collection_id)

@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_scene_tab.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -31,10 +30,10 @@ class Ui_SceneTab(object):
         self.opacitySlider.setObjectName("opacitySlider")
         self.opacityLayout.addWidget(self.opacitySlider)
         self.verticalLayout.addLayout(self.opacityLayout)
-        self.ModalityTreeView = QtWidgets.QTreeView(SceneTab)
-        self.ModalityTreeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.ModalityTreeView.setObjectName("ModalityTreeView")
-        self.verticalLayout.addWidget(self.ModalityTreeView)
+        self.ImageTreeView = QtWidgets.QTreeView(SceneTab)
+        self.ImageTreeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.ImageTreeView.setObjectName("ImageTreeView")
+        self.verticalLayout.addWidget(self.ImageTreeView)
         self.buttonsLayout = QtWidgets.QHBoxLayout()
         self.buttonsLayout.setObjectName("buttonsLayout")
         self.addButton = QtWidgets.QToolButton(SceneTab)
@@ -78,4 +77,3 @@ class Ui_SceneTab(object):
         self.upButton.setText(_translate("SceneTab", "..."))
         self.downButton.setText(_translate("SceneTab", "..."))
         self.deleteButton.setText(_translate("SceneTab", "..."))
-from . import resources_rc

@@ -1,17 +1,17 @@
 import functools
 from struct import unpack
 
-import imageio
+# import imageio
 import numpy as np
 
 
-def get_cfp(filepath):
-    """
+# def get_cfp(filepath):
+#    """
 
-    :param filepath:
-    :return:
-    """
-    return imageio.imread(filepath)
+#    :param filepath:
+#    :return:
+#    """
+#    return imageio.imread(filepath)
 
 
 class OCT():

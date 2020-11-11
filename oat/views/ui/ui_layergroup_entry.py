@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_layergroup_entry.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -63,4 +62,3 @@ class Ui_LayerGroupEntry(object):
         LayerGroupEntry.setWindowTitle(_translate("LayerGroupEntry", "Form"))
         self.hideButton.setText(_translate("LayerGroupEntry", "..."))
         self.label.setText(_translate("LayerGroupEntry", "Layer Group Name"))
-from . import resources_rc

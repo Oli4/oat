@@ -2,7 +2,7 @@ from setuptools import setup
 
 requirements = [
     'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio',
-    'sqlalchemy', 'cryptography'
+    'sqlalchemy', 'cryptography', "requests", "pandas", "scikit-image"
 ]
 
 test_requirements = [
@@ -17,13 +17,12 @@ test_requirements = [
 setup(
     name='oat',
     version='0.0.1',
-    description="A GUI to easily annoages",
+    description="A GUI to annotate multi modal retial images",
     author="Olivier Morelle",
     author_email='oli4morelle@gmail.com',
     url='https://github.com/Oli4/oat',
-    packages=['oat', 'oat.images',
-              'oat.tests'],
-    package_data={'oat.images': ['*.png']},
+    packages=['oat', 'oat.tests'],
+    # package_data={'oat.images': ['*.png']},
     entry_points={
         'console_scripts': [
             'oat=oat.oatmain:main'

@@ -15,8 +15,8 @@ from oat import config
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
     POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
 from oat.models.custom_scene import EnfaceGraphicsScene
-from oat.models.utils import array2qgraphicspixmapitem, \
-    qgraphicspixmapitem2array, get_registration_from_enface_ids
+from oat.models.utils import array2qgraphicspixmapitem, qgraphicspixmap2array, \
+    get_registration_from_enface_ids
 
 logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
@@ -38,7 +38,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                        for i, image_id in enumerate(self.image_ids)}
 
         self.checker_images, self.checker_scale = \
-            zip(*[self.img_rescale(qgraphicspixmapitem2array(scene.items()[0]),
+            zip(*[self.img_rescale(qgraphicspixmap2array(scene.backgroundBrush().texture()),
                                    300)
                   for scene in self.scenes.values()])
 

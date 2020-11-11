@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_modality_entry.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -73,4 +72,3 @@ class Ui_ModalityEntry(object):
         ModalityEntry.setWindowTitle(_translate("ModalityEntry", "Form"))
         self.hideButton.setText(_translate("ModalityEntry", "..."))
         self.label.setText(_translate("ModalityEntry", "New Modality"))
-from . import resources_rc

@@ -1,21 +1,32 @@
 from PyQt5 import QtWidgets, QtGui, QtCore, Qt
 from PyQt5.QtWidgets import QWidget
 
-from oat.models import ModalityTreeItem
-
-from oat.views.ui.ui_layergroup_entry import Ui_LayerGroupEntry
+from oat.models import ImageTreeItem
 from oat.views.ui.ui_layer_entry import Ui_LayerEntry
+from oat.views.ui.ui_layergroup_entry import Ui_LayerGroupEntry
+from oat.views.ui.ui_scene_tab import Ui_SceneTab
 from oat.views.ui.ui_toolbox import Ui_Toolbox
 
 
-from oat.views.ui.ui_scene_tab import Ui_SceneTab
 class SceneTab(QWidget, Ui_SceneTab):
-    def __init__(self, parent, scene):
+    def __init__(self, parent, scene: Qt.QGraphicsScene):
         super().__init__(parent)
         self.setupUi(self)
-        self.scene=scene
-        #self.ModalityTreeView.setModel()
-        #self.ModalityTreeView.setItemDelegate()
+        self.scene = scene
+        # self.ImageTreeView.setModel(self.scene)
+        # self.ImageTreeView.setItemDelegate(TreeItemDelegate(self.ImageTreeView))
+
+        # self.addButton.clicked.connect(self.add_annotation_layer)
+
+        # Represents AnnotationLayers as Itemgroups in scene
+        # Scene needs itemsgroups attribute which returns list of itemgroups
+
+        # Add image to treeview and make it hideable
+        # self.ImageTreeView.setItemDelegate()
+
+    def add_annotation_layer(self):
+        self.scene.createItemGroup()
+        self.ImageTreeView.add
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent):
@@ -25,7 +36,7 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionViewItem',
               index: QtCore.QModelIndex) -> None:
         if isinstance(self.parent(), QtWidgets.QAbstractItemView) or \
-                isinstance(self.parent(), ModalityTreeItem):
+                isinstance(self.parent(), ImageTreeItem):
             self.parent().openPersistentEditor(index)
         super().paint(painter, option, index)
 
@@ -47,10 +58,10 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         self.commitData.emit(editor)
 
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
-        editor.label.setText(index.model().data(index, Qt.UserRole + 2))
+        editor.label.setText(index.model()._data(index, Qt.UserRole + 2))
 
         icon = QtGui.QIcon()
-        if index.model().data(index, Qt.UserRole + 1):
+        if index.model()._data(index, Qt.UserRole + 1):
             icon.addPixmap(
                 QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"),
                 QtGui.QIcon.Normal,
@@ -97,22 +108,22 @@ class Toolbox(QWidget, Ui_Toolbox):
 
         self.main_window = parent
 
-        # Setting up the ModalityTreeView
-        self.ModalityTreeView_2d.setModel(parent.data_model)
-        self.ModalityTreeView_2d.setItemDelegate(
-            TreeItemDelegate(self.ModalityTreeView_2d))
-        self.ModalityTreeView_2d.setHeaderHidden(True)
-        self.ModalityTreeView_2d.setRootIndex(
+        # Setting up the ImageTreeView
+        self.ImageTreeView_2d.setModel(parent.data_model)
+        self.ImageTreeView_2d.setItemDelegate(
+            TreeItemDelegate(self.ImageTreeView_2d))
+        self.ImageTreeView_2d.setHeaderHidden(True)
+        self.ImageTreeView_2d.setRootIndex(
             QtCore.QModelIndex(parent.data_2D_index))
-        self.ModalityTreeView_2d.setUniformRowHeights(False)
+        self.ImageTreeView_2d.setUniformRowHeights(False)
 
-        self.ModalityTreeView_3d.setModel(parent.data_model)
-        self.ModalityTreeView_3d.setItemDelegate(
-            TreeItemDelegate(self.ModalityTreeView_3d))
-        self.ModalityTreeView_3d.setHeaderHidden(True)
-        self.ModalityTreeView_3d.setRootIndex(
+        self.ImageTreeView_3d.setModel(parent.data_model)
+        self.ImageTreeView_3d.setItemDelegate(
+            TreeItemDelegate(self.ImageTreeView_3d))
+        self.ImageTreeView_3d.setHeaderHidden(True)
+        self.ImageTreeView_3d.setRootIndex(
             QtCore.QModelIndex(parent.data_3D_index))
-        self.ModalityTreeView_3d.setUniformRowHeights(False)
+        self.ImageTreeView_3d.setUniformRowHeights(False)
 
         # self.addButton_2d.clicked.connect(self.create_layer_2d)
         # self.addButton_3d.clicked.connect(self.create_layer_3d)

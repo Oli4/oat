@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_main_window.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -112,4 +111,3 @@ class Ui_MainWindow(object):
         self.actionUploadVol.setText(_translate("MainWindow", "Heyex Raw (.vol)"))
         self.actionUploadCfp.setText(_translate("MainWindow", "CFP (.tiff/.bmp)"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
-from . import resources_rc

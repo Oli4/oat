@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_layer_entry.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -72,4 +71,3 @@ class Ui_LayerEntry(object):
         self.hideButton.setText(_translate("LayerEntry", "..."))
         self.label.setText(_translate("LayerEntry", "Layer Name"))
         self.settingButton.setText(_translate("LayerEntry", "..."))
-from . import resources_rc
