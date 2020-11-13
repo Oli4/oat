@@ -1,15 +1,18 @@
 import logging
+import sys
 from functools import partial
 
-import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
+from oat.models import PatientsModel, CollectionsModel
+from oat.models.config import DATA_ROLE
 from oat.models.registration_model import RegistrationModel
 from oat.views.annotation.annotation_view import AnnotationView
 from oat.views.dialogs.login import LoginDialog
 from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
+from oat.views.overview.overview_view import OverviewView
 from oat.views.registration.registration_view import RegistrationView
 from oat.views.ui.ui_main_window import Ui_MainWindow
 
@@ -21,26 +24,48 @@ class oat(QMainWindow, Ui_MainWindow):
         """Initialize the components of the main window."""
         super().__init__(parent)
         self.setupUi(self)
+        self.models = {"patients": PatientsModel(), "collections": CollectionsModel()}
 
         self.actionUploadVol.triggered.connect(partial(self.upload, type="vol"))
         self.actionUploadCfp.triggered.connect(partial(self.upload, type="cfp"))
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        #registration_view = RegistrationView(model=RegistrationModel(2, 3),
+        self.overview_view = OverviewView(model=self.models["collections"], parent=self)
+        self.mdiArea.addSubWindow(self.overview_view)
+        self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
+        self.overview_view.registerButton.clicked.connect(self.open_registration_view)
+        # registration_view = RegistrationView(model=RegistrationModel(3,2),
         #                                     parent=self)
-        #self.mdiArea.addSubWindow(registration_view)
+        # self.mdiArea.addSubWindow(registration_view)
 
-        annotation_view = AnnotationView(0, parent=self)
-        self.mdiArea.addSubWindow(annotation_view)
+    def open_annotation_view(self):
+        overview = self.overview_view
+        data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
+        volume_id = data["volumeimages"][0]["id"]
+        localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
+        cfp_id = data["enfaceimages"][0]["id"]
 
+        ao = AnnotationView(volume_id, localizer_id, cfp_id, parent=self)
+        self.mdiArea.addSubWindow(ao)
+        ao.show()
 
+    def open_registration_view(self):
+        overview = self.overview_view
+        data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
+        localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
+        cfp_id = data["enfaceimages"][0]["id"]
+
+        model = RegistrationModel(localizer_id, cfp_id)
+        rv = RegistrationView(model)
+        self.mdiArea.addSubWindow(rv)
+        rv.show()
 
     def upload(self, type):
         if type == "cfp":
-            dialog = UploadCfpDialog()
+            dialog = UploadCfpDialog(models=self.models)
         elif type == "vol":
-            dialog = UploadVolDialog()
+            dialog = UploadVolDialog(models=self.models)
         else:
             raise ValueError("'type' has to be either 'cfp' or 'vol'")
 

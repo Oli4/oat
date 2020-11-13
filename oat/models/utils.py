@@ -47,7 +47,7 @@ def get_img_by_id(img_id, type, format):
     if response.status_code == 200:
         meta = {k.lower(): v for k, v in response.headers.items()}
         img = imageio.imread(io.BytesIO(response.content), format=format)
-        return array2qgraphicspixmapitem(img), meta
+        return img, meta
     else:
         raise ValueError(f"Status Code: {response.status_code}")
 
@@ -69,6 +69,10 @@ def array2qgraphicspixmapitem(image):
 
 def qgraphicspixmapitem2array(pixmapitem):
     return qimage2ndarray.rgb_view(pixmapitem.pixmap().toImage())
+
+
+def qgraphicspixmap2array(pixmap):
+    return qimage2ndarray.rgb_view(pixmap.toImage())
 
 
 def get_collection_by_id(id):

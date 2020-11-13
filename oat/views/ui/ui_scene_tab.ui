@@ -40,10 +40,10 @@
     </layout>
    </item>
    <item>
-    <widget class="QTreeView" name="ModalityTreeView">
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
+    <widget class="QTreeView" name="ImageTreeView">
+        <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
     </widget>
    </item>
    <item>

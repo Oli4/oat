@@ -1,10 +1,10 @@
-import qimage2ndarray
 import sys
+
+import qimage2ndarray
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QFileDialog,
                              QMainWindow, QWidget)
 
 from oat.io import OCT
-from oat.models import *
 from oat.models.db import orm
 from oat.models.layers import OctLayer, NirLayer, LineLayer3D, CfpLayer
 # from oat.views import main_window, toolbox
@@ -406,10 +406,10 @@ class OctOverlay(Overlay):
 
     def create_overlay(self):
         # Get Bscan Positions
-        slice_positions = self.model.data(self.index, role=SLICEPOSITIONS_ROLE)
-        x_scaling = self.model.data(self.index, role=XSCALING_ROLE)
-        y_scaling = self.model.data(self.index, role=YSCALING_ROLE)
-        active_slice = self.model.data(self.index, role=ACTIVESLICE_ROLE)
+        slice_positions = self.model._data(self.index, role=SLICEPOSITIONS_ROLE)
+        x_scaling = self.model._data(self.index, role=XSCALING_ROLE)
+        y_scaling = self.model._data(self.index, role=YSCALING_ROLE)
+        active_slice = self.model._data(self.index, role=ACTIVESLICE_ROLE)
 
         # Add line for every Bscan position
         for slice_pos in slice_positions:
@@ -452,10 +452,10 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         self.commitData.emit(editor)
 
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
-        editor.label.setText(index.model().data(index, Qt.UserRole + 2))
+        editor.label.setText(index.model()._data(index, Qt.UserRole + 2))
 
         icon = QtGui.QIcon()
-        if index.model().data(index, Qt.UserRole + 1):
+        if index.model()._data(index, Qt.UserRole + 1):
             icon.addPixmap(
                 QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"),
                 QtGui.QIcon.Normal,

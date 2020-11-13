@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_annotation_view.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -69,7 +68,7 @@ class Ui_AnnotationView(object):
         self.horizontalLayout.addWidget(self.widget_5)
         self.widget = QtWidgets.QWidget(AnnotationView)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setHorizontalStretch(100)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy)
@@ -184,5 +183,7 @@ class Ui_AnnotationView(object):
         self.toolButton_7.setText(_translate("AnnotationView", "..."))
         self.toolButton_6.setText(_translate("AnnotationView", "..."))
         self.label_3.setText(_translate("AnnotationView", "Tool Options"))
+
+
 from oat.views.annotation import BscanView, EnfaceView, LocalizerView
 from . import resources_rc

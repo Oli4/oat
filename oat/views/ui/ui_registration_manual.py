@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_registration_manual.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -155,6 +154,8 @@ class Ui_RegistrationManual(object):
         self.label_2.setText(_translate("RegistrationManual", "Transformation Model"))
         self.transformationDropdown.setItemText(0, _translate("RegistrationManual", "Similarity"))
         self.transformationDropdown.setItemText(1, _translate("RegistrationManual", "Affine"))
+
+
 from oat.views.custom import CustomGraphicsView
 from oat.views.registration import FeatureSelectionView, FeatureTableView
 from . import resources_rc

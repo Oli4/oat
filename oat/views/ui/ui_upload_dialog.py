@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_upload_dialog.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -13,34 +12,59 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_UploadDialog(object):
     def setupUi(self, UploadDialog):
         UploadDialog.setObjectName("UploadDialog")
-        UploadDialog.resize(400, 161)
+        UploadDialog.resize(400, 237)
         self.verticalLayout = QtWidgets.QVBoxLayout(UploadDialog)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.label = QtWidgets.QLabel(UploadDialog)
-        self.label.setObjectName("label")
-        self.verticalLayout.addWidget(self.label)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.patientLabel = QtWidgets.QLabel(UploadDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.patientLabel.setFont(font)
+        self.patientLabel.setObjectName("patientLabel")
+        self.verticalLayout.addWidget(self.patientLabel)
+        self.patientLayout = QtWidgets.QHBoxLayout()
+        self.patientLayout.setObjectName("patientLayout")
         self.patientDropdown = QtWidgets.QComboBox(UploadDialog)
         self.patientDropdown.setObjectName("patientDropdown")
-        self.horizontalLayout_2.addWidget(self.patientDropdown)
+        self.patientLayout.addWidget(self.patientDropdown)
         self.addPatientButton = QtWidgets.QToolButton(UploadDialog)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("ui/\n"
-"                                        :/icons/icons/baseline-add_circle-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-add_circle-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.addPatientButton.setIcon(icon)
         self.addPatientButton.setIconSize(QtCore.QSize(24, 24))
         self.addPatientButton.setObjectName("addPatientButton")
-        self.horizontalLayout_2.addWidget(self.addPatientButton)
-        self.verticalLayout.addLayout(self.horizontalLayout_2)
-        self.label_2 = QtWidgets.QLabel(UploadDialog)
-        self.label_2.setObjectName("label_2")
-        self.verticalLayout.addWidget(self.label_2)
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.patientLayout.addWidget(self.addPatientButton)
+        self.verticalLayout.addLayout(self.patientLayout)
+        self.collectionLabel = QtWidgets.QLabel(UploadDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.collectionLabel.setFont(font)
+        self.collectionLabel.setObjectName("collectionLabel")
+        self.verticalLayout.addWidget(self.collectionLabel)
+        self.collectionLayout = QtWidgets.QHBoxLayout()
+        self.collectionLayout.setObjectName("collectionLayout")
+        self.collectionDropdown = QtWidgets.QComboBox(UploadDialog)
+        self.collectionDropdown.setObjectName("collectionDropdown")
+        self.collectionLayout.addWidget(self.collectionDropdown)
+        self.addCollectionButton = QtWidgets.QToolButton(UploadDialog)
+        self.addCollectionButton.setIcon(icon)
+        self.addCollectionButton.setIconSize(QtCore.QSize(24, 24))
+        self.addCollectionButton.setObjectName("addCollectionButton")
+        self.collectionLayout.addWidget(self.addCollectionButton)
+        self.verticalLayout.addLayout(self.collectionLayout)
+        self.fileLabel = QtWidgets.QLabel(UploadDialog)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.fileLabel.setFont(font)
+        self.fileLabel.setObjectName("fileLabel")
+        self.verticalLayout.addWidget(self.fileLabel)
+        self.fileLayout = QtWidgets.QHBoxLayout()
+        self.fileLayout.setObjectName("fileLayout")
         self.fileSelectButton = QtWidgets.QPushButton(UploadDialog)
         self.fileSelectButton.setObjectName("fileSelectButton")
-        self.horizontalLayout.addWidget(self.fileSelectButton)
+        self.fileLayout.addWidget(self.fileSelectButton)
         self.fileName = QtWidgets.QLabel(UploadDialog)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -49,8 +73,8 @@ class Ui_UploadDialog(object):
         self.fileName.setSizePolicy(sizePolicy)
         self.fileName.setText("")
         self.fileName.setObjectName("fileName")
-        self.horizontalLayout.addWidget(self.fileName)
-        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.fileLayout.addWidget(self.fileName)
+        self.verticalLayout.addLayout(self.fileLayout)
         self.buttonBox = QtWidgets.QDialogButtonBox(UploadDialog)
         self.buttonBox.setEnabled(True)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
@@ -67,8 +91,12 @@ class Ui_UploadDialog(object):
     def retranslateUi(self, UploadDialog):
         _translate = QtCore.QCoreApplication.translate
         UploadDialog.setWindowTitle(_translate("UploadDialog", "Dialog"))
-        self.label.setText(_translate("UploadDialog", "Patient:"))
+        self.patientLabel.setText(_translate("UploadDialog", "Patient:"))
         self.addPatientButton.setText(_translate("UploadDialog", "+"))
-        self.label_2.setText(_translate("UploadDialog", "File:"))
+        self.collectionLabel.setText(_translate("UploadDialog", "Collection"))
+        self.addCollectionButton.setText(_translate("UploadDialog", "+"))
+        self.fileLabel.setText(_translate("UploadDialog", "File:"))
         self.fileSelectButton.setText(_translate("UploadDialog", "Select"))
+
+
 from . import resources_rc

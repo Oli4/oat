@@ -7,22 +7,22 @@ from PyQt5.QtWidgets import QWidget
 
 from oat.models.custom_scene import BscanGraphicsScene, EnfaceGraphicsScene
 from oat.models.utils import get_registration_from_enface_ids
-from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 from oat.views.toolbox import SceneTab
+from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
 logger = logging.getLogger(__name__)
 
 
 class AnnotationView(QWidget, Ui_AnnotationView):
-    def __init__(self, collection_id: int, parent=None):
+    def __init__(self, volume_id: int, localizer_id: int, enface_id: int, parent=None):
         """Initialize the components of the Toolbox subwindow."""
         super().__init__(parent)
         self.setupUi(self)
 
         # self.collection = get_collection_by_id(collection_id)
-        self.volume_id = 1
-        self.localizer_id = 2
-        self.enface_id = 3
+        self.volume_id = volume_id
+        self.localizer_id = localizer_id
+        self.enface_id = enface_id
 
         self.key_actions = {
             # QtCore.Qt.Key_W: self.tableViewPoints.up,
@@ -79,6 +79,7 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         registration_data = get_registration_from_enface_ids(
             self.localizer_id, self.enface_id)
 
+        # Todo: Use QTransform here for faster transformations?
         tmodel = "similarity"
         matrix = np.array(registration_data[tmodel]).reshape((3, 3))
         self.enface_scene.tform = skitrans.ProjectiveTransform(matrix)

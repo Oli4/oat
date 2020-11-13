@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'ui/ui_data_table_view.ui'
 #
-# Created by: PyQt5 UI code generator 5.14.2
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -48,3 +47,5 @@ class Ui_DataTableView(object):
         _translate = QtCore.QCoreApplication.translate
         DataTableView.setWindowTitle(_translate("DataTableView", "Form"))
         self.AddButton.setText(_translate("DataTableView", "Add Patient"))
+
+

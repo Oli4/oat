@@ -71,30 +71,18 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="color_label">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>25</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>25</width>
-       <height>25</height>
-      </size>
-     </property>
-     <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: rgb(138, 226, 52);</string>
+    <widget class="QToolButton" name="colorButton">
+        <property name="minimumSize">
+            <size>
+                <width>26</width>
+                <height>26</height>
+            </size>
+        </property>
+        <property name="autoFillBackground">
+            <bool>false</bool>
+        </property>
+        <property name="styleSheet">
+            <string notr="true">background-color: green</string>
      </property>
      <property name="text">
       <string/>

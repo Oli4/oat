@@ -3,10 +3,9 @@ import requests
 from PyQt5 import QtCore
 
 from oat import config
-from oat.core.security import get_local_patient_info
 
 
-class PatientsModel(QtCore.QAbstractTableModel):
+class DatasetsModel(QtCore.QAbstractTableModel):
     def __init__(self):
         super().__init__()
 
@@ -15,22 +14,17 @@ class PatientsModel(QtCore.QAbstractTableModel):
 
     def reload_data(self):
         response = requests.get(
-            f"{config.api_server}/patients/",
+            f"{config.api_server}/datasets/",
             headers=config.auth_header)
 
         data = pd.DataFrame.from_records(response.json())
-        local_data = get_local_patient_info(
-            config.local_patient_info_file,
-            config.fernet)
-
-        try:
-            self.data = data.merge(local_data, on="pseudonym", how="left")
-        except KeyError:  # Produce empty patient model if no patients available
+        if len(data) == 0:
             self.data = pd.DataFrame(columns=["pseudonym", "id", "gender",
                                               "birthday"])
+        else:
+            self.data = data
 
         self.data.set_index("id", inplace=True)
-
         self.layoutChanged.emit()
 
     def data(self, index, role):
