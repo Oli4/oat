@@ -68,7 +68,7 @@ class Ui_AnnotationView(object):
         self.horizontalLayout.addWidget(self.widget_5)
         self.widget = QtWidgets.QWidget(AnnotationView)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setHorizontalStretch(100)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
         self.widget.setSizePolicy(sizePolicy)

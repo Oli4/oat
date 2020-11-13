@@ -17,6 +17,9 @@ SCENE_ROLE = Qt.UserRole + 11
 POINT_ROLE = Qt.UserRole + 12
 DELETE_ROLE = Qt.UserRole + 14
 EYEID_ROLE = Qt.UserRole + 15
+OPACITY_ROLE = Qt.UserRole + 16
+POSITION_ROLE = Qt.UserRole + 17
+COLOR_ROLE = Qt.UserRole + 18
 
 role_mapping = {VISIBILITY_ROLE: "visible", NAME_ROLE: "name",
                 DATA_ROLE: "data", None: "data", SHAPE_ROLE: "shape",

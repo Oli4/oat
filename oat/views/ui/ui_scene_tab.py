@@ -31,7 +31,7 @@ class Ui_SceneTab(object):
         self.opacityLayout.addWidget(self.opacitySlider)
         self.verticalLayout.addLayout(self.opacityLayout)
         self.ImageTreeView = QtWidgets.QTreeView(SceneTab)
-        self.ImageTreeView.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.ImageTreeView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.ImageTreeView.setObjectName("ImageTreeView")
         self.verticalLayout.addWidget(self.ImageTreeView)
         self.buttonsLayout = QtWidgets.QHBoxLayout()
