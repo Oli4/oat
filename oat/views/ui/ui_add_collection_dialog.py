@@ -30,7 +30,7 @@ class Ui_AddCollectionDialog(object):
         self.verticalLayout.addLayout(self.verticalLayout_3)
         self.buttonBox = QtWidgets.QDialogButtonBox(AddCollectionDialog)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
 
@@ -43,3 +43,5 @@ class Ui_AddCollectionDialog(object):
         _translate = QtCore.QCoreApplication.translate
         AddCollectionDialog.setWindowTitle(_translate("AddCollectionDialog", "Dialog"))
         self.label.setText(_translate("AddCollectionDialog", "Name"))
+
+

@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_RegistrationManual(object):
@@ -158,3 +158,4 @@ class Ui_RegistrationManual(object):
 
 from oat.views.custom import CustomGraphicsView
 from oat.views.registration import FeatureSelectionView, FeatureTableView
+from . import resources_rc

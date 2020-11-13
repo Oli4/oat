@@ -65,3 +65,6 @@ class Ui_LayerEntry(object):
         self.hideButton.setText(_translate("LayerEntry", "..."))
         self.label.setText(_translate("LayerEntry", "Layer Name"))
         self.settingButton.setText(_translate("LayerEntry", "..."))
+
+
+from . import resources_rc

@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_NewLayerDialog(object):
@@ -71,3 +71,5 @@ class Ui_NewLayerDialog(object):
         self.comboBox.setItemText(8, _translate("NewLayerDialog", "RPE Layer"))
         self.comboBox.setItemText(9, _translate("NewLayerDialog", "BM Layer"))
         self.comboBox.setItemText(10, _translate("NewLayerDialog", "EZ Layer"))
+
+

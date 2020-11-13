@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_LoginDialog(object):
@@ -59,3 +59,5 @@ class Ui_LoginDialog(object):
         self.label_3.setText(_translate("LoginDialog", "Database"))
         self.label.setText(_translate("LoginDialog", "Username:"))
         self.label_2.setText(_translate("LoginDialog", "Password:"))
+
+

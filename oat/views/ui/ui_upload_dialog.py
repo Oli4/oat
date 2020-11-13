@@ -78,7 +78,7 @@ class Ui_UploadDialog(object):
         self.buttonBox = QtWidgets.QDialogButtonBox(UploadDialog)
         self.buttonBox.setEnabled(True)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
         self.buttonBox.setObjectName("buttonBox")
         self.verticalLayout.addWidget(self.buttonBox)
@@ -97,3 +97,6 @@ class Ui_UploadDialog(object):
         self.addCollectionButton.setText(_translate("UploadDialog", "+"))
         self.fileLabel.setText(_translate("UploadDialog", "File:"))
         self.fileSelectButton.setText(_translate("UploadDialog", "Select"))
+
+
+from . import resources_rc

@@ -62,3 +62,6 @@ class Ui_LayerGroupEntry(object):
         LayerGroupEntry.setWindowTitle(_translate("LayerGroupEntry", "Form"))
         self.hideButton.setText(_translate("LayerGroupEntry", "..."))
         self.label.setText(_translate("LayerGroupEntry", "Layer Group Name"))
+
+
+from . import resources_rc

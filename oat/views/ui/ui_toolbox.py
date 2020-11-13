@@ -219,3 +219,6 @@ class Ui_Toolbox(object):
         self.toolButton_7.setText(_translate("Toolbox", "..."))
         self.toolButton_6.setText(_translate("Toolbox", "..."))
         self.toolButton_12.setText(_translate("Toolbox", "..."))
+
+
+from . import resources_rc

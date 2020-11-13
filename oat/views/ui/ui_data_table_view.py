@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_DataTableView(object):
@@ -47,3 +47,5 @@ class Ui_DataTableView(object):
         _translate = QtCore.QCoreApplication.translate
         DataTableView.setWindowTitle(_translate("DataTableView", "Form"))
         self.AddButton.setText(_translate("DataTableView", "Add Patient"))
+
+

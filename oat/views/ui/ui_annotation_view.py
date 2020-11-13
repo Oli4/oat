@@ -186,3 +186,4 @@ class Ui_AnnotationView(object):
 
 
 from oat.views.annotation import BscanView, EnfaceView, LocalizerView
+from . import resources_rc

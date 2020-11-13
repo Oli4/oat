@@ -6,15 +6,14 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_OverviewView(object):
     def setupUi(self, OverviewView):
         OverviewView.setObjectName("OverviewView")
         OverviewView.resize(350, 500)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
-                                           QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(OverviewView.sizePolicy().hasHeightForWidth())
@@ -45,3 +44,6 @@ class Ui_OverviewView(object):
         OverviewView.setWindowTitle(_translate("OverviewView", "Form"))
         self.registerButton.setText(_translate("OverviewView", "Register"))
         self.annotateButton.setText(_translate("OverviewView", "Annotate"))
+
+
+from . import resources_rc

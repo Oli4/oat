@@ -111,3 +111,6 @@ class Ui_MainWindow(object):
         self.actionUploadVol.setText(_translate("MainWindow", "Heyex Raw (.vol)"))
         self.actionUploadCfp.setText(_translate("MainWindow", "CFP (.tiff/.bmp)"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
+
+
+from . import resources_rc

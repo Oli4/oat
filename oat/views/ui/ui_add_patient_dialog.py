@@ -96,3 +96,5 @@ class Ui_AddPatientDialog(object):
         self.genderBox.setItemText(2, _translate("AddPatientDialog", "Male"))
         self.label_3.setText(_translate("AddPatientDialog", "Birthday"))
         self.birthdayRadioButton.setText(_translate("AddPatientDialog", "Unknown"))
+
+

@@ -77,3 +77,6 @@ class Ui_SceneTab(object):
         self.upButton.setText(_translate("SceneTab", "..."))
         self.downButton.setText(_translate("SceneTab", "..."))
         self.deleteButton.setText(_translate("SceneTab", "..."))
+
+
+from . import resources_rc
