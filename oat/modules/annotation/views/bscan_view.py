@@ -9,14 +9,15 @@ class BscanView(CustomGraphicsView):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self.current_slice=0
 
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
     def next_slice(self):
-        self.scene().next_slice()
+        self.current_slice +=1
 
     def last_slice(self):
-        self.scene().last_slice()
+        self.current_slice -=1
 
     def map_to_localizer(self, pos):
         # x = StartX + xpos

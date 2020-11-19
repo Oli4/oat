@@ -10,6 +10,8 @@ from oat.models.utils import get_registration_from_enface_ids
 from oat.modules.annotation.views.scenetab import SceneTab
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
+from oat.models.utils import get_volume_meta_by_id
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,9 +33,12 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         }
 
         # Create scenes
-        self.bscan_scene = BscanGraphicsScene(parent=self,
-                                              image_id=self.volume_id,
-                                              base_name="OCT")
+        self.volume_dict = get_volume_meta_by_id(volume_id)
+        self.slices = sorted(self.volume_dict["slices"],
+                             key=lambda x: x["number"])
+        self.bscan_scenes = [BscanGraphicsScene(parent=self, image_id=i["id"],
+                                                base_name="BScan")
+                             for i in self.slices]
         self.localizer_scene = EnfaceGraphicsScene(parent=self,
                                                    image_id=self.localizer_id,
                                                    base_name="NIR")
@@ -43,17 +48,20 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.set_enface_tforms()
 
         # Add scenes to toolbox
+        self.enface_scenes = [self.localizer_scene, self.enface_scene]
+        self.volume_scenes = [self.bscan_scenes]
+        self.enface_views = [self.graphicsViewLocalizer,
+                             self.graphicsViewEnface]
+        self.volume_views = [self.graphicsViewBscan]
 
-        self.scenes = [self.bscan_scene, self.localizer_scene,
-                       self.enface_scene]
-        self.graphic_views = [self.graphicsViewBscan,
-                              self.graphicsViewLocalizer,
-                              self.graphicsViewEnface]
-
-        # Add toolbox entries
-        for scene in self.scenes:
+        # Add toolbox enface entries
+        for scene in self.enface_scenes:
             self.layerOverview.addTab(SceneTab(self.layerOverview, scene),
                                       scene.name)
+        for scenes in self.volume_scenes:
+            self.slice_tabs = [SceneTab(self.layerOverview, scenes[x]) for x in scenes]
+            self.layerOverview.addTab(self.slice_tabs[0], scenes[0].name)
+            #self.layerOverview.setCurrentWidget()
 
         # Set Localizer from Bscan
         self.graphicsViewBscan.volumePosChanged.connect(
@@ -77,6 +85,10 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.penButton.clicked.connect(self.switch_to_pen)
         self.navigationButton.clicked.connect(self.switch_to_navigation)
         self.switch_to_navigation()
+
+    @property
+    def current_slice(self):
+        return self.volume_views[0].current_slice
 
     def switch_to_pen(self):
         self.uncheck_buttons()
@@ -105,24 +117,13 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         matrix = np.array(registration_data[tmodel]).reshape((3, 3))
         self.enface_scene.tform = skitrans.ProjectiveTransform(matrix)
 
-    # def center_PointSelection(self, point):
-    #    if point:
-    #        self.graphicsViewPointSelection.zoomToFeature()
-    #        self.graphicsViewPointSelection.centerOn(point)
-    #    else:
-    #        self.graphicsViewPointSelection.zoomToFit()
-
-    # def center_Patch(self, point):
-    #    if point:
-    # #       self.graphicsViewPatch.zoomToFeature()
-    #        self.graphicsViewPatch.centerOn(point)
-    #    else:
-    #        self.graphicsViewPatch.zoomToFit()
-
     def set_scenes(self):
         """ """
-        for i, view in enumerate(self.graphic_views):
-            view.setScene(self.scenes[i])
+        for scene, view in zip(*(self.enface_scenes, self.enface_views)):
+            view.setScene(scene)
+            view.zoomToFit()
+        for scene, view in zip(*(self.volume_scenes, self.volume_views)):
+            view.setScene(scene[self.current_slice])
             view.zoomToFit()
 
     def toogle_scroll_bars(self):

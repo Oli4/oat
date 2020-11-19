@@ -11,39 +11,28 @@ from oat.models.utils import get_volume_meta_by_id, get_bscan_by_id, \
 
 
 class BscanGraphicsScene(CustomGrahpicsScene):
-    def __init__(self, parent, image_id=None, base_name="OCT", *args, **kwargs):
+    def __init__(self, parent, data, base_name="OCT", *args, **kwargs):
         self.base_name = base_name
         super().__init__(*args, **kwargs, parent=parent)
 
-        # Fetch Volume image
-        self.volume_dict = get_volume_meta_by_id(image_id)
-        # Make sure slices are correctly ordered
-        self.slices = sorted(self.volume_dict["slices"],
-                             key=lambda x: x["number"])
-
         # Set Scene to first B-Scan
-        self.set_image(self.slices[self.current_slice_number]["id"])
+        self.data = data
+        self.set_image(self.data["image_id"])
 
-        # Asynchronously load remaining B-Scans
+        self.slice_params = self._line_for_slice()
 
-        self.slice_params = [self._line_for_slice(i)
-                             for i in range(len(self.slices))]
         self.fake_cursor = self.addPixmap(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
         self.fake_cursor.setFlag(Qt.QGraphicsItem.ItemIgnoresTransformations)
         self.fake_cursor.hide()
 
-    @property
-    def current_slice(self):
-        return self.slices[self.current_slice_number]
-
-    def _line_for_slice(self, number):
+    def _line_for_slice(self):
         lclzr_scale_x = self.volume_dict["localizer_image"]["scale_x"]
         lclzr_scale_y = self.volume_dict["localizer_image"]["scale_y"]
-        start_x = self.slices[number]["start_x"] / lclzr_scale_x
-        start_y = self.slices[number]["start_y"] / lclzr_scale_y
-        end_x = self.slices[number]["end_x"] / lclzr_scale_x
-        end_y = self.slices[number]["end_y"] / lclzr_scale_y
+        start_x = self.data["start_x"] / lclzr_scale_x
+        start_y = self.data["start_y"] / lclzr_scale_y
+        end_x = self.data["end_x"] / lclzr_scale_x
+        end_y = self.data["end_y"] / lclzr_scale_y
 
         p1 = Point(start_x, start_y)
         p2 = Point(end_x, end_y)
@@ -57,7 +46,7 @@ class BscanGraphicsScene(CustomGrahpicsScene):
         # Todo: Make this faster for smooth registered navigation
         point = Point(pos.x(), pos.y())
 
-        smallest_dist = self.point_line_distance(point, self.slice_params[0])
+        smallest_dist = self.point_line_distance(point, self.slice_params)
         for i, line in enumerate(self.slice_params):
             dist = self.point_line_distance(point, line)
             if dist <= smallest_dist:
@@ -74,15 +63,3 @@ class BscanGraphicsScene(CustomGrahpicsScene):
     def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
         img, meta = get_bscan_by_id(image_id)
         return array2qgraphicspixmapitem(img), meta
-
-    def set_slice(self, number):
-        if 0 <= number < len(self.slices):
-            self.current_slice_number = number
-            image_id = self.slices[self.current_slice_number]["id"]
-            self.set_image(image_id)
-
-    def next_slice(self):
-        self.set_slice(self.current_slice_number + 1)
-
-    def last_slice(self):
-        self.set_slice(self.current_slice_number - 1)
