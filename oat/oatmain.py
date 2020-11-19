@@ -1,19 +1,19 @@
 import logging
-import sys
 from functools import partial
 
+import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
 from oat.models import PatientsModel, CollectionsModel
 from oat.models.config import DATA_ROLE
-from oat.models.registration_model import RegistrationModel
-from oat.views.annotation.annotation_view import AnnotationView
+from oat.modules.annotation.views.annotation_view import AnnotationView
+from oat.modules.navigation import NavigationView
+from oat.modules.registration import RegistrationView
+from oat.modules.registration.models.registration_model import RegistrationModel
 from oat.views.dialogs.login import LoginDialog
 from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
-from oat.views.overview.overview_view import OverviewView
-from oat.views.registration.registration_view import RegistrationView
 from oat.views.ui.ui_main_window import Ui_MainWindow
 
 
@@ -31,7 +31,8 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        self.overview_view = OverviewView(model=self.models["collections"], parent=self)
+        self.overview_view = NavigationView(model=self.models["collections"],
+                                            parent=self)
         self.mdiArea.addSubWindow(self.overview_view)
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
