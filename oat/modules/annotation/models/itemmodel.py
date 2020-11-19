@@ -126,30 +126,33 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
     @pixels.setter
     def pixels(self, value):
         img_id = self._data["image_id"]
-        mask = base64.b64decode(value)
-        mask = zlib.decompress(mask)
-        size = self._data["size_x"] * self._data["size_y"]
-        shape = (self._data["size_y"], self._data["size_x"])
-        mask = np.unpackbits(
-            np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
-
-        if img_id in self._pixels:
-            old_area = self._pixels[img_id].boundingRect()
+        if value == "":
+            self._pixels[img_id] = Qt.QPolygon()
         else:
-            old_area = False
+            mask = base64.b64decode(value)
+            mask = zlib.decompress(mask)
+            size = self._data["size_x"] * self._data["size_y"]
+            shape = (self._data["size_y"], self._data["size_x"])
+            mask = np.unpackbits(
+                np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
 
-        self._pixels[img_id] = Qt.QPolygon()
-        for pos_y, pos_x in zip(*np.nonzero(mask)):
-            pos_x = pos_x + self._data["upperleft_x"]
-            pos_y = pos_y + self._data["upperleft_y"]
-            self._pixels[img_id].append(
-                Qt.QPoint(pos_x, pos_y))
-        area = self._pixels[img_id].boundingRect()
+            if img_id in self._pixels:
+                old_area = self._pixels[img_id].boundingRect()
+            else:
+                old_area = False
 
-        if old_area:
-            area = old_area.united(area)
+            self._pixels[img_id] = Qt.QPolygon()
+            for pos_y, pos_x in zip(*np.nonzero(mask)):
+                pos_x = pos_x + self._data["upperleft_x"]
+                pos_y = pos_y + self._data["upperleft_y"]
+                self._pixels[img_id].append(
+                    Qt.QPoint(pos_x, pos_y))
+            area = self._pixels[img_id].boundingRect()
 
-        self.update(Qt.QRectF(area))
+            if old_area:
+                area = old_area.united(area)
+
+            self.update(Qt.QRectF(area))
 
     def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
         return Qt.QGraphicsItem.ItemIsPanel

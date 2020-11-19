@@ -4,7 +4,7 @@ import numpy as np
 from PyQt5 import QtGui, Qt
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 
-from oat.models.custom import CustomGrahpicsScene
+from oat.models.custom.scene import CustomGrahpicsScene
 from oat.models.custom.scene import Point, Line
 from oat.models.utils import get_volume_meta_by_id, get_bscan_by_id, \
     array2qgraphicspixmapitem
