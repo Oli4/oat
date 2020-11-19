@@ -365,12 +365,12 @@
   <customwidget>
    <class>FeatureTableView</class>
    <extends>QTableView</extends>
-   <header>oat.views.registration</header>
+   <header>oat.modules.registration.views.featuretable_view</header>
   </customwidget>
   <customwidget>
    <class>FeatureSelectionView</class>
    <extends>QGraphicsView</extends>
-   <header>oat.views.registration</header>
+   <header>oat.modules.registration.views.featureselection_view</header>
   </customwidget>
   <customwidget>
    <class>CustomGraphicsView</class>
