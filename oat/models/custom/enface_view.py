@@ -2,28 +2,33 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QPointF
 
 from oat.views.custom.graphicsview import CustomGraphicsView
+from oat.models.utils import get_transformation
 
 
 class EnfaceView(CustomGraphicsView):
-    enfacePosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
+    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
 
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, image_id, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+        self.image_id = image_id
+        self._tforms = {}
 
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-    def map_to_localizer(self, pos):
-        result = self.scene().tform((pos.x(), pos.y()))[0]
+    def map_from_sender(self, pos, sender):
+        tform = self.get_tform(sender)
+        result = tform.inverse((pos.x(), pos.y()))[0]
         return QPointF(*result)
 
-    def map_from_localizer(self, pos):
-        result = self.scene().tform.inverse((pos.x(), pos.y()))[0]
+    def map_to_sender(self, pos, sender):
+        tform = self.get_tform(sender)
+        result = tform((pos.x(), pos.y()))[0]
         return QPointF(*result)
 
     def set_fake_cursor(self, pos, sender):
         if not sender == self:
             pos = QPointF(pos.x(), pos.y())
-            pos = self.map_from_localizer(pos)
+            pos = self.map_from_sender(pos, sender)
             self.centerOn(pos)
             self.scene().fake_cursor.setPos(pos)
             self.scene().fake_cursor.show()
@@ -41,5 +46,11 @@ class EnfaceView(CustomGraphicsView):
         super().mouseMoveEvent(event)
         self.scene().fake_cursor.hide()
         scene_pos = self.mapToScene(event.pos())
-        localizer_pos = self.map_to_localizer(scene_pos)
-        self.enfacePosChanged.emit(localizer_pos, self)
+        self.enfacePosChanged.emit(scene_pos, self)
+
+    def get_tform(self, other_view):
+        id_pair = (self.image_id, other_view.scene().image_id)
+        if not id_pair in self._tforms:
+            tmodel = "similarity"
+            self._tforms[id_pair] = get_transformation(*id_pair, tmodel)
+        return self._tforms[id_pair]

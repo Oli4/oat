@@ -6,11 +6,11 @@ from skimage import transform as skitrans
 from oat.models.custom.scene import CustomGrahpicsScene
 from oat.models.utils import get_enface_by_id, array2qgraphicspixmapitem
 
-
 class EnfaceGraphicsScene(CustomGrahpicsScene):
     def __init__(self, parent, image_id=None, base_name="Enface", *args,
                  **kwargs):
         self.base_name = base_name
+        self.urlprefix = "enface"
         super().__init__(*args, **kwargs, parent=parent, image_id=image_id)
 
     def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:

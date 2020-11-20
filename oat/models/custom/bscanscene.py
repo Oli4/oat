@@ -9,10 +9,10 @@ from oat.models.custom.scene import Point, Line
 from oat.models.utils import get_volume_meta_by_id, get_bscan_by_id, \
     array2qgraphicspixmapitem
 
-
 class BscanGraphicsScene(CustomGrahpicsScene):
     def __init__(self, parent, data, base_name="OCT", *args, **kwargs):
         self.base_name = base_name
+        self.urlprefix = "enface"
         super().__init__(*args, **kwargs, parent=parent)
 
         # Set Scene to first B-Scan

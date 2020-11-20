@@ -1,18 +1,19 @@
-from PyQt5 import Qt, QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget
 
-from oat.modules.annotation import TreeItemModel
-from oat.modules.annotation.views.treeitemdelegate import TreeItemDelegate
+from oat.models.custom.treeitemdelegate import TreeItemDelegate
 from oat.views.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
 
 
 class SceneTab(QWidget, Ui_SceneTab):
-    def __init__(self, parent, scene: Qt.QGraphicsScene):
+    def __init__(self, parent, model: "TreeItemModel"):
         super().__init__(parent)
         self.setupUi(self)
-        self.scene = scene
-        self.model = TreeItemModel(scene=self.scene, parent=self)
+
+        self.model = model
+        self.scene = self.model.scene
+
         self.ImageTreeView.setModel(self.model)
         self.ImageTreeView.header().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)

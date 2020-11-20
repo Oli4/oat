@@ -2,12 +2,13 @@ import logging
 
 import numpy as np
 import skimage.transform as skitrans
+from oat.models.utils import get_registration_from_enface_ids
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget
 
 from oat.models import BscanGraphicsScene, EnfaceGraphicsScene
-from oat.models.utils import get_registration_from_enface_ids
-from oat.modules.annotation.views.scenetab import SceneTab
+
+from oat.models.custom.scenetab import SceneTab
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
 from oat.models.utils import get_volume_meta_by_id

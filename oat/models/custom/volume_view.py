@@ -2,22 +2,32 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QPointF
 
 from oat.views.custom.graphicsview import CustomGraphicsView
+from .bscanscene import BscanGraphicsScene
+from oat.models.utils import get_volume_meta_by_id
 
-
-class BscanView(CustomGraphicsView):
+class VolumeView(CustomGraphicsView):
     volumePosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
 
-    def __init__(self, parent, *args, **kwargs):
+    def __init__(self, volume_id, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        self.current_slice=0
+        self.volume_id = volume_id
 
+        self.volume_dict = get_volume_meta_by_id(volume_id)
+        self.slices = sorted(self.volume_dict["slices"],
+                             key=lambda x: x["number"])
+        self.bscan_scenes = [BscanGraphicsScene(parent=self, image_id=i["id"],
+                                                base_name="BScan")
+                             for i in self.slices]
+        self.current_slice = 0
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
     def next_slice(self):
         self.current_slice +=1
+        self.setScene(self.bscan_scenes[self.current_slice])
 
     def last_slice(self):
         self.current_slice -=1
+        self.setScene(self.bscan_scenes[self.current_slice])
 
     def map_to_localizer(self, pos):
         # x = StartX + xpos

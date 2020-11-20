@@ -4,6 +4,8 @@ import io
 import imageio
 import qimage2ndarray
 import requests
+import numpy as np
+import skimage.transform as skitrans
 from PyQt5 import QtWidgets, QtGui
 
 from oat import config
@@ -27,9 +29,22 @@ def get_registration_from_enface_ids(id1, id2):
         headers=config.auth_header)
     if response.status_code == 200:
         return response.json()
+
     else:
         msg = f"Status {response.status_code}: {response.json()['detail']}"
         raise ValueError(msg)
+
+def get_transformation(id1, id2, type="similarity"):
+    try:
+        json = get_registration_from_enface_ids(id1, id2)
+        matrix = np.array(json[type]).reshape((3, 3))
+        tform = skitrans.ProjectiveTransform(matrix)
+    except ValueError:
+        json = get_registration_from_enface_ids(id2, id1)
+        matrix = np.array(json[type]).reshape((3, 3))
+        tform = skitrans.ProjectiveTransform(matrix).inverse()
+
+    return tform
 
 
 def get_img_by_id(img_id, type, format):

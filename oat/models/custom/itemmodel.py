@@ -24,9 +24,9 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         if is_panel:
             self.type = type
             # Dict of pixels for every
-            self._pixels = {}
+            self._pixels = None
             self._data = data
-            self.pixels = self._data["mask"]
+            self.changed=True
             self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
@@ -95,9 +95,8 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
 
     def sync(self):
         # Upload local changes if the layer is active
-        if self.isActive():
+        if self.hasFocus() and self.changed:
             # Check for changes in the DB - any entries newer than the last update
-            #
             pixels = self.pixels
             bounding_rect = pixels.boundingRect()
             shape = (bounding_rect.height(), bounding_rect.width())
@@ -115,19 +114,18 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             self._data = self.put_annotation(annotation_id=self._data["id"],
                                              data=self._data, type=self.type)
             self.pixels = self._data["mask"]
+            self.changed=False
 
     @property
     def pixels(self):
-        img_id = self.scene().image_id
-        if not img_id in self._pixels:
-            self._pixels[img_id] = Qt.QPolygon()
-        return self._pixels[img_id]
+        if self._pixels is None:
+            self._pixels = Qt.QPolygon()
+        return self._pixels
 
     @pixels.setter
     def pixels(self, value):
-        img_id = self._data["image_id"]
         if value == "":
-            self._pixels[img_id] = Qt.QPolygon()
+            self._pixels = Qt.QPolygon()
         else:
             mask = base64.b64decode(value)
             mask = zlib.decompress(mask)
@@ -136,23 +134,15 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             mask = np.unpackbits(
                 np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
 
-            if img_id in self._pixels:
-                old_area = self._pixels[img_id].boundingRect()
-            else:
-                old_area = False
-
-            self._pixels[img_id] = Qt.QPolygon()
+            old_pixels = self.pixels
+            self._pixels = Qt.QPolygon
             for pos_y, pos_x in zip(*np.nonzero(mask)):
                 pos_x = pos_x + self._data["upperleft_x"]
                 pos_y = pos_y + self._data["upperleft_y"]
-                self._pixels[img_id].append(
-                    Qt.QPoint(pos_x, pos_y))
-            area = self._pixels[img_id].boundingRect()
+                self._pixels.append(Qt.QPoint(pos_x, pos_y))
 
-            if old_area:
-                area = old_area.united(area)
-
-            self.update(Qt.QRectF(area))
+            for p in old_pixels.united(self.pixels):
+                self.update(p.pos_x, p.pos_y, 1, 1)
 
     def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
         return Qt.QGraphicsItem.ItemIsPanel
@@ -163,17 +153,19 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
                     0 <= pos.y() < self.scene().shape[0]:
                 self.pixels.append(pos)
                 self.update(pos.x(), pos.y(), 1, 1)
+                self.changed=True
 
     def remove_pixel(self, pos):
         i = self.pixels.indexOf(pos)
         if i != -1:
             self.pixels.remove(i)
             self.update(pos.x(), pos.y(), 1, 1)
+            self.changed = True
 
     def boundingRect(self) -> QtCore.QRectF:
         # print(self.pixels.boundingRect().x(), self.pixels.boundingRect().y())
         # TODO Return only the bounding region around all points
-        return self.scene().sceneRect()
+        return self.pixels.boundingRect()
 
     def paint(self, painter: QtGui.QPainter,
               option: 'QStyleOptionGraphicsItem',
@@ -314,38 +306,10 @@ class TreeItemModel(QAbstractItemModel):
     def __init__(self, scene: Qt.QGraphicsScene, parent=None, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=parent)
         self.scene = scene
-        if scene.base_name in ["NIR", "Enface", "CFP"]:
-            self.prefix = "enface"
-        elif scene.base_name == "OCT":
-            self.prefix = "slice"
+        self.prefix = scene.urlprefix
         self.root_item = TreeGraphicsItem(is_panel=False)
         self.scene.addItem(self.root_item)
         self.get_annotations()
-
-    def get_annotations(self):
-        # Retrive image annotations and create tree item for every annotation
-        image_id = self.scene.image_id
-
-        r = requests.get(
-            f"{config.api_server}/{self.prefix}areaannotations/image/{image_id}",
-            headers=config.auth_header)
-        if r.status_code == 200:
-            for data in r.json():
-                self.root_item.appendChild(
-                    TreeGraphicsItem(data=data, type=self.prefix,
-                                     is_panel=True))
-
-    def headerData(self, column, Qt_Orientation, role=None):
-        if role != QtCore.Qt.DisplayRole:
-            return None
-        return [str(x) for x in range(8)][column]
-
-    def getItem(self, index: QtCore.QModelIndex):
-        if index.isValid():
-            item = index.internalPointer()
-            if item:
-                return item
-        return self.root_item
 
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)
@@ -379,7 +343,6 @@ class TreeItemModel(QAbstractItemModel):
 
     def parent(self, index: QtCore.QModelIndex):
         if not index.isValid():
-            raise Exception("index is not valid")
             return QtCore.QModelIndex()
 
         childItem = self.getItem(index)
@@ -389,6 +352,31 @@ class TreeItemModel(QAbstractItemModel):
             return QtCore.QModelIndex()
 
         return self.createIndex(parentItem.childNumber(), 0, parentItem)
+
+    def get_annotations(self):
+        # Retrive image annotations and create tree item for every annotation
+        image_id = self.scene.image_id
+
+        r = requests.get(
+            f"{config.api_server}/{self.prefix}areaannotations/image/{image_id}",
+            headers=config.auth_header)
+        if r.status_code == 200:
+            for data in r.json():
+                self.root_item.appendChild(
+                    TreeGraphicsItem(data=data, type=self.prefix,
+                                     is_panel=True))
+
+    def headerData(self, column, Qt_Orientation, role=None):
+        if role != QtCore.Qt.DisplayRole:
+            return None
+        return [str(x) for x in range(8)][column]
+
+    def getItem(self, index: QtCore.QModelIndex):
+        if index.isValid():
+            item = index.internalPointer()
+            if item:
+                return item
+        return self.root_item
 
     def flags(self, index: QtCore.QModelIndex()):
         if not index.isValid():
