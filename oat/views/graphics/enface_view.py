@@ -38,9 +38,10 @@ class EnfaceView(CustomGraphicsView):
         result = tform.inverse((pos.x(), pos.y()))[0]
         return QPointF(*result)
 
-    def set_fake_cursor(self, pos, sender):
+    def set_fake_cursor(self, pos, sender=None):
         pos = QPointF(pos.x(), pos.y())
-        pos = self.map_from_sender(pos, sender)
+        if not sender is None and sender != self:
+            pos = self.map_from_sender(pos, sender)
         self.centerOn(pos)
         self.scene().fake_cursor.setPos(pos)
         self.scene().fake_cursor.show()
@@ -63,6 +64,7 @@ class EnfaceView(CustomGraphicsView):
     def get_tform(self, other_view):
         id_pair = (self.image_id, other_view.scene().image_id)
         if not id_pair in self._tforms:
+            print(id_pair, self.scene().base_name)
             tmodel = "similarity"
             self._tforms[id_pair] = get_transformation(*id_pair, tmodel)
         return self._tforms[id_pair]

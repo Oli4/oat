@@ -87,6 +87,7 @@ def get_enface_meta_by_id(enface_id):
     if response.status_code == 200:
         return response.json()
     else:
+        print(response)
         raise ValueError(f"Status Code: {response.status_code}")
 
 

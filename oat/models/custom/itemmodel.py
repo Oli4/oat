@@ -22,19 +22,25 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         """
         super().__init__(*args, parent=parent, **kwargs)
         self._pixels = None
+        self.paintable = False
         if is_panel:
+            self.paintable=True
             self.type = type
             # Dict of pixels for every
             self._data = data
             self.pixels = self._data["mask"]
             self.changed = False
-            self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
+            #self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
             self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
             self.timer.timeout.connect(self.sync)
 
             [setattr(self, key, value) for key, value in self._data.items()]
+
+    def focusInEvent(self, QFocusEvent):
+        print(self._data["annotationtype"]["name"])
+        super().focusInEvent(QFocusEvent)
 
     @classmethod
     def create(cls, data, parent=None, type="enface"):
@@ -175,7 +181,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
     def paint(self, painter: QtGui.QPainter,
               option: 'QStyleOptionGraphicsItem',
               widget) -> None:
-        if self.isPanel():
+        if self.paintable:
             pen = Qt.QPen()
             pen.setWidth(1)
             color = Qt.QColor()

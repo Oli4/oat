@@ -42,7 +42,6 @@ class SceneTab(QWidget, Ui_SceneTab):
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
         self.scene.setFocusItem(self.model.getItem(current))
-        print(self.scene.items())
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

@@ -11,16 +11,9 @@ class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):
         self.setupUi(self)
         self.volume_id = None
 
-        self.graphicsViewVolume.volumePosChanged.connect(
-            self.graphicsViewLocalizer.set_fake_cursor)
-
         self.graphicsViewVolume.volumePosChanged.connect(self.emit_volume_pos)
 
-        self.graphicsViewLocalizer.cursorPosChanged.connect(
-            self.graphicsViewVolume.set_fake_cursor)
-
-        self.graphicsViewLocalizer.cursorPosChanged.connect(
-            self.cursorPosChanged.emit)
+        self.graphicsViewLocalizer.cursorPosChanged.connect(self.emit_localizer_pos)
 
         self._tforms = {}
 
@@ -37,9 +30,14 @@ class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):
         # Since other views can only map from the localizer to their space
         # replace the sender here.
         self.cursorPosChanged.emit(pos, self.graphicsViewLocalizer)
+        self.graphicsViewLocalizer.set_fake_cursor(pos)
+
+    def emit_localizer_pos(self, pos, sender):
+        self.graphicsViewVolume.set_fake_cursor(pos, sender)
+        self.cursorPosChanged.emit(pos, sender)
+
 
     def set_fake_cursor(self, pos, sender):
-        if not sender == self:
-            pos = self.graphicsViewLocalizer.map_from_sender(pos, sender)
-            self.graphicsViewLocalizer.set_fake_cursor(pos, self.graphicsViewLocalizer)
-            self.graphicsViewVolume.set_fake_cursor(pos, self.graphicsViewLocalizer)
+        pos = self.graphicsViewLocalizer.map_from_sender(pos, sender)
+        self.graphicsViewLocalizer.set_fake_cursor(pos, self.graphicsViewLocalizer)
+        self.graphicsViewVolume.set_fake_cursor(pos, self.graphicsViewLocalizer)
