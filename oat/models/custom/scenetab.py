@@ -4,15 +4,16 @@ from PyQt5.QtWidgets import QWidget
 from oat.models.custom.treeitemdelegate import TreeItemDelegate
 from oat.views.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
+from oat.models.custom.itemmodel import TreeItemModel
 
 
 class SceneTab(QWidget, Ui_SceneTab):
-    def __init__(self, parent, model: "TreeItemModel"):
+    def __init__(self, scene: "CustomGraphicsScene", parent=None):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.model = model
-        self.scene = self.model.scene
+        self.scene = scene
+        self.model = TreeItemModel(self.scene)
 
         self.ImageTreeView.setModel(self.model)
         self.ImageTreeView.header().setSectionResizeMode(
@@ -28,7 +29,7 @@ class SceneTab(QWidget, Ui_SceneTab):
         self.deleteButton.clicked.connect(self.remove_annotation_layer)
         self.upButton.clicked.connect(self.layer_up)
         self.downButton.clicked.connect(self.layer_down)
-        self.ImageTreeView.selectionModel().currentChanged.connect(
+        self.ImageTreeView.selectionModel().currentRowChanged.connect(
             self.on_currentChanged)
 
         self.opacitySlider.valueChanged.connect(self.set_opacity)
@@ -40,7 +41,8 @@ class SceneTab(QWidget, Ui_SceneTab):
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
-        self.scene.setActivePanel(current.internalPointer())
+        self.scene.setFocusItem(self.model.getItem(current))
+        print(self.scene.items())
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

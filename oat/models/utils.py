@@ -29,7 +29,6 @@ def get_registration_from_enface_ids(id1, id2):
         headers=config.auth_header)
     if response.status_code == 200:
         return response.json()
-
     else:
         msg = f"Status {response.status_code}: {response.json()['detail']}"
         raise ValueError(msg)
@@ -40,9 +39,13 @@ def get_transformation(id1, id2, type="similarity"):
         matrix = np.array(json[type]).reshape((3, 3))
         tform = skitrans.ProjectiveTransform(matrix)
     except ValueError:
-        json = get_registration_from_enface_ids(id2, id1)
-        matrix = np.array(json[type]).reshape((3, 3))
-        tform = skitrans.ProjectiveTransform(matrix).inverse()
+        try:
+            json = get_registration_from_enface_ids(id2, id1)
+            matrix = np.linalg.inv(np.array(json[type]).reshape((3, 3)))
+            tform = skitrans.ProjectiveTransform(matrix)
+        except:
+            matrix = np.diag(np.array([1,1,1]))
+            tform = skitrans.ProjectiveTransform(matrix)
 
     return tform
 
@@ -70,6 +73,16 @@ def get_img_by_id(img_id, type, format):
 def get_volume_meta_by_id(volume_id):
     response = requests.get(
         f"{config.api_server}/volumeimages/{volume_id}",
+        headers=config.auth_header)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise ValueError(f"Status Code: {response.status_code}")
+
+
+def get_enface_meta_by_id(enface_id):
+    response = requests.get(
+        f"{config.api_server}/enfaceimages/{enface_id}",
         headers=config.auth_header)
     if response.status_code == 200:
         return response.json()

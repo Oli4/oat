@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
 from skimage.color import gray2rgb
 
 from oat import config
-from oat.models import EnfaceGraphicsScene
+from oat.models.custom.scene import CustomGrahpicsScene
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
     POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
 from oat.models.utils import array2qgraphicspixmapitem, qgraphicspixmap2array, \
@@ -21,11 +21,22 @@ from oat.models.utils import array2qgraphicspixmapitem, qgraphicspixmap2array, \
 logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
 
+from typing import Tuple, Dict
 
-class RegistrationGraphicsScene(EnfaceGraphicsScene):
+from PyQt5.QtWidgets import QGraphicsPixmapItem
+from oat.models.utils import get_enface_by_id
+
+
+class RegistrationGraphicsScene(CustomGrahpicsScene):
     def __init__(self, parent, column, *args, **kwargs):
+        self.urlprefix = "enface"
         super().__init__(*args, **kwargs, parent=parent)
         self.column = column
+
+
+    def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
+        img, meta = get_enface_by_id(image_id)
+        return array2qgraphicspixmapitem(img), meta
 
 
 class RegistrationModel(QtCore.QAbstractTableModel):

@@ -130,7 +130,7 @@ class CustomGraphicsView(QGraphicsView):
                     self._dragPos = event.pos()
                     event.accept()
         elif self._active_tool == "pen":
-            layer = self.scene().activePanel()
+            layer = self.scene().focusItem()
             if event.button() == QtCore.Qt.LeftButton:
                 self._mouse_left_pressed = True
                 if layer:
@@ -167,7 +167,7 @@ class CustomGraphicsView(QGraphicsView):
 
     def mouseMoveEvent(self, event):
         if self._active_tool == "pen":
-            layer = self.scene().activePanel()
+            layer = self.scene().focusItem()
             if layer:
                 if self._mouse_left_pressed:
                     layer.add_pixel(self.mapToScene(event.pos()).toPoint())

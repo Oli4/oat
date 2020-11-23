@@ -35,7 +35,7 @@ class LayerEntry(QWidget, Ui_LayerEntry):
 
     def set_color(self, color=None):
         if not color:
-            self.color = QtWidgets.QColorDialog.getColor().name()
+            self.color = QtWidgets.QColorDialog.getColor().name()[1:]
         else:
             self.color = color
         self.colorButton.setStyleSheet(f"background-color: #{self.color}")

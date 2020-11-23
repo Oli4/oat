@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 
 from oat.models.config import DATA_ROLE
 from oat.models.db import AreaTypeModel
-from oat.modules.annotation.models import TreeItemModel, TreeGraphicsItem
+from oat.models.custom.itemmodel import TreeItemModel, TreeGraphicsItem
 from oat.views.ui.ui_add_areaannotation_dialog import Ui_AreaAnnotationDialog
 
 logger = logging.getLogger(__name__)
@@ -30,9 +30,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AreaAnnotationDialog):
                            "image_id": self.layer_model.scene.image_id,
                            "z_value": self.layer_model.rowCount()
                            }
-        if self.layer_model.scene.base_name in ["CFP", "NIR", "Enface"]:
-            t = "enface"
-        elif self.layer_model.scene.base_name in ["OCT"]:
-            t = "slice"
+
+        t = self.layer_model.scene.urlprefix
         new_item = TreeGraphicsItem.create(area_annotation, type=t)
         self.layer_model.appendRow(new_item)

@@ -44,10 +44,9 @@ class oat(QMainWindow, Ui_MainWindow):
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
         volume_id = data["volumeimages"][0]["id"]
-        localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
         cfp_id = data["enfaceimages"][0]["id"]
 
-        ao = AnnotationView(volume_id, localizer_id, cfp_id, parent=self)
+        ao = AnnotationView(volume_id, cfp_id, parent=self)
         self.mdiArea.addSubWindow(ao)
         ao.show()
 

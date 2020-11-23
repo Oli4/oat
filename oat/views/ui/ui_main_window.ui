@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>EyeLab</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -37,18 +37,18 @@
     <property name="title">
      <string>File</string>
     </property>
-       <widget class="QMenu" name="menuUpload">
-           <property name="title">
-               <string>Upload</string>
-           </property>
-           <addaction name="actionUploadVol"/>
-           <addaction name="actionUploadCfp"/>
-       </widget>
-       <addaction name="separator"/>
-       <addaction name="menuUpload"/>
-       <addaction name="actionSave"/>
-       <addaction name="separator"/>
-       <addaction name="actionExport"/>
+    <widget class="QMenu" name="menuUpload">
+     <property name="title">
+      <string>Upload</string>
+     </property>
+     <addaction name="actionUploadVol"/>
+     <addaction name="actionUploadCfp"/>
+    </widget>
+    <addaction name="separator"/>
+    <addaction name="menuUpload"/>
+    <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionExport"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -132,38 +132,38 @@
     <iconset resource="resources.qrc">
      <normaloff>:/icons/icons/baseline-redo-24px.svg</normaloff>:/icons/icons/baseline-redo-24px.svg</iconset>
    </property>
-      <property name="text">
-          <string>Redo</string>
-      </property>
-      <property name="shortcut">
-          <string>Ctrl+Y</string>
-      </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
   </action>
-     <action name="action_cfp">
-         <property name="text">
-             <string>CFP (.bmp/.tif/.jpg)</string>
-         </property>
-     </action>
-     <action name="actionExport">
-         <property name="text">
-             <string>Export</string>
-         </property>
-     </action>
-     <action name="actionUploadVol">
-         <property name="text">
-             <string>Heyex Raw (.vol)</string>
-         </property>
-     </action>
-     <action name="actionUploadCfp">
-         <property name="text">
-             <string>CFP (.tiff/.bmp)</string>
-         </property>
-     </action>
-     <action name="actionSave">
-         <property name="text">
-             <string>Save</string>
-         </property>
-     </action>
+  <action name="action_cfp">
+   <property name="text">
+    <string>CFP (.bmp/.tif/.jpg)</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+  </action>
+  <action name="actionUploadVol">
+   <property name="text">
+    <string>Heyex Raw (.vol)</string>
+   </property>
+  </action>
+  <action name="actionUploadCfp">
+   <property name="text">
+    <string>CFP (.tiff/.bmp)</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
  </widget>
  <resources>
   <include location="resources.qrc"/>

@@ -7,7 +7,7 @@ from PyQt5.QtCore import QRectF
 from PyQt5.QtWidgets import QGraphicsScene
 
 from .itemmodel import TreeItemModel
-from . scenetab import SceneTab
+from .scenetab import SceneTab
 
 Line = namedtuple("Line", ["a", "b", "c"])
 Point = namedtuple("Point", ["x", "y"])
@@ -36,11 +36,24 @@ class CustomGrahpicsScene(QGraphicsScene):
 
         self.set_image()
 
-        self.model = TreeItemModel(self)
-        self.scene_tab = SceneTab(self.model)
+        #self.model = TreeItemModel(self)
+        self.scene_tab = SceneTab(self)
         # self.add_areaannotations(image_id)
         # self.add_shapeannotations(image_id)
         # self.add_overlays()
+        self.focusItemChanged.connect(self.print)
+
+    def print(self, new, old, reason):
+        if self.base_name == "CFP":
+            if not old is None:
+                old = old._data['id']
+            else:
+                old = "None"
+            if not new is None:
+                new = new._data['id']
+            else:
+                new = "None"
+            print(f"New id: {new}  Old id: {old}  Reason: {reason}")
 
     def _set_name(self):
         if self.number == 0:

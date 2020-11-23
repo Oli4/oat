@@ -5,60 +5,21 @@ from PyQt5 import QtGui, Qt
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 
 from oat.models.custom.scene import CustomGrahpicsScene
-from oat.models.custom.scene import Point, Line
-from oat.models.utils import get_volume_meta_by_id, get_bscan_by_id, \
-    array2qgraphicspixmapitem
+from oat.models.utils import get_bscan_by_id, array2qgraphicspixmapitem
 
 class BscanGraphicsScene(CustomGrahpicsScene):
     def __init__(self, parent, data, base_name="OCT", *args, **kwargs):
+        self.data = data
         self.base_name = base_name
-        self.urlprefix = "enface"
-        super().__init__(*args, **kwargs, parent=parent)
+        self.urlprefix = "slice"
+        super().__init__(*args, **kwargs, parent=parent, image_id=data["id"])
 
         # Set Scene to first B-Scan
-        self.data = data
-        self.set_image(self.data["image_id"])
-
-        self.slice_params = self._line_for_slice()
 
         self.fake_cursor = self.addPixmap(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
         self.fake_cursor.setFlag(Qt.QGraphicsItem.ItemIgnoresTransformations)
         self.fake_cursor.hide()
-
-    def _line_for_slice(self):
-        lclzr_scale_x = self.volume_dict["localizer_image"]["scale_x"]
-        lclzr_scale_y = self.volume_dict["localizer_image"]["scale_y"]
-        start_x = self.data["start_x"] / lclzr_scale_x
-        start_y = self.data["start_y"] / lclzr_scale_y
-        end_x = self.data["end_x"] / lclzr_scale_x
-        end_y = self.data["end_y"] / lclzr_scale_y
-
-        p1 = Point(start_x, start_y)
-        p2 = Point(end_x, end_y)
-        a = p1.y - p2.y
-        b = p2.x - p1.x
-        c = a * (p2.x) + b * (p2.y)
-
-        return Line(a, b, -c)
-
-    def closest_slice(self, pos):
-        # Todo: Make this faster for smooth registered navigation
-        point = Point(pos.x(), pos.y())
-
-        smallest_dist = self.point_line_distance(point, self.slice_params)
-        for i, line in enumerate(self.slice_params):
-            dist = self.point_line_distance(point, line)
-            if dist <= smallest_dist:
-                smallest_dist = dist
-            else:
-                return i - 1
-        return i
-
-    @staticmethod
-    def point_line_distance(point, line):
-        return np.abs(line.a * point.x + line.b * point.y + line.c) / \
-               np.sqrt(line.a ** 2 + line.b ** 2)
 
     def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
         img, meta = get_bscan_by_id(image_id)

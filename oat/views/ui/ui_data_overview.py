@@ -43,7 +43,7 @@ class Ui_OverviewView(object):
 
     def retranslateUi(self, OverviewView):
         _translate = QtCore.QCoreApplication.translate
-        OverviewView.setWindowTitle(_translate("OverviewView", "Form"))
+        OverviewView.setWindowTitle(_translate("OverviewView", "Data Collections"))
         self.registerButton.setText(_translate("OverviewView", "Register"))
         self.annotateButton.setText(_translate("OverviewView", "Annotate"))
 from . import resources_rc

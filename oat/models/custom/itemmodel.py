@@ -21,13 +21,15 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
+        self._pixels = None
         if is_panel:
             self.type = type
             # Dict of pixels for every
-            self._pixels = None
             self._data = data
-            self.changed=True
+            self.pixels = self._data["mask"]
+            self.changed = False
             self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
+            self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
             self.timer.timeout.connect(self.sync)
@@ -38,6 +40,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
     def create(cls, data, parent=None, type="enface"):
         data = {**cls._defaults, **data}
         item_data = cls.post_annotation(data, type=type)
+        print(item_data)
         return cls(data=item_data, parent=parent, is_panel=True, type=type)
 
     @classmethod
@@ -135,25 +138,26 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
                 np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
 
             old_pixels = self.pixels
-            self._pixels = Qt.QPolygon
+            self._pixels = Qt.QPolygon()
             for pos_y, pos_x in zip(*np.nonzero(mask)):
                 pos_x = pos_x + self._data["upperleft_x"]
                 pos_y = pos_y + self._data["upperleft_y"]
                 self._pixels.append(Qt.QPoint(pos_x, pos_y))
 
             for p in old_pixels.united(self.pixels):
-                self.update(p.pos_x, p.pos_y, 1, 1)
+                self.update(p.x(), p.y(), 1, 1)
 
-    def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
-        return Qt.QGraphicsItem.ItemIsPanel
+    #def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
+    #    return Qt.QGraphicsItem.ItemIsPanel
 
     def add_pixel(self, pos):
         if not self.pixels.contains(pos):
             if 0 <= pos.x() < self.scene().shape[1] and \
                     0 <= pos.y() < self.scene().shape[0]:
                 self.pixels.append(pos)
-                self.update(pos.x(), pos.y(), 1, 1)
-                self.changed=True
+                self.scene().update()
+                self.scene().update(pos.x()-1, pos.y()-1, 2, 2)
+                self.changed = True
 
     def remove_pixel(self, pos):
         i = self.pixels.indexOf(pos)
@@ -163,9 +167,10 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             self.changed = True
 
     def boundingRect(self) -> QtCore.QRectF:
-        # print(self.pixels.boundingRect().x(), self.pixels.boundingRect().y())
         # TODO Return only the bounding region around all points
-        return self.pixels.boundingRect()
+        return self.scene().sceneRect()
+        # Do I have to map the rect to the viewport to make it work scaled?
+        #return Qt.QRectF(self.pixels.boundingRect())
 
     def paint(self, painter: QtGui.QPainter,
               option: 'QStyleOptionGraphicsItem',
@@ -223,7 +228,6 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
 
     def data(self, column: str):
         if column not in self._data:
-            print(self._data)
             raise Exception(f"column {column} not in data")
         return getattr(self, column)
 
@@ -231,7 +235,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         if column not in self._data or type(self._data[column]) != type(value):
             return False
         setattr(self, column, value)
-        self.scene().update(self.boundingRect())
+        self.scene().update(self.scene().sceneRect())
         return True
 
     def appendChild(self, data: "TreeGraphicsItem"):
@@ -361,8 +365,8 @@ class TreeItemModel(QAbstractItemModel):
             f"{config.api_server}/{self.prefix}areaannotations/image/{image_id}",
             headers=config.auth_header)
         if r.status_code == 200:
-            for data in r.json():
-                self.root_item.appendChild(
+            for data in sorted(r.json(), key=lambda x: x["z_value"]):
+                self.appendRow(
                     TreeGraphicsItem(data=data, type=self.prefix,
                                      is_panel=True))
 
@@ -389,7 +393,7 @@ class TreeItemModel(QAbstractItemModel):
     def setData(self, index: QtCore.QModelIndex, value, role=None):
         if role == QtCore.Qt.EditRole:
             item = self.getItem(index)
-            for k, v in {"current_color": value.color[1:],
+            for k, v in {"current_color": value.color,
                          "visible": value.visible,
                          "name": value.label.text()}.items():
                 item.setData(k, v)
