@@ -2,6 +2,7 @@ from PyQt5 import QtGui, QtWidgets, QtCore
 
 class Pen(object):
     def __init__(self):
+        """ """
 
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()

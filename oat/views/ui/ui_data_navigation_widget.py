@@ -1,0 +1,49 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui/ui_data_navigation_widget.ui'
+#
+# Created by: PyQt5 UI code generator 5.12.2
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+class Ui_dataNavigationWidget(object):
+    def setupUi(self, dataNavigationWidget):
+        dataNavigationWidget.setObjectName("dataNavigationWidget")
+        dataNavigationWidget.resize(350, 500)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(dataNavigationWidget.sizePolicy().hasHeightForWidth())
+        dataNavigationWidget.setSizePolicy(sizePolicy)
+        dataNavigationWidget.setMinimumSize(QtCore.QSize(350, 500))
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(dataNavigationWidget)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.tableView = QtWidgets.QTableView(dataNavigationWidget)
+        self.tableView.setObjectName("tableView")
+        self.horizontalLayout_4.addWidget(self.tableView)
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.registerButton = QtWidgets.QPushButton(dataNavigationWidget)
+        self.registerButton.setObjectName("registerButton")
+        self.verticalLayout.addWidget(self.registerButton)
+        self.annotateButton = QtWidgets.QPushButton(dataNavigationWidget)
+        self.annotateButton.setObjectName("annotateButton")
+        self.verticalLayout.addWidget(self.annotateButton)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem)
+        self.horizontalLayout_4.addLayout(self.verticalLayout)
+
+        self.retranslateUi(dataNavigationWidget)
+        QtCore.QMetaObject.connectSlotsByName(dataNavigationWidget)
+
+    def retranslateUi(self, dataNavigationWidget):
+        _translate = QtCore.QCoreApplication.translate
+        dataNavigationWidget.setWindowTitle(_translate("dataNavigationWidget", "Data Collections"))
+        self.registerButton.setText(_translate("dataNavigationWidget", "Register"))
+        self.annotateButton.setText(_translate("dataNavigationWidget", "Annotate"))
+
+
+from . import resources_rc
