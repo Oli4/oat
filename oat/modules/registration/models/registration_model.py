@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
 from skimage.color import gray2rgb
 
 from oat import config
-from oat.models.custom.scene import CustomGrahpicsScene
+from PyQt5 import Qt, QtCore, QtGui
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
     POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
 from oat.models.utils import array2qgraphicspixmapitem, qgraphicspixmap2array, \
@@ -25,6 +25,71 @@ from typing import Tuple, Dict
 
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 from oat.models.utils import get_enface_by_id
+
+
+class CustomGrahpicsScene(Qt.QGraphicsScene):
+    number = 0
+    base_name = "Default"
+
+    def __init__(self, parent, image_id=None, *args, **kwargs):
+        super().__init__(*args, **kwargs, parent=parent)
+        self._set_name()
+
+        self.image = None
+        self.image_meta = None
+
+        self._widthForHeightFactor = 1
+        # Slice number for OCT Scenes, Enfaceimages are slice 0
+        self.current_slice_number = 0
+
+        self.area_annotations = []
+        self.background_on = True
+
+        self.image_id = None
+        if image_id:
+            self.set_image(image_id)
+
+    def _set_name(self):
+        if self.number == 0:
+            self.name = self.base_name
+            self.number += 1
+        else:
+            self.name = f"{self.base_name}_{self.number}"
+            self.number += 1
+
+    def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
+        raise NotImplementedError
+
+    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
+        painter.translate(-0.5, -0.5)
+        if self.background_on:
+            painter.fillRect(self.sceneRect(), self.backgroundBrush())
+        else:
+            painter.fillRect(self.sceneRect(), QtCore.Qt.NoBrush)
+
+    def set_image(self, image_id):
+        self.image_id = image_id
+        pixmap_item, meta = self._fetch_image(image_id)
+        self.image_meta = meta
+        self.shape = (
+        pixmap_item.pixmap().height(), pixmap_item.pixmap().width())
+        pixmap = pixmap_item.pixmap()
+
+        self.setSceneRect(Qt.QRectF(pixmap.rect()))
+        self._widthForHeightFactor = \
+            1.0 * pixmap.size().width() / pixmap.size().height()
+        brush = Qt.QBrush(pixmap)
+        self.setBackgroundBrush(brush)
+
+    def hide_background(self):
+        if self.background_on:
+            self.background_on = False
+            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
+
+    def show_background(self):
+        if not self.background_on:
+            self.background_on = True
+            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
 
 
 class RegistrationGraphicsScene(CustomGrahpicsScene):

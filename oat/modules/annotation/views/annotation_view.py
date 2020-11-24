@@ -40,7 +40,7 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                               self.graphicsViewEnface]
         self.scenes = [view.scene() for view in self.graphic_views]
         self.set_tabs()
-        #self.volumeWidget.graphicsViewVolume.sceneChanged.connect(self.set_tabs)
+        self.volumeWidget.graphicsViewVolume.sceneChanged.connect(self.set_tabs)
 
         # Connect VolumeLocalizerView to EnfaceView
         self.volumeWidget.cursorPosChanged.connect(
