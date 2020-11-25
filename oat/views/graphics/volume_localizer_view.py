@@ -11,7 +11,7 @@ class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):
         self.setupUi(self)
         self.volume_id = None
 
-        self.graphicsViewVolume.volumePosChanged.connect(self.emit_volume_pos)
+        self.graphicsViewVolume.cursorPosChanged.connect(self.emit_volume_pos)
 
         self.graphicsViewLocalizer.cursorPosChanged.connect(self.emit_localizer_pos)
 

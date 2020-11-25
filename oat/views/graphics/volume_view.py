@@ -8,7 +8,7 @@ from oat.models.custom.scene import Point, Line
 import numpy as np
 
 class VolumeView(CustomGraphicsView):
-    volumePosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
+    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
     sceneChanged = QtCore.pyqtSignal(Qt.QGraphicsScene)
 
     def __init__(self, parent, *args, **kwargs):
@@ -79,12 +79,15 @@ class VolumeView(CustomGraphicsView):
         # Turn localizer position to x pos and slice number for OCT
         pos = self.map_from_localizer(pos)
         # set slice
-        self.current_slice = int(pos.y())
-        self.set_current_scene()
 
         current_center = self.mapToScene(self.rect().center()).y()
         pos = QPointF(pos.x(), current_center)
-        self.centerOn(pos) # Todo: Make this optional
+
+        if self.linked_navigation:
+            self.current_slice = int(pos.y())
+            self.set_current_scene()
+            self.centerOn(pos)
+
         self.scene().fake_cursor.setPos(pos)
         self.scene().fake_cursor.show()
 
@@ -100,21 +103,17 @@ class VolumeView(CustomGraphicsView):
 
             pos_on_localizer = self.map_to_localizer(
                 QPointF(self.mapToScene(event.pos()).x(), self.current_slice))
-            self.volumePosChanged.emit(pos_on_localizer, self)
-
-            self.parent().wheelEvent(event)
-            # Ask the parent to change the data -> change slice
+            self.cursorPosChanged.emit(pos_on_localizer, self)
             event.accept()
         else:
             super().wheelEvent(event)
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
-        self.scene().fake_cursor.hide()
         scene_pos = self.mapToScene(event.pos())
         localizer_pos = self.map_to_localizer(
             QtCore.QPointF(scene_pos.x(), self.current_slice))
-        self.volumePosChanged.emit(localizer_pos, self)
+        self.cursorPosChanged.emit(localizer_pos, self)
 
     def _slice_lines(self):
         lines = []

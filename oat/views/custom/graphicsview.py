@@ -11,10 +11,9 @@ class CustomGraphicsView(QGraphicsView):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self._zoom = 0
-        self._mouse_left_pressed = False
-        self._mouse_right_pressed = False
         self._ctrl_pressed = False
-        self._dragging = False
+
+        self.linked_navigation=False
 
         # How to position the scene when transformed (eg zoom)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
@@ -24,20 +23,11 @@ class CustomGraphicsView(QGraphicsView):
         self.setMouseTracking(True)
         self.deactivate_scroll_bars()
 
-        self._cursors = None
-        self._active_tool = None
+        self.tool = None
 
-    @property
-    def cursors(self):
-        if self._cursors is None:
-            bm = QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg")
-            navigation_cursor = QtGui.QCursor(bm, hotX=0, hotY=0)
-            bm = QtGui.QPixmap(":/cursors/cursors/pen_cursor.svg")
-            pen_cursor = QtGui.QCursor(bm, hotX=0, hotY=0)
-
-            self._cursors = {"navigation": navigation_cursor,
-                             "pen": pen_cursor}
-        return self._cursors
+    def set_tool(self, tool):
+        self.tool = tool
+        self.setCursor(tool.cursor)
 
     def hasWidthForHeight(self):
         return True
@@ -72,14 +62,6 @@ class CustomGraphicsView(QGraphicsView):
                 > self.scene().width() / 3:
             self.zoom_in()
 
-        # while self.mapToScene(self.rect()).boundingRect() / 4 > self.scene().width():
-
-    def hasPhoto(self):
-        if len(self.scene().items()) > 0:
-            return True
-        else:
-            return False
-
     def zoom_in(self):
         self._zoom += 1
         self.scale(1.25, 1.25)
@@ -89,23 +71,13 @@ class CustomGraphicsView(QGraphicsView):
             self._zoom -= 1
             self.scale(0.8, 0.8)
 
-    def set_active_tool(self, tool=None):
-        if tool is None:
-            tool = self._active_tool
-        if tool in self.cursors:
-            self._active_tool = tool
-            self.setCursor(self.cursors[tool])
-
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if self.hasPhoto():
-            pos = self.mapToScene(event.pos())
-            if event.angleDelta().y() > 0:
-                self.zoom_in()
-            else:
-                self.zoom_out()
-            self.centerOn(pos)
+        pos = self.mapToScene(event.pos())
+        if event.angleDelta().y() > 0:
+            self.zoom_in()
         else:
-            super().wheelEvent(event)
+            self.zoom_out()
+        self.centerOn(pos)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
@@ -119,67 +91,43 @@ class CustomGraphicsView(QGraphicsView):
         self.zoomToFit()
 
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        scene_pos = self.mapToScene(event.pos())
-        if self._active_tool == "navigation":
-            if event.button() == QtCore.Qt.LeftButton:
-                self._mouse_left_pressed = True
-                if event.modifiers() & QtCore.Qt.ControlModifier:
-                    self.setCursor(QtCore.Qt.ClosedHandCursor)
-                    self._dragging = True
-                    self._dragPos = event.pos()
-                    event.accept()
-        elif self._active_tool == "pen":
-            layer = self.scene().focusItem()
-            if event.button() == QtCore.Qt.LeftButton:
-                self._mouse_left_pressed = True
-                if layer:
-                    layer.add_pixel(scene_pos.toPoint())
-            if event.button() == QtCore.Qt.RightButton:
-                self._mouse_right_pressed = True
-                if layer:
-                    layer.remove_pixel(scene_pos.toPoint())
-            event.accept()
+        if self._ctrl_pressed:
+            super().mousePressEvent(event)
+        else:
+            # Current tool action
+            self.tool.mouse_press_handler(self, event)
+        event.accept()
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        self._dragging = False
-        if event.button() == QtCore.Qt.LeftButton:
-            self._mouse_left_pressed = False
-        elif event.button() == QtCore.Qt.RightButton:
-            self._mouse_right_pressed = False
-        if not self._ctrl_pressed:
-            self.set_active_tool()
-            self.viewport().update()
+        # Current tool action
+        self.tool.mouse_release_handler(self, event)
+        event.accept()
 
     def keyPressEvent(self, event):
-        super().keyPressEvent(event)
         if event.key() == QtCore.Qt.Key_Control:
-            self.setCursor(QtCore.Qt.OpenHandCursor)
+            self.setDragMode(QGraphicsView.ScrollHandDrag)
+            super().keyPressEvent(event)
             self._ctrl_pressed = True
+        else:
+            self.tool.key_press_handler(self, event)
+        event.accept()
 
     def keyReleaseEvent(self, event):
         super().keyReleaseEvent(event)
         if event.key() == QtCore.Qt.Key_Control:
+            self.setDragMode(QGraphicsView.NoDrag)
             self._ctrl_pressed = False
-            if not self._mouse_left_pressed:
-                self.set_active_tool()
+            self.setCursor(self.tool.cursor)
+        else:
+            self.tool.key_release_handler(self, event)
+        event.accept()
 
     def mouseMoveEvent(self, event):
-        if self._active_tool == "pen":
-            layer = self.scene().focusItem()
-            if layer:
-                if self._mouse_left_pressed:
-                    layer.add_pixel(self.mapToScene(event.pos()).toPoint())
-                elif self._mouse_right_pressed:
-                    layer.remove_pixel(self.mapToScene(event.pos()).toPoint())
-
-        elif self._active_tool == "navigation":
-            if self._mouse_left_pressed and self._dragging:
-                newPos = event.pos()
-                diff = newPos - self._dragPos
-                self._dragPos = newPos
-                self.horizontalScrollBar().setValue(
-                    self.horizontalScrollBar().value() - diff.x())
-                self.verticalScrollBar().setValue(
-                    self.verticalScrollBar().value() - diff.y())
+        self.scene().fake_cursor.hide()
+        if self._ctrl_pressed:
+            super().mouseMoveEvent(event)
+        else:
+            # Current tool action
+            self.tool.mouse_move_handler(self, event)
+        event.accept()

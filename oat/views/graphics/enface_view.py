@@ -42,22 +42,20 @@ class EnfaceView(CustomGraphicsView):
         pos = QPointF(pos.x(), pos.y())
         if not sender is None and sender != self:
             pos = self.map_from_sender(pos, sender)
-        self.centerOn(pos)
+        if self.linked_navigation:
+            self.centerOn(pos)
         self.scene().fake_cursor.setPos(pos)
         self.scene().fake_cursor.show()
         self.viewport().update()
 
     def wheelEvent(self, event):
         if event.modifiers() == (Qt.ControlModifier):
-            self.parent().wheelEvent(event)
-            # Ask the parent to change the data -> change slice
             event.accept()
         else:
             super().wheelEvent(event)
 
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
-        self.scene().fake_cursor.hide()
         scene_pos = self.mapToScene(event.pos())
         self.cursorPosChanged.emit(scene_pos, self)
 

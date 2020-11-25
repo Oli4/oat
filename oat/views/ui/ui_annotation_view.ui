@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>820</width>
-    <height>453</height>
+    <height>462</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -192,7 +192,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QWidget" name="widget_3" native="true">
+          <widget class="QWidget" name="toolboxWidget" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>100</horstretch>
@@ -201,7 +201,7 @@
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="toolsLabel">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -224,85 +224,18 @@
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="widget_4" native="true">
+             <widget class="QWidget" name="toolsWidget" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <layout class="QGridLayout" name="gridLayout">
-               <item row="1" column="4">
-                <widget class="QToolButton" name="toolButton_8">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QToolButton" name="penButton">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/icons/icons/baseline-edit-24px.svg</normaloff>:/icons/icons/baseline-edit-24px.svg</iconset>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="3">
-                <widget class="QToolButton" name="toolButton_6">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QToolButton" name="navigationButton">
-                 <property name="text">
-                  <string>...</string>
-                 </property>
-                 <property name="icon">
-                  <iconset resource="resources.qrc">
-                   <normaloff>:/icons/icons/navigation.svg</normaloff>:/icons/icons/navigation.svg</iconset>
-                 </property>
-                 <property name="iconSize">
-                  <size>
-                   <width>24</width>
-                   <height>24</height>
-                  </size>
-                 </property>
-                 <property name="checkable">
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
+              <layout class="QGridLayout" name="gridLayout"/>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_3">
+             <widget class="QLabel" name="optionsLabel">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -325,13 +258,14 @@
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="widget_6" native="true">
+             <widget class="QWidget" name="optionsWidget" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
                 <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
+                <verstretch>1</verstretch>
                </sizepolicy>
               </property>
+              <layout class="QVBoxLayout" name="verticalLayout"/>
              </widget>
             </item>
            </layout>

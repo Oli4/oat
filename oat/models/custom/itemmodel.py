@@ -106,6 +106,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         # Upload local changes if the layer is active
         if self.hasFocus() and self.changed:
             # Check for changes in the DB - any entries newer than the last update
+            self._pixels = self.pixels.intersected(self.pixels)
             pixels = self.pixels
             bounding_rect = pixels.boundingRect()
             shape = (bounding_rect.height(), bounding_rect.width())
@@ -122,7 +123,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
                               upperleft_y=upperleft_y, upperleft_x=upperleft_x)
             self._data = self.put_annotation(annotation_id=self._data["id"],
                                              data=self._data, type=self.type)
-            self.pixels = self._data["mask"]
+            #self.pixels = self._data["mask"]
             self.changed=False
 
     @property
@@ -156,14 +157,23 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
     #def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
     #    return Qt.QGraphicsItem.ItemIsPanel
 
-    def add_pixel(self, pos):
-        if not self.pixels.contains(pos):
-            if 0 <= pos.x() < self.scene().shape[1] and \
-                    0 <= pos.y() < self.scene().shape[0]:
-                self.pixels.append(pos)
-                self.scene().update()
-                self.scene().update(pos.x()-1, pos.y()-1, 2, 2)
-                self.changed = True
+    def add_pixels(self, pos, mask):
+        size_x, size_y = mask.shape
+        offset_x = pos.x() - (size_x - 1) / 2
+        offset_y = pos.y() - (size_y - 1) / 2
+        for ix, iy in np.ndindex(mask.shape):
+            if mask[ix, iy]:
+                pos = Qt.QPoint(int(offset_x+ix), int(offset_y+iy))
+                self._add_pixel(pos)
+
+        self.scene().update(offset_x, offset_y, size_x, size_y)
+        self.changed = True
+
+    def _add_pixel(self, pos):
+        #if not self.pixels.contains(pos):
+        if 0 <= pos.x() < self.scene().shape[1] and \
+                0 <= pos.y() < self.scene().shape[0]:
+            self.pixels.append(pos)
 
     def remove_pixel(self, pos):
         i = self.pixels.indexOf(pos)

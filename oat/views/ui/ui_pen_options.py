@@ -1,0 +1,37 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'ui/ui_pen_options.ui'
+#
+# Created by: PyQt5 UI code generator 5.12.2
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+
+class Ui_penOptions(object):
+    def setupUi(self, penOptions):
+        penOptions.setObjectName("penOptions")
+        penOptions.resize(132, 58)
+        penOptions.setWindowTitle("")
+        self.verticalLayout = QtWidgets.QVBoxLayout(penOptions)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.sizeLabel = QtWidgets.QLabel(penOptions)
+        self.sizeLabel.setObjectName("sizeLabel")
+        self.verticalLayout.addWidget(self.sizeLabel)
+        self.sizeSlider = QtWidgets.QSlider(penOptions)
+        self.sizeSlider.setMinimum(1)
+        self.sizeSlider.setMaximum(100)
+        self.sizeSlider.setProperty("value", 5)
+        self.sizeSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.sizeSlider.setObjectName("sizeSlider")
+        self.verticalLayout.addWidget(self.sizeSlider)
+
+        self.retranslateUi(penOptions)
+        QtCore.QMetaObject.connectSlotsByName(penOptions)
+
+    def retranslateUi(self, penOptions):
+        _translate = QtCore.QCoreApplication.translate
+        self.sizeLabel.setText(_translate("penOptions", "Size"))
+
+
