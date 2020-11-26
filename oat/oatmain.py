@@ -12,8 +12,8 @@ from oat.modules.annotation.views.annotation_view import AnnotationView
 from oat.modules.navigation import NavigationView
 from oat.modules.registration import RegistrationView
 from oat.modules.registration.models.registration_model import RegistrationModel
-from oat.views.dialogs.login import LoginDialog
-from oat.views.dialogs.upload import UploadCfpDialog, UploadVolDialog
+from oat.modules.dialogs.login import LoginDialog
+from oat.modules.dialogs.upload import UploadCfpDialog, UploadVolDialog
 from oat.views.ui.ui_main_window import Ui_MainWindow
 
 

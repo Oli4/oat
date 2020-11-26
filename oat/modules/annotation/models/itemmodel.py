@@ -30,7 +30,6 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             self._data = data
             self.pixels = self._data["mask"]
             self.changed = False
-            #self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
             self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
@@ -38,15 +37,11 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
 
             [setattr(self, key, value) for key, value in self._data.items()]
 
-    def focusInEvent(self, QFocusEvent):
-        print(self._data["annotationtype"]["name"])
-        super().focusInEvent(QFocusEvent)
 
     @classmethod
     def create(cls, data, parent=None, type="enface"):
         data = {**cls._defaults, **data}
         item_data = cls.post_annotation(data, type=type)
-        print(item_data)
         return cls(data=item_data, parent=parent, is_panel=True, type=type)
 
     @classmethod
@@ -311,6 +306,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             item = items[i]
             item.scene().removeItem(item)
             self.delete_annotation(item._data["id"], item.type)
+            print(len(self.scene().items()))
 
     def switchChildren(self, row1: int, row2: int):
         child1 = self.child(row1)

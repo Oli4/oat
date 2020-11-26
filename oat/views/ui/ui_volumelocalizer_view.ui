@@ -78,14 +78,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>VolumeView</class>
-   <extends>QGraphicsView</extends>
-   <header>oat.views.graphics</header>
-  </customwidget>
-  <customwidget>
    <class>EnfaceView</class>
    <extends>QGraphicsView</extends>
-   <header>oat.views.graphics</header>
+   <header>oat.modules.annotation.views.enface_view</header>
+  </customwidget>
+  <customwidget>
+   <class>VolumeView</class>
+   <extends>QGraphicsView</extends>
+   <header>oat.modules.annotation.views.volume_view</header>
   </customwidget>
  </customwidgets>
  <resources>

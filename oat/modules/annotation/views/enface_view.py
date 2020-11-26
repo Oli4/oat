@@ -1,9 +1,9 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QPointF
 
-from oat.views.custom.graphicsview import CustomGraphicsView
+from oat.modules.annotation.views.graphicsview import CustomGraphicsView
 from oat.models.utils import get_transformation
-from oat.models import EnfaceGraphicsScene
+from oat.modules.annotation.models import EnfaceGraphicsScene
 from oat.models.utils import get_enface_meta_by_id
 
 

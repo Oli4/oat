@@ -92,6 +92,10 @@ class Pen(object):
         pos = view.mapToScene(event.pos())
         #view.scene().tool_preview.setPos(pos)
         layer = view.scene().focusItem()
+        try:
+            print(layer._data["annotationtype"]["name"])
+        except:
+            pass
         if layer:
             if event.buttons() & QtCore.Qt.LeftButton:
                 layer.add_pixels(pos.toPoint(), self.mask)
@@ -101,6 +105,10 @@ class Pen(object):
     def mouse_press_handler(self, view, event):
         scene_pos = view.mapToScene(event.pos())
         layer = view.scene().focusItem()
+        try:
+            print(layer._data["annotationtype"]["name"])
+        except:
+            pass
         if event.button() == QtCore.Qt.LeftButton:
             if layer:
                 layer.add_pixels(scene_pos.toPoint(), self.mask)

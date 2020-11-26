@@ -45,5 +45,6 @@ class Ui_VolumeLocalizerView(object):
         VolumeLocalizerView.setWindowTitle(_translate("VolumeLocalizerView", "Form"))
 
 
-from oat.views.graphics import EnfaceView, VolumeView
+from oat.modules.annotation.views.enface_view import EnfaceView
+from oat.modules.annotation.views.volume_view import VolumeView
 from . import resources_rc

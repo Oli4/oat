@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtCore, Qt
 from PyQt5.QtCore import QPointF
 
-from oat.views.custom.graphicsview import CustomGraphicsView
-from oat.models.custom.bscanscene import BscanGraphicsScene
+from oat.modules.annotation.views.graphicsview import CustomGraphicsView
+from oat.modules.annotation.models import BscanGraphicsScene
 from oat.models.utils import get_volume_meta_by_id
-from oat.models.custom.scene import Point, Line
+from oat.modules.annotation.models.scene import Point, Line
 import numpy as np
 
 class VolumeView(CustomGraphicsView):

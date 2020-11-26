@@ -1,19 +1,11 @@
 import logging
 
-import numpy as np
-import skimage.transform as skitrans
-from oat.models.utils import get_registration_from_enface_ids
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget
 
-from oat.models import BscanGraphicsScene, EnfaceGraphicsScene
-
-from oat.models.custom.scenetab import SceneTab
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
-from oat.models.utils import get_volume_meta_by_id
-
-from oat.modules.tools import tools
+from oat.modules.annotation.tools import tools
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +28,6 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.key_actions = {
             # QtCore.Qt.Key_W: self.tableViewPoints.up,
         }
-
-
 
         self.graphic_views = [self.volumeWidget.graphicsViewVolume,
                               self.volumeWidget.graphicsViewLocalizer,

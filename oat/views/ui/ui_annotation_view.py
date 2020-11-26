@@ -161,5 +161,6 @@ class Ui_AnnotationView(object):
         self.optionsLabel.setText(_translate("AnnotationView", "Tool Options"))
 
 
-from oat.views.graphics import EnfaceView, VolumeLocalizerView
+from oat.modules.annotation.views.enface_view import EnfaceView
+from oat.modules.annotation.views.volume_localizer_view import VolumeLocalizerView
 from . import resources_rc

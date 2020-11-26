@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets
 
 from oat.models.config import DATA_ROLE
 from oat.models.db import AreaTypeModel
-from oat.models.custom.itemmodel import TreeItemModel, TreeGraphicsItem
+from oat.modules.annotation.models.itemmodel import TreeItemModel, TreeGraphicsItem
 from oat.views.ui.ui_add_areaannotation_dialog import Ui_AreaAnnotationDialog
 
 logger = logging.getLogger(__name__)

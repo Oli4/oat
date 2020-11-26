@@ -158,5 +158,5 @@ class Ui_RegistrationManual(object):
 
 from oat.modules.registration.views.featureselection_view import FeatureSelectionView
 from oat.modules.registration.views.featuretable_view import FeatureTableView
-from oat.views.custom import CustomGraphicsView
+from oat.modules.registration.views.graphicsview import CustomGraphicsView
 from . import resources_rc

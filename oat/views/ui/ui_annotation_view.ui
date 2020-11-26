@@ -283,12 +283,12 @@
   <customwidget>
    <class>EnfaceView</class>
    <extends>QGraphicsView</extends>
-   <header>oat.views.graphics</header>
+   <header>oat.modules.annotation.views.enface_view</header>
   </customwidget>
   <customwidget>
    <class>VolumeLocalizerView</class>
    <extends>QWidget</extends>
-   <header>oat.views.graphics</header>
+   <header>oat.modules.annotation.views.volume_localizer_view</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

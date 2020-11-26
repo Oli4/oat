@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import Qt, QPoint
 
-from oat.views.custom.graphicsview import CustomGraphicsView
+from oat.modules.registration.views.graphicsview import CustomGraphicsView
 
 
 class FeatureSelectionView(CustomGraphicsView):

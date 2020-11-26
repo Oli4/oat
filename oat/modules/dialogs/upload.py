@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from oat import config
 from oat.utils.api import upload_vol, upload_enface
-from oat.views.dialogs import AddPatientDialog, AddCollectionDialog
+from oat.modules.dialogs import AddPatientDialog, AddCollectionDialog
 from oat.views.ui.ui_upload_dialog import Ui_UploadDialog
 
 logger = logging.getLogger(__name__)

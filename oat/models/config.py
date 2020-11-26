@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt
 
-# custom data roles
+# models data roles
 VISIBILITY_ROLE = Qt.UserRole + 1
 NAME_ROLE = Qt.UserRole + 2
 DATA_ROLE = Qt.UserRole + 3

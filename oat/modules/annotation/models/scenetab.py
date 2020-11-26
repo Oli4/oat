@@ -1,10 +1,10 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget
 
-from oat.models.custom.treeitemdelegate import TreeItemDelegate
-from oat.views.dialogs import AddAnnotationDialog
+from oat.modules.annotation.models.treeitemdelegate import TreeItemDelegate
+from oat.modules.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
-from oat.models.custom.itemmodel import TreeItemModel
+from oat.modules.annotation.models.itemmodel import TreeItemModel
 
 
 class SceneTab(QWidget, Ui_SceneTab):
@@ -14,7 +14,23 @@ class SceneTab(QWidget, Ui_SceneTab):
 
         self.scene = scene
         self.model = TreeItemModel(self.scene)
+        self.configure_imageTreeView()
 
+
+        self.addButton.clicked.connect(self.add_annotation_layer)
+        self.deleteButton.clicked.connect(self.remove_annotation_layer)
+        self.upButton.clicked.connect(self.layer_up)
+        self.downButton.clicked.connect(self.layer_down)
+
+
+        self.opacitySlider.valueChanged.connect(self.set_opacity)
+
+        self.upButton.setEnabled(False)
+        self.downButton.setEnabled(False)
+        self.upButton.hide()
+        self.downButton.hide()
+
+    def configure_imageTreeView(self):
         self.ImageTreeView.setModel(self.model)
         self.ImageTreeView.header().setSectionResizeMode(
             QtWidgets.QHeaderView.Stretch)
@@ -24,24 +40,19 @@ class SceneTab(QWidget, Ui_SceneTab):
         # self.ImageTreeView.setUniformRowHeights(False)
         self.ImageTreeView.setItemDelegate(TreeItemDelegate(self.ImageTreeView))
         self.ImageTreeView.setRootIsDecorated(False)
-
-        self.addButton.clicked.connect(self.add_annotation_layer)
-        self.deleteButton.clicked.connect(self.remove_annotation_layer)
-        self.upButton.clicked.connect(self.layer_up)
-        self.downButton.clicked.connect(self.layer_down)
         self.ImageTreeView.selectionModel().currentRowChanged.connect(
             self.on_currentChanged)
 
-        self.opacitySlider.valueChanged.connect(self.set_opacity)
-
-        self.upButton.setEnabled(False)
-        self.downButton.setEnabled(False)
-        self.upButton.hide()
-        self.downButton.hide()
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
-        print(current)
+        try:
+            # Otherwise the previous item is still the mouse grabber and receives the tool actions
+            self.model.getItem(previous).setEnabled(False)
+        except:
+            pass
+        print(self.scene.items())
+        self.model.getItem(current).setEnabled(True)
         self.scene.setFocusItem(self.model.getItem(current))
 
     def set_opacity(self, value):
@@ -77,8 +88,8 @@ class SceneTab(QWidget, Ui_SceneTab):
     def add_annotation_layer(self):
         dialog = AddAnnotationDialog(self.model)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            self.model = TreeItemModel(scene=self.scene, parent=self)
-            self.ImageTreeView.setModel(self.model)
+            self.model = TreeItemModel(scene=self.scene)
+            self.configure_imageTreeView()
             self.model.layoutChanged.emit()
             self.scene.update()
 

@@ -1,1 +1,0 @@
-from .graphicsview import CustomGraphicsView

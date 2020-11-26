@@ -44,6 +44,8 @@ class CustomGrahpicsScene(Qt.QGraphicsScene):
 
         self.area_annotations = []
         self.background_on = True
+        self.fake_cursor = self.addPixmap(
+            QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
 
         self.image_id = None
         if image_id:

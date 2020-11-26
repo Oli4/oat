@@ -3,7 +3,7 @@ from typing import Tuple, Dict
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 from skimage import transform as skitrans
 
-from oat.models.custom.scene import CustomGrahpicsScene
+from oat.modules.annotation.models.scene import CustomGrahpicsScene
 from oat.models.utils import get_enface_by_id, array2qgraphicspixmapitem
 
 class EnfaceGraphicsScene(CustomGrahpicsScene):

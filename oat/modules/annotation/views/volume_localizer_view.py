@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, Qt
 
-from oat.views.custom.graphicsview import CustomGraphicsView
+from oat.modules.annotation.views.graphicsview import CustomGraphicsView
 from oat.views.ui.ui_volumelocalizer_view import Ui_VolumeLocalizerView
 
 class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):

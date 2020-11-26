@@ -24,6 +24,7 @@ class CustomGrahpicsScene(QGraphicsScene):
 
         self.image = None
         self.image_meta = None
+        self.shape = None
 
         self._widthForHeightFactor = 1
 
@@ -41,19 +42,6 @@ class CustomGrahpicsScene(QGraphicsScene):
         # self.add_areaannotations(image_id)
         # self.add_shapeannotations(image_id)
         # self.add_overlays()
-        self.focusItemChanged.connect(self.print)
-
-    def print(self, new, old, reason):
-        if self.base_name == "CFP":
-            if not old is None:
-                old = old._data['id']
-            else:
-                old = "None"
-            if not new is None:
-                new = new._data['id']
-            else:
-                new = "None"
-            print(f"New id: {new}  Old id: {old}  Reason: {reason}")
 
     def _set_name(self):
         if self.number == 0:

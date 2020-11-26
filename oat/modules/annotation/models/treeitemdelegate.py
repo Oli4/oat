@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QWidget
 
-from oat.models.custom.layereditor import LayerEntry
+from oat.modules.annotation.models.layereditor import LayerEntry
 
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):

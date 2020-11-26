@@ -1,10 +1,9 @@
 from typing import Tuple, Dict
 
-import numpy as np
 from PyQt5 import QtGui, Qt
 from PyQt5.QtWidgets import QGraphicsPixmapItem
 
-from oat.models.custom.scene import CustomGrahpicsScene
+from oat.modules.annotation.models.scene import CustomGrahpicsScene
 from oat.models.utils import get_bscan_by_id, array2qgraphicspixmapitem
 
 class BscanGraphicsScene(CustomGrahpicsScene):
