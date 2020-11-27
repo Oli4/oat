@@ -42,6 +42,7 @@ class VolumeView(CustomGraphicsView):
 
     def set_current_scene(self):
         self.setScene(self.bscan_scene)
+        self.set_tool(self.tool)
         self.sceneChanged.emit(self.bscan_scene)
 
     def next_slice(self):

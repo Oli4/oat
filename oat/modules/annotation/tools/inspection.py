@@ -1,4 +1,14 @@
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtGui, QtWidgets, QtCore, Qt
+
+
+class PaintPreview(Qt.QGraphicsItem):
+    def __init__(self, settings_widget, parent=None):
+        super().__init__(parent)
+        self.settings_widget = settings_widget
+        self.init_preview()
+
+    def init_preview(self):
+        pass
 
 class Inspection(object):
     def __init__(self):
@@ -8,7 +18,7 @@ class Inspection(object):
         self.button = self.get_tool_button()
         self.hot_key = None
         self.options_widget = QtWidgets.QWidget()
-        self.paint_preview = None
+        self.paint_preview = PaintPreview(self.options_widget)
 
     def get_tool_button(self):
         button = QtWidgets.QToolButton()

@@ -13,32 +13,33 @@ class PenWidget(QtWidgets.QWidget, Ui_penOptions):
     def set_label(self):
         self.sizeLabel.setText(f"Size: {self.sizeSlider.value()}")
 
+
 class PaintPreview(Qt.QGraphicsEllipseItem):
     def __init__(self, settings_widget, parent=None):
         super().__init__(parent)
         self.settings_widget = settings_widget
-        self.pen = self.get_pen()
+        self.init_preview()
         self.settings_widget.sizeSlider.valueChanged.connect(self.set_size)
+        self.set_size(self.settings_widget.sizeSlider.value())
 
     def set_size(self, size):
-        self.set
-        self.pen.setWidth(size)
+        radius = size/2
+        self.setRect(QtCore.QRectF(-radius,-radius,size,size))
         self.update()
 
-    def get_pen(self):
-        pen = Qt.QPen()
-        pen.setWidth(self.settings_widget.sizeSlider.value())
+    def init_preview(self):
         color = Qt.QColor()
         color.setNamedColor("#8833AA")
-        brush = Qt.QBrush(color)
-        brush.setStyle(QtCore.Qt.NoBrush)
-        pen.setBrush(brush)
-        return pen
+        brush = Qt.QBrush()
+        brush.setColor(color)
+        brush.setStyle(QtCore.Qt.SolidPattern)
 
-    def paint(self, painter: QtGui.QPainter, QStyleOptionGraphicsItem, widget=None):
-        painter.setPen(self.pen)
-        painter.drawPoint()
-        painter.drawPoints(self.pos)
+        pen = Qt.QPen()
+        pen.setWidth(0)
+        pen.setBrush(brush)
+        pen.setStyle(QtCore.Qt.DashLine)
+        self.setPen(pen)
+
 
 class Pen(object):
     def __init__(self):
@@ -49,11 +50,8 @@ class Pen(object):
         self.hot_key = None
         self.options_widget = self.get_options_widget()
         self.paint_preview = self.get_paint_preview()
-        self.paint_preview = None
 
         self._masks = {}
-
-
 
     @property
     def mask(self):

@@ -97,6 +97,50 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")
 
+    """
+    def mousePressEvent(self, event):
+        if self._ctrl_pressed:
+            super().mousePressEvent(event)
+        else:
+            # Current tool action
+            self.tool.mouse_press_handler(self, event)
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        # Current tool action
+        self.tool.mouse_release_handler(self, event)
+        event.accept()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Control:
+            self.setDragMode(QGraphicsView.ScrollHandDrag)
+            super().keyPressEvent(event)
+            self._ctrl_pressed = True
+        else:
+            self.tool.key_press_handler(self, event)
+        event.accept()
+
+    def keyReleaseEvent(self, event):
+        super().keyReleaseEvent(event)
+        if event.key() == QtCore.Qt.Key_Control:
+            self.setDragMode(QGraphicsView.NoDrag)
+            self._ctrl_pressed = False
+            self.setCursor(self.tool.cursor)
+        else:
+            self.tool.key_release_handler(self, event)
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        self.scene().fake_cursor.hide()
+        if self._ctrl_pressed:
+            super().mouseMoveEvent(event)
+        else:
+            # Current tool action
+            self.tool.mouse_move_handler(self, event)
+        event.accept()
+    """
+
     def sync(self):
         # Upload local changes if the layer is active
         if self.hasFocus() and self.changed:

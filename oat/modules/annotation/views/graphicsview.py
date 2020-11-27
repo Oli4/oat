@@ -26,8 +26,19 @@ class CustomGraphicsView(QGraphicsView):
         self.tool = None
 
     def set_tool(self, tool):
+        if not self.tool is None:
+            self.scene().removeItem(self.tool.paint_preview)
         self.tool = tool
-        self.setCursor(tool.cursor)
+        if not self.tool is None:
+            self.scene().addItem(tool.paint_preview)
+            self.setCursor(tool.cursor)
+
+    def enterEvent(self, QEvent):
+        self.set_tool(self.tool)
+
+    def leaveEvent(self, QEvent):
+        if not self.tool is None:
+            self.scene().removeItem(self.tool.paint_preview)
 
     def hasWidthForHeight(self):
         return True
@@ -89,45 +100,3 @@ class CustomGraphicsView(QGraphicsView):
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         self.zoomToFit()
-
-    def mousePressEvent(self, event):
-        if self._ctrl_pressed:
-            super().mousePressEvent(event)
-        else:
-            # Current tool action
-            self.tool.mouse_press_handler(self, event)
-        event.accept()
-
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-        # Current tool action
-        self.tool.mouse_release_handler(self, event)
-        event.accept()
-
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Control:
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            super().keyPressEvent(event)
-            self._ctrl_pressed = True
-        else:
-            self.tool.key_press_handler(self, event)
-        event.accept()
-
-    def keyReleaseEvent(self, event):
-        super().keyReleaseEvent(event)
-        if event.key() == QtCore.Qt.Key_Control:
-            self.setDragMode(QGraphicsView.NoDrag)
-            self._ctrl_pressed = False
-            self.setCursor(self.tool.cursor)
-        else:
-            self.tool.key_release_handler(self, event)
-        event.accept()
-
-    def mouseMoveEvent(self, event):
-        self.scene().fake_cursor.hide()
-        if self._ctrl_pressed:
-            super().mouseMoveEvent(event)
-        else:
-            # Current tool action
-            self.tool.mouse_move_handler(self, event)
-        event.accept()

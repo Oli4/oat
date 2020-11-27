@@ -21,6 +21,7 @@ class CustomGrahpicsScene(QGraphicsScene):
         super().__init__(*args, **kwargs, parent=parent)
         self.image_id = image_id
         self._set_name()
+        self.tool = None
 
         self.image = None
         self.image_meta = None
@@ -84,3 +85,11 @@ class CustomGrahpicsScene(QGraphicsScene):
 
     def add_areaannotations(self, image_id):
         pass
+
+    def mouseMoveEvent(self, event):
+        self.fake_cursor.hide()
+        # Set tool preview
+        self.set_tool_preview(event.scenePos())
+
+    def set_tool_preview(self, pos):
+        self.views()[0].tool.paint_preview.setPos(pos.toPoint())
