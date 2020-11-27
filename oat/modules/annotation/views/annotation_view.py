@@ -66,8 +66,6 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             # Set the tool and preview
             for view in self.graphic_views:
                 view.set_tool(tool)
-                view.scene().tool_preview = tool.paint_preview
-                view.scene().addItem(tool.paint_preview)
         return func
 
     def set_tabs(self, scene=None):

@@ -85,43 +85,28 @@ class Pen(object):
         return QtGui.QCursor(
             QtGui.QPixmap(":/cursors/cursors/pen_cursor.svg"), hotX=0, hotY=0)
 
+    def mouse_move_handler(self, gitem: "TreeGraphicsItem", event):
+        pos = gitem.mapToScene(event.pos())
+        if event.buttons() & QtCore.Qt.LeftButton:
+            gitem.add_pixels(pos.toPoint(), self.mask)
+        elif event.buttons() & QtCore.Qt.RightButton:
+            gitem.remove_pixels(pos.toPoint(), self.mask)
 
-    def mouse_move_handler(self, view: Qt.QGraphicsView, event):
-        pos = view.mapToScene(event.pos())
-        #view.scene().tool_preview.setPos(pos)
-        layer = view.scene().focusItem()
-        try:
-            print(layer._data["annotationtype"]["name"])
-        except:
-            pass
-        if layer:
-            if event.buttons() & QtCore.Qt.LeftButton:
-                layer.add_pixels(pos.toPoint(), self.mask)
-            elif event.buttons() & QtCore.Qt.RightButton:
-                layer.remove_pixel(pos.toPoint())
-
-    def mouse_press_handler(self, view, event):
-        scene_pos = view.mapToScene(event.pos())
-        layer = view.scene().focusItem()
-        try:
-            print(layer._data["annotationtype"]["name"])
-        except:
-            pass
+    def mouse_press_handler(self, gitem, event):
+        scene_pos = gitem.mapToScene(event.pos())
         if event.button() == QtCore.Qt.LeftButton:
-            if layer:
-                layer.add_pixels(scene_pos.toPoint(), self.mask)
+            gitem.add_pixels(scene_pos.toPoint(), self.mask)
         if event.button() == QtCore.Qt.RightButton:
-            if layer:
-                layer.remove_pixel(scene_pos.toPoint())
+            gitem.remove_pixels(scene_pos.toPoint(), self.mask)
 
     @staticmethod
-    def mouse_release_handler(view, event):
+    def mouse_release_handler(gitem, event):
         pass
 
     @staticmethod
-    def key_press_handler(view, event):
+    def key_press_handler(gitem, event):
         pass
 
     @staticmethod
-    def key_release_handler(view, event):
+    def key_release_handler(gitem, event):
         pass

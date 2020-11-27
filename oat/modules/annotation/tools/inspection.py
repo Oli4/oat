@@ -10,6 +10,13 @@ class PaintPreview(Qt.QGraphicsItem):
     def init_preview(self):
         pass
 
+    def boundingRect(self) -> QtCore.QRectF:
+        return QtCore.QRectF(0.0,0.0,0.0,0.0)
+
+    def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
+              widget) -> None:
+        return None
+
 class Inspection(object):
     def __init__(self):
         """ """
@@ -36,25 +43,25 @@ class Inspection(object):
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"), hotX=0, hotY=0)
 
     @staticmethod
-    def mouse_move_handler(view, event):
+    def mouse_move_handler(gitem, event):
         pass
 
     @staticmethod
-    def mouse_press_handler(view, event):
+    def mouse_press_handler(gitem, event):
         pass
 
     @staticmethod
-    def mouse_release_handler(view, event):
+    def mouse_release_handler(gitem, event):
         pass
 
     @staticmethod
-    def mouse_release_handler(view, event):
+    def mouse_release_handler(gitem, event):
         pass
 
     @staticmethod
-    def key_press_handler(view, event):
+    def key_press_handler(gitem, event):
         pass
 
     @staticmethod
-    def key_release_handler(view, event):
+    def key_release_handler(gitem, event):
         pass

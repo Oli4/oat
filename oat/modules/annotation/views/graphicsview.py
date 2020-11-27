@@ -3,6 +3,7 @@ import logging
 import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QGraphicsView
+from oat.modules.annotation.tools import tools
 
 logger = logging.getLogger(__name__)
 
@@ -23,22 +24,17 @@ class CustomGraphicsView(QGraphicsView):
         self.setMouseTracking(True)
         self.deactivate_scroll_bars()
 
-        self.tool = None
+        self.tool = tools()["inspection"]
 
     def set_tool(self, tool):
-        if not self.tool is None:
-            self.scene().removeItem(self.tool.paint_preview)
         self.tool = tool
-        if not self.tool is None:
-            self.scene().addItem(tool.paint_preview)
-            self.setCursor(tool.cursor)
 
     def enterEvent(self, QEvent):
-        self.set_tool(self.tool)
+        self.scene().addItem(self.tool.paint_preview)
+        self.setCursor(self.tool.cursor)
 
     def leaveEvent(self, QEvent):
-        if not self.tool is None:
-            self.scene().removeItem(self.tool.paint_preview)
+        self.scene().removeItem(self.tool.paint_preview)
 
     def hasWidthForHeight(self):
         return True
@@ -100,3 +96,21 @@ class CustomGraphicsView(QGraphicsView):
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         self.zoomToFit()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Control:
+            self.setDragMode(QGraphicsView.ScrollHandDrag)
+            self._ctrl_pressed = True
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
+    def keyReleaseEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Control:
+            self.setDragMode(QGraphicsView.NoDrag)
+            self._ctrl_pressed = False
+            self.setCursor(self.tool.cursor)
+            event.accept()
+        else:
+            super().keyReleaseEvent(event)
+

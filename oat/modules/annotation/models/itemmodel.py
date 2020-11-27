@@ -33,10 +33,9 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
-            self.timer.timeout.connect(self.sync)
+            #self.timer.timeout.connect(self.sync)
 
             [setattr(self, key, value) for key, value in self._data.items()]
-
 
     @classmethod
     def create(cls, data, parent=None, type="enface"):
@@ -97,55 +96,34 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")
 
-    """
+    @property
+    def view(self):
+        return self.scene().views()[0]
+
     def mousePressEvent(self, event):
-        if self._ctrl_pressed:
-            super().mousePressEvent(event)
-        else:
-            # Current tool action
-            self.tool.mouse_press_handler(self, event)
+        self.view.tool.mouse_press_handler(self, event)
         event.accept()
 
     def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-        # Current tool action
-        self.tool.mouse_release_handler(self, event)
+        self.view.tool.mouse_release_handler(self, event)
         event.accept()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Control:
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            super().keyPressEvent(event)
-            self._ctrl_pressed = True
-        else:
-            self.tool.key_press_handler(self, event)
+        self.view.tool.key_press_handler(self, event)
         event.accept()
 
     def keyReleaseEvent(self, event):
-        super().keyReleaseEvent(event)
-        if event.key() == QtCore.Qt.Key_Control:
-            self.setDragMode(QGraphicsView.NoDrag)
-            self._ctrl_pressed = False
-            self.setCursor(self.tool.cursor)
-        else:
-            self.tool.key_release_handler(self, event)
+        self.view.tool.key_release_handler(self, event)
         event.accept()
 
     def mouseMoveEvent(self, event):
-        self.scene().fake_cursor.hide()
-        if self._ctrl_pressed:
-            super().mouseMoveEvent(event)
-        else:
-            # Current tool action
-            self.tool.mouse_move_handler(self, event)
+        self.view.tool.mouse_move_handler(self, event)
         event.accept()
-    """
 
     def sync(self):
         # Upload local changes if the layer is active
         if self.hasFocus() and self.changed:
             # Check for changes in the DB - any entries newer than the last update
-            self._pixels = self.pixels.intersected(self.pixels)
             pixels = self.pixels
             bounding_rect = pixels.boundingRect()
             shape = (bounding_rect.height(), bounding_rect.width())
@@ -190,11 +168,7 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
                 pos_y = pos_y + self._data["upperleft_y"]
                 self._pixels.append(Qt.QPoint(pos_x, pos_y))
 
-            for p in old_pixels.united(self.pixels):
-                self.update(p.x(), p.y(), 1, 1)
-
-    #def flags(self) -> 'QGraphicsItem.GraphicsItemFlags':
-    #    return Qt.QGraphicsItem.ItemIsPanel
+            self.update()
 
     def add_pixels(self, pos, mask):
         size_x, size_y = mask.shape
@@ -208,18 +182,28 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         self.scene().update(offset_x, offset_y, size_x, size_y)
         self.changed = True
 
+    def remove_pixels(self, pos, mask):
+        size_x, size_y = mask.shape
+        offset_x = pos.x() - (size_x - 1) / 2
+        offset_y = pos.y() - (size_y - 1) / 2
+        for ix, iy in np.ndindex(mask.shape):
+            if mask[ix, iy]:
+                pos = Qt.QPoint(int(offset_x+ix), int(offset_y+iy))
+                self._remove_pixel(pos)
+
+        self.scene().update(offset_x, offset_y, size_x, size_y)
+        self.changed = True
+
     def _add_pixel(self, pos):
         #if not self.pixels.contains(pos):
         if 0 <= pos.x() < self.scene().shape[1] and \
                 0 <= pos.y() < self.scene().shape[0]:
             self.pixels.append(pos)
 
-    def remove_pixel(self, pos):
+    def _remove_pixel(self, pos):
         i = self.pixels.indexOf(pos)
         if i != -1:
             self.pixels.remove(i)
-            self.update(pos.x(), pos.y(), 1, 1)
-            self.changed = True
 
     def boundingRect(self) -> QtCore.QRectF:
         # TODO Return only the bounding region around all points
