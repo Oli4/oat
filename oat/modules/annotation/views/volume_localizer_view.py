@@ -36,7 +36,6 @@ class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):
         self.graphicsViewVolume.set_fake_cursor(pos, sender)
         self.cursorPosChanged.emit(pos, sender)
 
-
     def set_fake_cursor(self, pos, sender):
         pos = self.graphicsViewLocalizer.map_from_sender(pos, sender)
         self.graphicsViewLocalizer.set_fake_cursor(pos, self.graphicsViewLocalizer)

@@ -32,5 +32,6 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AreaAnnotationDialog):
                            }
 
         t = self.layer_model.scene.urlprefix
-        new_item = TreeGraphicsItem.create(area_annotation, type=t)
+        new_item = TreeGraphicsItem.create(area_annotation, type=t,
+                                           shape=self.layer_model.scene.shape)
         self.layer_model.appendRow(new_item)

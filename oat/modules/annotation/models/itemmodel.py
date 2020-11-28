@@ -6,21 +6,23 @@ import requests
 import zlib
 from PyQt5 import Qt, QtCore, QtGui
 from PyQt5.QtCore import QAbstractItemModel
+import qimage2ndarray
 
 from oat import config
 
 
-class TreeGraphicsItem(Qt.QGraphicsItem):
+class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
     _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
                  "upperleft_y": 0,
                  "size_x": 0, "size_y": 0}
 
     def __init__(self, *args, parent=None, data=None, is_panel=True,
-                 type="enface", **kwargs):
+                 type="enface", shape, **kwargs):
         """ Provide data to create a new annotation or the id of an existing
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
+        self.shape = shape
         self._pixels = None
         self.paintable = False
         if is_panel:
@@ -28,20 +30,55 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
             self.type = type
             # Dict of pixels for every
             self._data = data
+            height, width = self.shape
+            self.qimage = Qt.QImage(width, height,
+                                    Qt.QImage.Format_ARGB32)
+            color = Qt.QColor()
+            color.setNamedColor(f"#{self.current_color}")
+            self.qimage.fill(color)
+            self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
+            self.setPixmap(Qt.QPixmap())
+            self.set_data()
+
+
             self.pixels = self._data["mask"]
             self.changed = False
             self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
-            #self.timer.timeout.connect(self.sync)
+            self.timer.timeout.connect(self.sync)
 
             [setattr(self, key, value) for key, value in self._data.items()]
 
+    def update_pixmap(self):
+        pixmap = self.pixmap()
+        pixmap.convertFromImage(self.qimage)
+        self.setPixmap(pixmap)
+
+    def set_data(self):
+        self.alpha_array[...] = 0.0
+        y_start = self._data["upperleft_y"]
+        y_end = self._data["upperleft_y"] + self._data["size_y"]
+        x_start = self._data["upperleft_x"]
+        x_end = self._data["upperleft_x"] + self._data["size_x"]
+
+        if self._data["mask"] != "":
+            mask = base64.b64decode(self._data["mask"])
+            mask = zlib.decompress(mask)
+            size = self._data["size_x"] * self._data["size_y"]
+            shape = (self._data["size_y"], self._data["size_x"])
+            mask = np.unpackbits(
+                np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
+            self.alpha_array[y_start:y_end,x_start:x_end] = mask.astype(float)*255
+            self.update_pixmap()
+
+
     @classmethod
-    def create(cls, data, parent=None, type="enface"):
+    def create(cls, data, shape, parent=None, type="enface"):
         data = {**cls._defaults, **data}
         item_data = cls.post_annotation(data, type=type)
-        return cls(data=item_data, parent=parent, is_panel=True, type=type)
+        return cls(data=item_data, parent=parent, is_panel=True, type=type,
+                   shape=shape)
 
     @classmethod
     def from_annotation_id(cls, id, parent=None, type="enface"):
@@ -122,64 +159,28 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
 
     def sync(self):
         # Upload local changes if the layer is active
-        if self.hasFocus() and self.changed:
-            # Check for changes in the DB - any entries newer than the last update
-            pixels = self.pixels
-            bounding_rect = pixels.boundingRect()
-            shape = (bounding_rect.height(), bounding_rect.width())
-            upperleft_x, upperleft_y = bounding_rect.topLeft().x(), \
-                                       bounding_rect.topLeft().y()
-            mask = np.zeros(shape, dtype=bool)
-            for pixel in self.pixels:
-                mask[pixel.y() - upperleft_y, pixel.x() - upperleft_x] = True
-
+        if self.changed:
+            mask = self.alpha_array == 255.0
             mask = np.packbits(mask).tobytes()
             mask = zlib.compress(mask)
             mask = base64.b64encode(mask).decode("ascii")
-            self._data.update(mask=mask, size_x=shape[1], size_y=shape[0],
-                              upperleft_y=upperleft_y, upperleft_x=upperleft_x)
+            self._data.update(mask=mask, size_x=self.shape[1], size_y=self.shape[0],
+                              upperleft_y=0, upperleft_x=0)
             self._data = self.put_annotation(annotation_id=self._data["id"],
                                              data=self._data, type=self.type)
-            #self.pixels = self._data["mask"]
+            self.set_data()
             self.changed=False
-
-    @property
-    def pixels(self):
-        if self._pixels is None:
-            self._pixels = Qt.QPolygon()
-        return self._pixels
-
-    @pixels.setter
-    def pixels(self, value):
-        if value == "":
-            self._pixels = Qt.QPolygon()
-        else:
-            mask = base64.b64decode(value)
-            mask = zlib.decompress(mask)
-            size = self._data["size_x"] * self._data["size_y"]
-            shape = (self._data["size_y"], self._data["size_x"])
-            mask = np.unpackbits(
-                np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
-
-            old_pixels = self.pixels
-            self._pixels = Qt.QPolygon()
-            for pos_y, pos_x in zip(*np.nonzero(mask)):
-                pos_x = pos_x + self._data["upperleft_x"]
-                pos_y = pos_y + self._data["upperleft_y"]
-                self._pixels.append(Qt.QPoint(pos_x, pos_y))
-
-            self.update()
 
     def add_pixels(self, pos, mask):
         size_x, size_y = mask.shape
         offset_x = pos.x() - (size_x - 1) / 2
         offset_y = pos.y() - (size_y - 1) / 2
+
         for ix, iy in np.ndindex(mask.shape):
             if mask[ix, iy]:
-                pos = Qt.QPoint(int(offset_x+ix), int(offset_y+iy))
-                self._add_pixel(pos)
+                self.alpha_array[int(offset_y+iy), int(offset_x+ix)] = 255.0
 
-        self.scene().update(offset_x, offset_y, size_x, size_y)
+        self.update_pixmap()
         self.changed = True
 
     def remove_pixels(self, pos, mask):
@@ -188,40 +189,10 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
         offset_y = pos.y() - (size_y - 1) / 2
         for ix, iy in np.ndindex(mask.shape):
             if mask[ix, iy]:
-                pos = Qt.QPoint(int(offset_x+ix), int(offset_y+iy))
-                self._remove_pixel(pos)
+                self.alpha_array[int(offset_y + iy), int(offset_x + ix)] = 0.0
 
-        self.scene().update(offset_x, offset_y, size_x, size_y)
+        self.update_pixmap()
         self.changed = True
-
-    def _add_pixel(self, pos):
-        #if not self.pixels.contains(pos):
-        if 0 <= pos.x() < self.scene().shape[1] and \
-                0 <= pos.y() < self.scene().shape[0]:
-            self.pixels.append(pos)
-
-    def _remove_pixel(self, pos):
-        i = self.pixels.indexOf(pos)
-        if i != -1:
-            self.pixels.remove(i)
-
-    def boundingRect(self) -> QtCore.QRectF:
-        # TODO Return only the bounding region around all points
-        return self.scene().sceneRect()
-        # Do I have to map the rect to the viewport to make it work scaled?
-        #return Qt.QRectF(self.pixels.boundingRect())
-
-    def paint(self, painter: QtGui.QPainter,
-              option: 'QStyleOptionGraphicsItem',
-              widget) -> None:
-        if self.paintable:
-            pen = Qt.QPen()
-            pen.setWidth(1)
-            color = Qt.QColor()
-            color.setNamedColor(f"#{self.current_color}")
-            pen.setBrush(color)
-            painter.setPen(pen)
-            painter.drawPoints(self.pixels)
 
     # Functions to make the QGraphicsItemGroup work as a item in a model tree
 
@@ -248,6 +219,11 @@ class TreeGraphicsItem(Qt.QGraphicsItem):
     @current_color.setter
     def current_color(self, value):
         self._data["current_color"] = value
+        color = Qt.QColor()
+        color.setNamedColor(f"#{self.current_color}")
+        self.qimage.fill(color)
+        self.set_data()
+        self.update_pixmap()
 
     def childNumber(self):
         if self.parentItem():
@@ -351,7 +327,7 @@ class TreeItemModel(QAbstractItemModel):
         super().__init__(*args, **kwargs, parent=parent)
         self.scene = scene
         self.prefix = scene.urlprefix
-        self.root_item = TreeGraphicsItem(is_panel=False)
+        self.root_item = TreeGraphicsItem(is_panel=False, shape=(0,0))
         self.scene.addItem(self.root_item)
         self.get_annotations()
 
@@ -408,7 +384,7 @@ class TreeItemModel(QAbstractItemModel):
             for data in sorted(r.json(), key=lambda x: x["z_value"]):
                 self.appendRow(
                     TreeGraphicsItem(data=data, type=self.prefix,
-                                     is_panel=True))
+                                     is_panel=True, shape=self.scene.shape))
 
     def headerData(self, column, Qt_Orientation, role=None):
         if role != QtCore.Qt.DisplayRole:

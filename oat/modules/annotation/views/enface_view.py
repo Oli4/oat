@@ -62,7 +62,6 @@ class EnfaceView(CustomGraphicsView):
     def get_tform(self, other_view):
         id_pair = (self.image_id, other_view.scene().image_id)
         if not id_pair in self._tforms:
-            print(id_pair, self.scene().base_name)
             tmodel = "similarity"
             self._tforms[id_pair] = get_transformation(*id_pair, tmodel)
         return self._tforms[id_pair]

@@ -46,13 +46,9 @@ class SceneTab(QWidget, Ui_SceneTab):
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
-        try:
-            # Otherwise the previous item is still the mouse grabber and receives the tool actions
-            self.model.getItem(previous).setEnabled(False)
-        except:
-            pass
-        print(self.scene.items())
-        self.model.getItem(current).setEnabled(True)
+        if not previous is None:
+            self.model.getItem(previous).ungrabMouse()
+        self.model.getItem(current).grabMouse()
         self.scene.setFocusItem(self.model.getItem(current))
 
     def set_opacity(self, value):
