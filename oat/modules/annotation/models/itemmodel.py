@@ -23,7 +23,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         """
         super().__init__(*args, parent=parent, **kwargs)
         self.shape = shape
-        self.setOffset(Qt.QPointF(-0.5, -0.5))
+        #self.setOffset(Qt.QPointF(-0.5, -0.5))
         self.paintable = False
         if is_panel:
             self.paintable=True

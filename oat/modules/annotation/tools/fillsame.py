@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 from oat.views.ui.ui_pen_options import Ui_penOptions
 
-class PenWidget(QtWidgets.QWidget, Ui_penOptions):
+class FillSameWidget(QtWidgets.QWidget, Ui_fillSameOptions):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -38,7 +38,7 @@ class PaintPreview(Qt.QGraphicsPixmapItem):
         self.setOpacity(0.25)
 
 
-class Pen(object):
+class FillSame(object):
     def __init__(self):
         """ """
         self._masks = {}
@@ -68,7 +68,7 @@ class Pen(object):
         return PaintPreview(self)
 
     def get_options_widget(self):
-        widget = PenWidget()
+        widget = FillSameWidget()
         return widget
 
     def get_tool_button(self):

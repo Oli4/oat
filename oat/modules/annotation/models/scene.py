@@ -37,12 +37,7 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.fake_cursor.hide()
 
         self.set_image()
-
-        #self.model = TreeItemModel(self)
         self.scene_tab = SceneTab(self)
-        # self.add_areaannotations(image_id)
-        # self.add_shapeannotations(image_id)
-        # self.add_overlays()
 
     def _set_name(self):
         if self.number == 0:
@@ -56,7 +51,6 @@ class CustomGrahpicsScene(QGraphicsScene):
         raise NotImplementedError
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
-        painter.translate(-0.5, -0.5)
         if self.background_on:
             painter.fillRect(self.sceneRect(), self.backgroundBrush())
         else:
