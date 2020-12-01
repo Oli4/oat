@@ -1,6 +1,9 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 from oat.views.ui.ui_pen_options import Ui_penOptions
 import numpy as np
+import cv2
+import skimage
+from skimage import transform
 
 class PenWidget(QtWidgets.QWidget, Ui_penOptions):
     def __init__(self, parent=None):
@@ -14,22 +17,37 @@ class PenWidget(QtWidgets.QWidget, Ui_penOptions):
         self.sizeLabel.setText(f"Size: {self.sizeSlider.value()}")
 
 
-class PaintPreview(Qt.QGraphicsEllipseItem):
-    def __init__(self, settings_widget, parent=None):
+class PaintPreview(Qt.QGraphicsPixmapItem):
+    def __init__(self, tool, parent=None):
         super().__init__(parent)
-        self.settings_widget = settings_widget
-        self.init_preview()
-        self.settings_widget.sizeSlider.valueChanged.connect(self.set_size)
-        self.set_size(self.settings_widget.sizeSlider.value())
+        self.tool = tool
+        self.settings_widget = tool.options_widget
+        self.settings_widget.sizeSlider.valueChanged.connect(self.compute_preview)
+        self.compute_preview()
+        #self.set_size(self.settings_widget.sizeSlider.value())
 
-    def set_size(self, size):
-        radius = size/2
-        self.setRect(QtCore.QRectF(-radius,-radius,size,size))
+    def compute_preview(self):
+        diameter = float(self.settings_widget.sizeSlider.value())
+        pixmap = Qt.QPixmap(diameter, diameter)
+        #pixmap.fill(Qt.QColor(f"#{'FF000000'}"))
+
+        painter = Qt.QPainter(pixmap)
+        color = Qt.QColor(f"#{'FF0000'}")
+        color.setAlpha(100)
+        brush = Qt.QBrush()
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        brush.setColor(color)
+        painter.setPen(color)
+        painter.setBrush(brush)
+
+        painter.drawEllipse(Qt.QRectF(3,3,diameter, diameter))
+        painter.end()
+        self.setPixmap(pixmap)
         self.update()
 
-    def init_preview(self):
+    def get_pen(self):
         color = Qt.QColor()
-        color.setNamedColor("#8833AA")
+        color.setNamedColor("#FFEE00")
         brush = Qt.QBrush()
         brush.setColor(color)
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -38,20 +56,18 @@ class PaintPreview(Qt.QGraphicsEllipseItem):
         pen.setWidth(0)
         pen.setBrush(brush)
         pen.setStyle(QtCore.Qt.DashLine)
-        self.setPen(pen)
+        return pen
 
 
 class Pen(object):
     def __init__(self):
         """ """
-
+        self._masks = {}
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()
         self.hot_key = None
         self.options_widget = self.get_options_widget()
         self.paint_preview = self.get_paint_preview()
-
-        self._masks = {}
 
     @property
     def mask(self):
@@ -64,7 +80,7 @@ class Pen(object):
         return self._masks[radius]
 
     def get_paint_preview(self):
-        return PaintPreview(self.options_widget)
+        return PaintPreview(self)
 
     def get_options_widget(self):
         widget = PenWidget()
@@ -85,19 +101,51 @@ class Pen(object):
         return QtGui.QCursor(
             QtGui.QPixmap(":/cursors/cursors/pen_cursor.svg"), hotX=0, hotY=0)
 
+    def get_painter(self, gitem):
+        painter = Qt.QPainter(gitem.qimage)
+        color = Qt.QColor(f"#{gitem.current_color}")
+        brush = Qt.QBrush()
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        brush.setColor(color)
+        painter.setPen(color)
+        painter.setBrush(brush)
+        return painter
+
+    def draw(self, gitem, pos):
+        radius = self.options_widget.sizeSlider.value() / 2
+        painter = self.get_painter(gitem)
+        painter.setCompositionMode(Qt.QPainter.CompositionMode_Source)
+        painter.drawEllipse(pos, radius, radius)
+        painter.end()
+
+        gitem.update_pixmap()
+        gitem.changed = True
+
+    def erase(self, gitem, pos):
+        radius = self.options_widget.sizeSlider.value() / 2
+        painter = self.get_painter(gitem)
+        painter.setCompositionMode(Qt.QPainter.CompositionMode_Clear)
+        painter.drawEllipse(pos, radius, radius)
+        painter.end()
+
+        gitem.update_pixmap()
+        gitem.changed = True
+
     def mouse_move_handler(self, gitem: "TreeGraphicsItem", event):
-        pos = gitem.mapToScene(event.pos())
+        pos = gitem.mapToScene(event.pos()).toPoint()
+        pos = Qt.QPointF(pos.x() + 0.5, pos.y() + 0.5)
         if event.buttons() & QtCore.Qt.LeftButton:
-            gitem.add_pixels(pos.toPoint(), self.mask)
+            self.draw(gitem, pos)
         elif event.buttons() & QtCore.Qt.RightButton:
-            gitem.remove_pixels(pos.toPoint(), self.mask)
+            self.erase(gitem, pos)
 
     def mouse_press_handler(self, gitem, event):
-        scene_pos = gitem.mapToScene(event.pos())
-        if event.button() == QtCore.Qt.LeftButton:
-            gitem.add_pixels(scene_pos.toPoint(), self.mask)
-        if event.button() == QtCore.Qt.RightButton:
-            gitem.remove_pixels(scene_pos.toPoint(), self.mask)
+        pos = gitem.mapToScene(event.pos()).toPoint()
+        pos = Qt.QPointF(pos.x() + 0.5, pos.y() + 0.5)
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self.draw(gitem, pos)
+        elif event.buttons() & QtCore.Qt.RightButton:
+            self.erase(gitem, pos)
 
     @staticmethod
     def mouse_release_handler(gitem, event):

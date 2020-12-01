@@ -30,6 +30,7 @@ class CustomGraphicsView(QGraphicsView):
         self.tool = tool
 
     def enterEvent(self, QEvent):
+        self.tool.paint_preview.setParentItem(self.scene().mouseGrabberItem())
         self.scene().addItem(self.tool.paint_preview)
         
         self.setCursor(self.tool.cursor)
