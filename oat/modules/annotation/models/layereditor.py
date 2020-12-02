@@ -32,10 +32,14 @@ class LayerEntry(QWidget, Ui_LayerEntry):
         self.visible = True
         self.hideButton.clicked.connect(self.toggle_visibility)
         self.colorButton.clicked.connect(self.set_color)
+        self.colorDialog = QtWidgets.QColorDialog()
 
     def set_color(self, color=None):
         if not color:
-            self.color = QtWidgets.QColorDialog.getColor().name()[1:]
+            color = self.colorDialog.getColor(options=QtWidgets.QColorDialog.DontUseNativeDialog)
+            if not color.isValid():
+                return
+            self.color = color.name()[1:]
         else:
             self.color = color
         self.colorButton.setStyleSheet(f"background-color: #{self.color}")
