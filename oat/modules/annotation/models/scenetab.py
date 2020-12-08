@@ -84,8 +84,6 @@ class SceneTab(QWidget, Ui_SceneTab):
     def add_annotation_layer(self):
         dialog = AddAnnotationDialog(self.model)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
-            self.model = TreeItemModel(scene=self.scene)
-            self.configure_imageTreeView()
             self.model.layoutChanged.emit()
             self.scene.update()
 
@@ -96,4 +94,3 @@ class SceneTab(QWidget, Ui_SceneTab):
             self.model.removeRows(index.row(), 1, index.parent())
             self.model.layoutChanged.emit()
             self.scene.update()
-            # self.ImageTreeView.selectionModel().clear()

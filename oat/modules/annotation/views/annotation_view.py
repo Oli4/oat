@@ -60,7 +60,8 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
             # Show tool options
             tool.options_widget.setParent(self.toolboxWidget)
-            self.toolboxWidget.layout().replaceWidget(self.optionsWidget, tool.options_widget)
+            self.toolboxWidget.layout().removeWidget(self.optionsWidget)
+            self.toolboxWidget.layout().addWidget(tool.options_widget)
             self.optionsWidget = tool.options_widget
 
             # Set the tool and preview
