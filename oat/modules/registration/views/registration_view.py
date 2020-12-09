@@ -48,6 +48,8 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         self.graphicsViewCheckerboard.setTransformationAnchor(
             QtWidgets.QGraphicsView.AnchorUnderMouse)
 
+        self.grabKeyboard()
+
     def add_feature(self, feature: QtCore.QPoint):
         self.model.setData(self.tableViewPoints.selectionModel().currentIndex(),
                            feature, role=QtCore.Qt.EditRole)
@@ -136,7 +138,9 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        print(event.key())
         try:
             self.key_actions[event.key()]()
         except:
+            print("super")
             super().keyPressEvent(event)

@@ -49,6 +49,7 @@ class FeatureTableView(QtWidgets.QTableView):
 
     def up(self):
         """ Select last feature on same image """
+        print("test")
         index = self.currentIndex()
         if index.row() > 0:
             new_index = self.model().createIndex(index.row() - 1,
@@ -57,6 +58,7 @@ class FeatureTableView(QtWidgets.QTableView):
 
     def down(self):
         """ Select next feature on same image """
+        print("test down")
         index = self.currentIndex()
         if index.row() + 1 == self.model().rowCount():
             if self.model().match_is_empty(index.row()):

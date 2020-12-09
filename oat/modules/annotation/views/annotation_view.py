@@ -47,7 +47,6 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
     def set_tool_buttons(self):
         for i, (name, tool) in enumerate(self.tools.items()):
-            tool.button.setParent(self.toolsWidget)
             self.toolsWidget.layout().addWidget(tool.button, 1,i,1,1)
             tool.button.clicked.connect(self._switch_to_tool(name))
 
