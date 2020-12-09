@@ -18,7 +18,8 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         logger.info("Login dialog initialization.")
         _translate = QtCore.QCoreApplication.translate
 
-        self.db_dict = {"Default DB": "http://localhost/api/v1"}
+        self.db_dict = {"Default DB": "http://localhost/api/v1",
+                        "UKB": "http://131.220.28.177/api/v1"}
 
         self.setupUi(self)
 
