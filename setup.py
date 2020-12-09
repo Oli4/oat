@@ -21,7 +21,8 @@ setup(
     author="Olivier Morelle",
     author_email='oli4morelle@gmail.com',
     url='https://github.com/Oli4/oat',
-    packages=['oat', 'oat.tests'],
+    packages=['oat', 'oat.tests', 'oat.models', 'oat.modules',
+              'oat.utils', 'oat.views', 'oat.io', 'oat.core'],
     # package_data={'oat.images': ['*.png']},
     entry_points={
         'console_scripts': [
