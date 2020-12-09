@@ -1,4 +1,4 @@
-import setuptools
+from setuptools import setup, find_packages
 
 requirements = [
     'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio',
@@ -14,14 +14,14 @@ test_requirements = [
     'pytest-xvfb',
 ]
 
-setuptools.setup(
+setup(
     name='oat',
     version='0.0.1',
     description="A GUI to annotate multi modal retial images",
     author="Olivier Morelle",
     author_email='oli4morelle@gmail.com',
     url='https://github.com/Oli4/oat',
-    packages=setuptools.find_packages(),
+    packages=find_packages(),
     # package_data={'oat.images': ['*.png']},
     entry_points={
         'console_scripts': [
