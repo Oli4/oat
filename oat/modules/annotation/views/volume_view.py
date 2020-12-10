@@ -112,6 +112,8 @@ class VolumeView(CustomGraphicsView):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         scene_pos = self.mapToScene(event.pos())
+        if self.tool.paint_preview.scene() == self.scene():
+            self.tool.paint_preview.setPos(scene_pos.toPoint())
         localizer_pos = self.map_to_localizer(
             QtCore.QPointF(scene_pos.x(), self.current_slice))
         self.cursorPosChanged.emit(localizer_pos, self)

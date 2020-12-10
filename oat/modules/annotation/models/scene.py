@@ -83,6 +83,5 @@ class CustomGrahpicsScene(QGraphicsScene):
     def mouseMoveEvent(self, event):
         self.fake_cursor.hide()
         # Set tool preview
-        self.views()[0].tool.paint_preview.setPos(event.scenePos().toPoint())
         super().mouseMoveEvent(event)
 

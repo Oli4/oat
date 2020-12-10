@@ -57,6 +57,8 @@ class EnfaceView(CustomGraphicsView):
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         scene_pos = self.mapToScene(event.pos())
+        if self.tool.paint_preview.scene() == self.scene():
+            self.tool.paint_preview.setPos(scene_pos.toPoint())
         self.cursorPosChanged.emit(scene_pos, self)
 
     def get_tform(self, other_view):

@@ -310,7 +310,6 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
             item = items[i]
             item.scene().removeItem(item)
             self.delete_annotation(item._data["id"], item.type)
-            print(len(self.scene().items()))
 
     def switchChildren(self, row1: int, row2: int):
         child1 = self.child(row1)

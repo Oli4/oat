@@ -37,7 +37,6 @@ class SceneTab(QWidget, Ui_SceneTab):
         for col in range(1, self.model.columnCount()):
             self.ImageTreeView.hideColumn(col)
         self.ImageTreeView.setHeaderHidden(True)
-        # self.ImageTreeView.setUniformRowHeights(False)
         self.ImageTreeView.setItemDelegate(TreeItemDelegate(self.ImageTreeView))
         self.ImageTreeView.setRootIsDecorated(False)
         self.ImageTreeView.selectionModel().currentRowChanged.connect(
@@ -46,7 +45,7 @@ class SceneTab(QWidget, Ui_SceneTab):
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
-        if not previous is None:
+        if self.model.getItem(previous) == self.model.scene.mouseGrabberItem():
             self.model.getItem(previous).ungrabMouse()
         self.model.getItem(current).grabMouse()
         self.scene.setFocusItem(self.model.getItem(current))

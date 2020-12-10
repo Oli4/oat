@@ -20,7 +20,7 @@ class PaintPreview(Qt.QGraphicsItem):
 class Inspection(object):
     def __init__(self):
         """ """
-
+        self.name = "inspection"
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()
         self.hot_key = None

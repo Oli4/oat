@@ -41,6 +41,7 @@ class PaintPreview(Qt.QGraphicsPixmapItem):
 class Pen(object):
     def __init__(self):
         """ """
+        self.name = "pen"
         self._masks = {}
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()
