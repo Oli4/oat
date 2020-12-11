@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_AnnotationView(object):
     def setupUi(self, AnnotationView):
         AnnotationView.setObjectName("AnnotationView")
-        AnnotationView.resize(820, 462)
+        AnnotationView.resize(856, 488)
         self.horizontalLayout = QtWidgets.QHBoxLayout(AnnotationView)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.widget_5 = QtWidgets.QWidget(AnnotationView)
@@ -97,7 +97,7 @@ class Ui_AnnotationView(object):
         self.layerOverview.setObjectName("layerOverview")
         self.verticalLayout_2.addWidget(self.layerOverview)
         self.toolboxWidget = QtWidgets.QWidget(self.widget_2)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(100)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.toolboxWidget.sizePolicy().hasHeightForWidth())
@@ -116,7 +116,7 @@ class Ui_AnnotationView(object):
         self.toolsLabel.setObjectName("toolsLabel")
         self.verticalLayout_7.addWidget(self.toolsLabel)
         self.toolsWidget = QtWidgets.QWidget(self.toolboxWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.toolsWidget.sizePolicy().hasHeightForWidth())
@@ -136,7 +136,7 @@ class Ui_AnnotationView(object):
         self.optionsLabel.setObjectName("optionsLabel")
         self.verticalLayout_7.addWidget(self.optionsLabel)
         self.optionsWidget = QtWidgets.QWidget(self.toolboxWidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.optionsWidget.sizePolicy().hasHeightForWidth())
@@ -158,7 +158,7 @@ class Ui_AnnotationView(object):
         AnnotationView.setWindowTitle(_translate("AnnotationView", "Multimodal Annotation"))
         self.label_4.setText(_translate("AnnotationView", "Layers"))
         self.toolsLabel.setText(_translate("AnnotationView", "Tools"))
-        self.optionsLabel.setText(_translate("AnnotationView", "Tool Options"))
+        self.optionsLabel.setText(_translate("AnnotationView", "Tool Options Test"))
 
 
 from oat.modules.annotation.views.enface_view import EnfaceView

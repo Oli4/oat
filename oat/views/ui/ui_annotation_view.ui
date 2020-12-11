@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>820</width>
-    <height>462</height>
+    <width>856</width>
+    <height>488</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -194,7 +194,7 @@
          <item>
           <widget class="QWidget" name="toolboxWidget" native="true">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
              <horstretch>100</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -226,7 +226,7 @@
             <item>
              <widget class="QWidget" name="toolsWidget" native="true">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
@@ -250,7 +250,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Tool Options</string>
+               <string>Tool Options Test</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -260,7 +260,7 @@
             <item>
              <widget class="QWidget" name="optionsWidget" native="true">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+               <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
                 <horstretch>0</horstretch>
                 <verstretch>1</verstretch>
                </sizepolicy>

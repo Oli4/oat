@@ -249,7 +249,12 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
     def setData(self, column: str, value):
         if column not in self._data or type(self._data[column]) != type(value):
             return False
+
         setattr(self, column, value)
+        if column == "visible" and value == True:
+            if self.scene().mouseGrabberItem() is None:
+                self.grabMouse()
+
         self.scene().update(self.scene().sceneRect())
         return True
 

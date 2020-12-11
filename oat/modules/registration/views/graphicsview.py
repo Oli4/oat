@@ -3,6 +3,7 @@ import logging
 import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QGraphicsView
+from oat.modules.annotation.tools import tools
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +23,9 @@ class CustomGraphicsView(QGraphicsView):
         # Get Move events even if no button is pressed
         self.setMouseTracking(True)
         self.deactivate_scroll_bars()
+        self.mouse_grabber_cache = None
 
-        self.tool = None
-
-    def set_tool(self, tool):
-        self.tool = tool
-        self.setCursor(tool.cursor)
+        self.tool = tools()["inspection"]
 
     def hasWidthForHeight(self):
         return True
@@ -72,12 +70,10 @@ class CustomGraphicsView(QGraphicsView):
             self.scale(0.8, 0.8)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        pos = self.mapToScene(event.pos())
         if event.angleDelta().y() > 0:
             self.zoom_in()
         else:
             self.zoom_out()
-        self.centerOn(pos)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
@@ -90,33 +86,25 @@ class CustomGraphicsView(QGraphicsView):
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         self.zoomToFit()
 
-    def mousePressEvent(self, event):
-        if self._ctrl_pressed:
-            super().mousePressEvent(event)
-        event.accept()
-
-    def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-        # Current tool action
-        event.accept()
-
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Control:
+            self.mouse_grabber_cache = self.scene().mouseGrabberItem()
+            if not self.mouse_grabber_cache is None:
+                self.mouse_grabber_cache.ungrabMouse()
             self.setDragMode(QGraphicsView.ScrollHandDrag)
-            super().keyPressEvent(event)
             self._ctrl_pressed = True
-        event.accept()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
-        super().keyReleaseEvent(event)
         if event.key() == QtCore.Qt.Key_Control:
+            if not self.mouse_grabber_cache is None:
+                self.mouse_grabber_cache.grabMouse()
             self.setDragMode(QGraphicsView.NoDrag)
             self._ctrl_pressed = False
             self.setCursor(self.tool.cursor)
-        event.accept()
+            event.accept()
+        else:
+            super().keyReleaseEvent(event)
 
-    def mouseMoveEvent(self, event):
-        #self.scene().fake_cursor.hide()
-        if self._ctrl_pressed:
-            super().mouseMoveEvent(event)
-        event.accept()

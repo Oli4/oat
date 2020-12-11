@@ -85,12 +85,10 @@ class CustomGraphicsView(QGraphicsView):
             self.scale(0.8, 0.8)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        pos = self.mapToScene(event.pos())
         if event.angleDelta().y() > 0:
             self.zoom_in()
         else:
             self.zoom_out()
-        self.centerOn(pos)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
