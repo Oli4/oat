@@ -34,6 +34,7 @@ class VolumeView(CustomGraphicsView):
     @property
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
+            print(len(self.slices), self.current_slice)
             self._bscan_scenes[self.current_slice] = BscanGraphicsScene(
                 parent=self, data=self.slices[self.current_slice],
                 base_name=self.name)
@@ -81,13 +82,13 @@ class VolumeView(CustomGraphicsView):
         pos = self.map_from_localizer(pos)
         # set slice
 
-        current_center = self.mapToScene(self.rect().center()).y()
-        pos = QPointF(pos.x(), current_center)
-
         if self.linked_navigation:
             self.current_slice = int(pos.y())
             self.set_current_scene()
             self.centerOn(pos)
+
+        current_center = self.mapToScene(self.rect().center()).y()
+        pos = QPointF(pos.x(), current_center)
 
         self.scene().fake_cursor.setPos(pos)
         self.scene().fake_cursor.show()

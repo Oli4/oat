@@ -48,7 +48,6 @@ class SceneTab(QWidget, Ui_SceneTab):
         if self.model.getItem(previous) == self.model.scene.mouseGrabberItem():
             self.model.getItem(previous).ungrabMouse()
         self.model.getItem(current).grabMouse()
-        self.scene.setFocusItem(self.model.getItem(current))
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

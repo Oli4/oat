@@ -33,12 +33,10 @@ class oat(QMainWindow, Ui_MainWindow):
 
         self.overview_view = NavigationView(model=self.models["collections"],
                                             parent=self)
-        self.mdiArea.addSubWindow(self.overview_view)
+        #self.mdiArea.addSubWindow(self.overview_view)
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
-        # registration_view = RegistrationView(model=RegistrationModel(3,2),
-        #                                     parent=self)
-        # self.mdiArea.addSubWindow(registration_view)
+        self.navigationDock.setWidget(self.overview_view)
 
     def open_annotation_view(self):
         overview = self.overview_view
@@ -47,8 +45,7 @@ class oat(QMainWindow, Ui_MainWindow):
         cfp_id = data["enfaceimages"][0]["id"]
 
         ao = AnnotationView(volume_id, cfp_id, parent=self)
-        self.mdiArea.addSubWindow(ao)
-        ao.show()
+        self.setCentralWidget(ao)
 
     def open_registration_view(self):
         overview = self.overview_view
@@ -58,8 +55,7 @@ class oat(QMainWindow, Ui_MainWindow):
 
         model = RegistrationModel(localizer_id, cfp_id)
         rv = RegistrationView(model)
-        self.mdiArea.addSubWindow(rv)
-        rv.show()
+        self.setCentralWidget(rv)
 
     def upload(self, type):
         if type == "cfp":

@@ -27,6 +27,12 @@ class CustomGraphicsView(QGraphicsView):
 
         self.tool = tools()["inspection"]
 
+    def unlink_navigation(self):
+        self.linked_navigation = False
+
+    def link_navigation(self):
+        self.linked_navigation = True
+
     def set_tool(self, tool):
         self.tool = tool
 

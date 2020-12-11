@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QWidget
 
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
@@ -26,6 +26,7 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
 
         self.key_actions = {
+            QtCore.Qt.Key_Alt: self.toggle_linked_navigation
             # QtCore.Qt.Key_W: self.tableViewPoints.up,
         }
 
@@ -44,6 +45,19 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             self.volumeWidget.set_fake_cursor)
 
         self._switch_to_tool("inspection")()
+        self.linked_navigation = False
+
+    def toggle_linked_navigation(self):
+        if self.linked_navigation:
+            self.linked_navigation = False
+            for view in self.graphic_views:
+                view.unlink_navigation()
+
+        else:
+            self.linked_navigation = True
+            for view in self.graphic_views:
+                view.link_navigation()
+
 
     def set_tool_buttons(self):
         for i, (name, tool) in enumerate(self.tools.items()):
