@@ -28,13 +28,12 @@ class VolumeView(CustomGraphicsView):
                              key=lambda x: x["number"])
         self.slice_lines = self._slice_lines()
 
-        self.set_current_scene()
+        self.setScene(self.bscan_scene)
         self.zoomToFit()
 
     @property
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
-            print(len(self.slices), self.current_slice)
             self._bscan_scenes[self.current_slice] = BscanGraphicsScene(
                 parent=self, data=self.slices[self.current_slice],
                 base_name=self.name)
@@ -42,8 +41,12 @@ class VolumeView(CustomGraphicsView):
 
 
     def set_current_scene(self):
+        if self.tool.paint_preview.scene() == self.scene():
+            self.scene().removeItem(self.tool.paint_preview)
         self.setScene(self.bscan_scene)
-        self.set_tool(self.tool)
+        if not self.scene().mouseGrabberItem() is None:
+            self.tool.paint_preview.setParentItem(
+                self.scene().mouseGrabberItem())
         self.sceneChanged.emit(self.bscan_scene)
 
     def next_slice(self):

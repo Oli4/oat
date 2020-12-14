@@ -38,7 +38,9 @@ class CustomGraphicsView(QGraphicsView):
 
     def enterEvent(self, event):
         self.grabKeyboard()
-        self.tool.paint_preview.setParentItem(self.scene().mouseGrabberItem())
+        if not self.scene().mouseGrabberItem() is None:
+            self.tool.paint_preview.setParentItem(
+                self.scene().mouseGrabberItem())
         self.setCursor(self.tool.cursor)
         super().enterEvent(event)
 
