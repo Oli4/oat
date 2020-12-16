@@ -247,7 +247,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         return getattr(self, column)
 
     def setData(self, column: str, value):
-        if column not in self._data or type(self._data[column]) != type(value):
+        if (column not in self._data) or type(self._data[column]) != type(value):
             return False
 
         setattr(self, column, value)
@@ -262,9 +262,9 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         items = self.childItems()
 
         if items:
-            z_value = int(items[-1].zValue() + 1)
+            z_value = float(items[-1].zValue() + 1)
         else:
-            z_value = 0
+            z_value = 0.0
 
         data.z_value = z_value
         data.setParentItem(self)
@@ -276,10 +276,10 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         items = self.childItems()
 
         if items:
-            z = int(items[-1].zValue() + 1)
+            z = float(items[-1].zValue() + 1)
         else:
-            z = 0
-        z_values = list(range(z, z + count))
+            z = 0.0
+        z_values = [float(x) for x in range(z, z + count)]
         # if self.childCount() == 0:
         #    z_values = list(range(0, count))
 
@@ -436,7 +436,7 @@ class TreeItemModel(QAbstractItemModel):
         self.scene.update()
 
     def switchRows(self, row1, row2, parent=QtCore.QModelIndex()):
-        self.beginMoveRows(parent, row1, row1, parent, row2)
+        self.beginMoveRows(parent, row1, row1, parent, row2+1)
         self.getItem(parent).switchChildren(row1, row2)
         self.endMoveRows()
         self.scene.update()
