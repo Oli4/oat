@@ -33,7 +33,6 @@ class oat(QMainWindow, Ui_MainWindow):
 
         self.overview_view = NavigationView(model=self.models["collections"],
                                             parent=self)
-        #self.mdiArea.addSubWindow(self.overview_view)
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
         self.navigationDock.setWidget(self.overview_view)

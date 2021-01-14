@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget
 from oat.modules.annotation.models.treeitemdelegate import TreeItemDelegate
 from oat.modules.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
-from oat.modules.annotation.models.itemmodel import TreeItemModel
+from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 
 
 class SceneTab(QWidget, Ui_SceneTab):

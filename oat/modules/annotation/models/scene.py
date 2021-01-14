@@ -6,7 +6,6 @@ from PyQt5.Qt import QBrush, QGraphicsPixmapItem
 from PyQt5.QtCore import QRectF
 from PyQt5.QtWidgets import QGraphicsScene
 
-from .itemmodel import TreeItemModel
 from .scenetab import SceneTab
 
 Line = namedtuple("Line", ["a", "b", "c"])

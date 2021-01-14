@@ -1,54 +1,50 @@
 import base64
+import zlib
 from typing import List, Dict
 
 import numpy as np
-import requests
-import zlib
-from PyQt5 import Qt, QtCore, QtGui
-from PyQt5.QtCore import QAbstractItemModel
 import qimage2ndarray
+import requests
+from PyQt5 import Qt, QtCore
 
 from oat import config
 
 
-class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
+class TreeAreaItem(Qt.QGraphicsPixmapItem):
     _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
                  "upperleft_y": 0,
                  "size_x": 0, "size_y": 0}
 
-    def __init__(self, *args, parent=None, data=None, is_panel=True,
+    def __init__(self, *args, parent=None, data=None,
                  type="enface", shape, **kwargs):
         """ Provide data to create a new annotation or the id of an existing
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
         self.shape = shape
-        #self.setOffset(Qt.QPointF(-0.5, -0.5))
-        self.paintable = False
-        if is_panel:
-            self.paintable=True
-            self.type = type
-            # Dict of pixels for every
-            self._data = data
-            height, width = self.shape
-            self.qimage = Qt.QImage(width, height,
-                                    Qt.QImage.Format_ARGB32)
-            color = Qt.QColor()
-            color.setNamedColor(f"#{self.current_color}")
-            self.qimage.fill(color)
-            self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
-            self.setPixmap(Qt.QPixmap())
-            self.set_data()
+        self.paintable=True
+        self.type = type
+        # Dict of pixels for every
+        self._data = data
+        height, width = self.shape
+        self.qimage = Qt.QImage(width, height,
+                                Qt.QImage.Format_ARGB32)
+        color = Qt.QColor()
+        color.setNamedColor(f"#{self.current_color}")
+        self.qimage.fill(color)
+        self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
+        self.setPixmap(Qt.QPixmap())
+        self.set_data()
 
 
-            self.pixels = self._data["mask"]
-            self.changed = False
-            self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
-            self.timer = QtCore.QTimer()
-            self.timer.start(2500)
-            self.timer.timeout.connect(self.sync)
+        self.pixels = self._data["mask"]
+        self.changed = False
+        self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
+        self.timer = QtCore.QTimer()
+        self.timer.start(2500)
+        self.timer.timeout.connect(self.sync)
 
-            [setattr(self, key, value) for key, value in self._data.items()]
+        [setattr(self, key, value) for key, value in self._data.items()]
 
     def update_pixmap(self):
         pixmap = self.pixmap()
@@ -77,13 +73,13 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
     def create(cls, data, shape, parent=None, type="enface"):
         data = {**cls._defaults, **data}
         item_data = cls.post_annotation(data, type=type)
-        return cls(data=item_data, parent=parent, is_panel=True, type=type,
+        return cls(data=item_data, parent=parent, type=type,
                    shape=shape)
 
     @classmethod
     def from_annotation_id(cls, id, parent=None, type="enface"):
         item_data = cls.get_annotation(id, type=type)
-        return cls(data=item_data, parent=parent, is_panel=True, type=type)
+        return cls(data=item_data, parent=parent, type=type)
 
     @staticmethod
     def post_annotation(data, type="enface"):
@@ -258,7 +254,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         self.scene().update(self.scene().sceneRect())
         return True
 
-    def appendChild(self, data: "TreeGraphicsItem"):
+    def appendChild(self, data: "TreeAreaItem"):
         items = self.childItems()
 
         if items:
@@ -303,7 +299,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
             else:
                 item_data = {}
             item_data.update(z_value=z_value)
-            layer = TreeGraphicsItem(data=item_data)
+            layer = TreeAreaItem(data=item_data)
             layer.setParentItem(self)
 
     def removeChildren(self, row: int, count: int):
@@ -324,129 +320,3 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         child2_z = child2.zValue()
         child1.setData("z_value", child2_z)
         child2.setData("z_value", child1_z)
-
-
-class TreeItemModel(QAbstractItemModel):
-    def __init__(self, scene: Qt.QGraphicsScene, parent=None, *args, **kwargs):
-        super().__init__(*args, **kwargs, parent=parent)
-        self.scene = scene
-        self.prefix = scene.urlprefix
-        self.root_item = TreeGraphicsItem(is_panel=False, shape=(0,0))
-        self.scene.addItem(self.root_item)
-        self.get_annotations()
-
-    def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
-        parent_item = self.getItem(parent)
-        return parent_item.childCount()
-
-    def columnCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
-        return self.root_item.columnCount()
-
-    def data(self, index: QtCore.QModelIndex(), role=None):
-        if role == QtCore.Qt.EditRole:
-            item = self.getItem(index)
-
-            annotation_data = {key: item.data(key) for key in
-                               ["current_color", "visible", "z_value"]}
-            type_data = {"name": item.data("annotationtype")["name"]}
-            return {**annotation_data, **type_data}
-
-        if role == QtCore.Qt.DisplayRole:
-            return self.getItem(index).data("annotationtype")["name"]
-
-    def index(self, row, column, parent=QtCore.QModelIndex(), *args, **kwargs):
-        if not parent.isValid():
-            parent_item = self.root_item
-        else:
-            parent_item = parent.internalPointer()
-
-        child_item = parent_item.child(row)
-        if child_item:
-            return self.createIndex(row, column, child_item)
-        return QtCore.QModelIndex()
-
-    def parent(self, index: QtCore.QModelIndex):
-        if not index.isValid():
-            return QtCore.QModelIndex()
-
-        childItem = self.getItem(index)
-        parentItem = childItem.parentItem()
-
-        if parentItem is None:
-            return QtCore.QModelIndex()
-
-        return self.createIndex(parentItem.childNumber(), 0, parentItem)
-
-    def get_annotations(self):
-        # Retrive image annotations and create tree item for every annotation
-        image_id = self.scene.image_id
-
-        r = requests.get(
-            f"{config.api_server}/{self.prefix}areaannotations/image/{image_id}",
-            headers=config.auth_header)
-        if r.status_code == 200:
-            for data in sorted(r.json(), key=lambda x: x["z_value"]):
-                self.appendRow(
-                    TreeGraphicsItem(data=data, type=self.prefix,
-                                     is_panel=True, shape=self.scene.shape))
-
-    def headerData(self, column, Qt_Orientation, role=None):
-        if role != QtCore.Qt.DisplayRole:
-            return None
-        return [str(x) for x in range(8)][column]
-
-    def getItem(self, index: QtCore.QModelIndex):
-        if index.isValid():
-            item = index.internalPointer()
-            if item:
-                return item
-        return self.root_item
-
-    def flags(self, index: QtCore.QModelIndex()):
-        if not index.isValid():
-            return QtCore.Qt.NoItemFlags
-
-        return QtCore.Qt.ItemIsEditable | QAbstractItemModel.flags(self, index)
-
-    # Provide support for editing and resizing
-
-    def setData(self, index: QtCore.QModelIndex, value, role=None):
-        if role == QtCore.Qt.EditRole:
-            item = self.getItem(index)
-            for k, v in {"current_color": value.color,
-                         "visible": value.visible,
-                         "name": value.label.text()}.items():
-                item.setData(k, v)
-            return True
-        return False
-
-    def insertRows(self, row, count, parent=QtCore.QModelIndex(), *args,
-                   **kwargs):
-        """ Insert count rows before the given row under the given parent """
-        self.beginInsertRows(parent, row, row + count - 1)
-        self.getItem(parent).insertChildren(row, count)
-        self.endInsertRows()
-        self.scene.update()
-        return True
-
-    def appendRow(self, data: TreeGraphicsItem, parent=QtCore.QModelIndex()):
-        self.beginInsertRows(parent, self.rowCount(), self.rowCount())
-        self.getItem(parent).appendChild(data)
-        self.endInsertRows()
-        self.scene.update()
-
-    def switchRows(self, row1, row2, parent=QtCore.QModelIndex()):
-        self.beginMoveRows(parent, row1, row1, parent, row2+1)
-        self.getItem(parent).switchChildren(row1, row2)
-        self.endMoveRows()
-        self.scene.update()
-
-    def removeRows(self, row, count, parent=QtCore.QModelIndex()):
-        if parent.isValid():
-            self.beginRemoveRows(parent, row, row + count - 1)
-            parent = self.getItem(parent)
-            parent.removeChildren(row, count)
-            self.endRemoveRows()
-            self.scene.update()
-            return True
-        return False

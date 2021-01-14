@@ -119,7 +119,7 @@ class Pen(object):
         gitem.update_pixmap()
         gitem.changed = True
 
-    def mouse_move_handler(self, gitem: "TreeGraphicsItem", event):
+    def mouse_move_handler(self, gitem: "TreeAreaItem", event):
         pos = gitem.mapToScene(event.pos()).toPoint()
         if event.buttons() & QtCore.Qt.LeftButton:
             self.draw(gitem, pos)
