@@ -22,7 +22,7 @@
      <x>0</x>
      <y>0</y>
      <width>836</width>
-     <height>23</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -31,10 +31,13 @@
     </property>
     <widget class="QMenu" name="menuUpload">
      <property name="title">
-      <string>Upload</string>
+      <string>Import</string>
      </property>
-     <addaction name="actionUploadVol"/>
-     <addaction name="actionUploadCfp"/>
+     <addaction name="actionImportVol"/>
+     <addaction name="actionImportHEXML"/>
+     <addaction name="actionImportBSFolder"/>
+     <addaction name="separator"/>
+     <addaction name="actionImportCfp"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="menuUpload"/>
@@ -147,12 +150,12 @@
     <string>Export</string>
    </property>
   </action>
-  <action name="actionUploadVol">
+  <action name="actionImportVol">
    <property name="text">
     <string>Heyex Raw (.vol)</string>
    </property>
   </action>
-  <action name="actionUploadCfp">
+  <action name="actionImportCfp">
    <property name="text">
     <string>CFP (.tiff/.bmp)</string>
    </property>
@@ -160,6 +163,16 @@
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionImportHEXML">
+   <property name="text">
+    <string>Heyex XML (.xml)</string>
+   </property>
+  </action>
+  <action name="actionImportBSFolder">
+   <property name="text">
+    <string>B-Scans from folder</string>
    </property>
   </action>
  </widget>

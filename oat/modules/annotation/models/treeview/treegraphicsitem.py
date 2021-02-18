@@ -102,7 +102,10 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
             f"{config.api_server}/{type}areaannotations/{annotation_id}",
             headers=config.auth_header)
         if response.status_code == 200:
-            return response.json()
+            r = response.json()
+            annotation_type = r.pop("annotationtype")
+            r = {**annotation_type, **r}
+            return r
         else:
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")

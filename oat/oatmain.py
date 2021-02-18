@@ -13,7 +13,8 @@ from oat.modules.navigation import NavigationView
 from oat.modules.registration import RegistrationView
 from oat.modules.registration.models.registration_model import RegistrationModel
 from oat.modules.dialogs.login import LoginDialog
-from oat.modules.dialogs.upload import UploadCfpDialog, UploadVolDialog
+from oat.modules.dialogs.upload import ImportCfpDialog, ImportVolDialog, \
+    ImportHexmlDialog, ImportFolderDialog
 from oat.views.ui.ui_main_window import Ui_MainWindow
 
 
@@ -26,8 +27,10 @@ class oat(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.models = {"patients": PatientsModel(), "collections": CollectionsModel()}
 
-        self.actionUploadVol.triggered.connect(partial(self.upload, type="vol"))
-        self.actionUploadCfp.triggered.connect(partial(self.upload, type="cfp"))
+        self.actionImportVol.triggered.connect(partial(self.upload, type="vol"))
+        self.actionImportCfp.triggered.connect(partial(self.upload, type="cfp"))
+        self.actionImportHEXML.triggered.connect(partial(self.upload, type="hexml"))
+        self.actionImportBSFolder.triggered.connect(partial(self.upload, type="folder"))
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
@@ -58,9 +61,13 @@ class oat(QMainWindow, Ui_MainWindow):
 
     def upload(self, type):
         if type == "cfp":
-            dialog = UploadCfpDialog(models=self.models)
+            dialog = ImportCfpDialog(models=self.models)
         elif type == "vol":
-            dialog = UploadVolDialog(models=self.models)
+            dialog = ImportVolDialog(models=self.models)
+        elif type == "hexml":
+            dialog = ImportHexmlDialog(models=self.models)
+        elif type == "folder":
+            dialog = ImportFolderDialog(models=self.models)
         else:
             raise ValueError("'type' has to be either 'cfp' or 'vol'")
 

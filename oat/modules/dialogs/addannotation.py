@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from oat.models.config import DATA_ROLE
 from oat.models.db import AreaTypeModel
@@ -33,6 +33,12 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AreaAnnotationDialog):
                            }
 
         t = self.layer_model.scene.urlprefix
-        new_item = TreeAreaItem.create(area_annotation, type=t,
-                                       shape=self.layer_model.scene.shape)
-        self.layer_model.appendRow(new_item)
+        try:
+            new_item = TreeAreaItem.create(area_annotation, type=t,
+                                           shape=self.layer_model.scene.shape)
+            self.layer_model.appendRow(
+                new_item,
+                parent=QtCore.QModelIndex(self.layer_model.area_index))
+        except:
+            return
+

@@ -41,6 +41,7 @@ class SceneTab(QWidget, Ui_SceneTab):
         self.ImageTreeView.setRootIsDecorated(False)
         self.ImageTreeView.selectionModel().currentRowChanged.connect(
             self.on_currentChanged)
+        self.ImageTreeView.expandAll()
 
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')

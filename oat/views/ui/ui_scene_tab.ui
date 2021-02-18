@@ -62,6 +62,9 @@
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
      </property>
+     <property name="indentation">
+      <number>5</number>
+     </property>
     </widget>
    </item>
    <item>

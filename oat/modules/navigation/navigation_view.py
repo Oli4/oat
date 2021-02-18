@@ -57,9 +57,13 @@ class NavigationView(QWidget, Ui_OverviewView):
 
     def toggle_buttons(self):
         data = self.model.data(self.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
-        if len(data["enfaceimages"]) == 1 and len(data["volumeimages"]) == 1:
+        print(data)
+        if len(data["enfaceimages"]) == 2 and len(data["volumeimages"]) == 1:
             self.annotateButton.setEnabled(True)
             self.registerButton.setEnabled(True)
+        elif len(data["enfaceimages"]) != 2 and len(data["volumeimages"]) == 1:
+            self.annotateButton.setEnabled(True)
+            self.registerButton.setEnabled(False)
         else:
             self.annotateButton.setEnabled(False)
             self.registerButton.setEnabled(False)

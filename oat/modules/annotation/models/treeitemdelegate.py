@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QWidget
 
-from oat.modules.annotation.models.layereditor import LayerEntry
+from oat.modules.annotation.models.layereditor import LayerEntry, LayerGroupEntry
 
 
 class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
@@ -16,7 +16,10 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
-        self.editor = LayerEntry(parent)
+        if index.parent().parent() == QtCore.QModelIndex():
+            self.editor = LayerGroupEntry(parent)
+        else:
+            self.editor = LayerEntry(parent)
         self.editor.editorChanged.connect(self.update_model)
         return self.editor
 
@@ -28,8 +31,12 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         data = index.model().data(index, QtCore.Qt.EditRole)
         editor.label.setText(str(data["name"]))
-        editor.set_color(data["current_color"].upper())
         editor.set_visible(data["visible"])
+        try:
+            editor.set_color(data["current_color"].upper())
+        except:
+            pass
+
 
     def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:

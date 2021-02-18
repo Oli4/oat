@@ -5,19 +5,20 @@ from typing import List, Dict
 import numpy as np
 import qimage2ndarray
 import requests
-from PyQt5 import Qt, QtCore
+from PyQt5 import Qt, QtCore, QtGui
+import typing
 
 from oat import config
 
 
-class ItemGroup(Qt.QGraphicsItemGroup):
-    def __init__(self, *args, parent=None, **kwargs):
+class ItemGroup(Qt.QGraphicsItem):
+    def __init__(self, *args, parent=None, name="Areas", **kwargs):
         """ Provide data to create a new annotation or the id of an existing
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
         self.paintable = False
-        self._data = {"visible": True, "z_value": 0.0}
+        self._data = {"visible": True, "z_value": 0.0, "name": name}
 
     @property
     def view(self):
@@ -39,6 +40,14 @@ class ItemGroup(Qt.QGraphicsItemGroup):
     @z_value.setter
     def z_value(self, value):
         self.setZValue(value)
+
+    @property
+    def name(self):
+        return self._data["name"]
+
+    @name.setter
+    def name(self, value):
+        self._data["name"] = value
 
     def childNumber(self):
         if self.parentItem():
@@ -64,7 +73,6 @@ class ItemGroup(Qt.QGraphicsItemGroup):
     def setData(self, column: str, value):
         if (column not in self._data) or type(self._data[column]) != type(value):
             return False
-
         setattr(self, column, value)
         self.scene().update(self.scene().sceneRect())
         return True
@@ -96,3 +104,12 @@ class ItemGroup(Qt.QGraphicsItemGroup):
         child2_z = child2.zValue()
         child1.setData("z_value", child2_z)
         child2.setData("z_value", child1_z)
+
+    def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
+              widget: typing.Optional[Qt.QWidget] = ...) -> None:
+        pass
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.childrenBoundingRect()
+
+

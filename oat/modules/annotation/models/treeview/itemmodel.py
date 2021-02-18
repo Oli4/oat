@@ -14,13 +14,15 @@ class TreeItemModel(QAbstractItemModel):
         self.prefix = scene.urlprefix
         self.root_item = ItemGroup()
 
-        self.area_root = ItemGroup()
-        self.line_root = ItemGroup()
+        self.area_root = ItemGroup(name="Areas")
         self.appendRow(self.area_root)
-        self.appendRow(self.line_root)
-
         self.area_index = QtCore.QPersistentModelIndex(self.index(0,0))
-        self.line_index = QtCore.QPersistentModelIndex(self.index(1,0))
+
+        if self.prefix == "slice":
+            self.line_root = ItemGroup(name="Lines")
+            self.appendRow(self.line_root)
+            self.line_index = QtCore.QPersistentModelIndex(self.index(1, 0))
+
 
         self.scene.addItem(self.root_item)
         self.get_annotations()
@@ -37,12 +39,11 @@ class TreeItemModel(QAbstractItemModel):
             item = self.getItem(index)
             if type(item) is ItemGroup:
                 item_data = {key: item.data(key) for key in
-                             ["visible", "z_value"]}
+                             ["visible", "z_value", "name"]}
             else:
                 item_data = {key: item.data(key) for key in
-                             ["current_color", "visible", "z_value"]}
-            type_data = {"name": item.data("annotationtype")["name"]}
-            return item_data{**annotation_data, **type_data}
+                             ["current_color", "visible", "z_value", "name"]}
+            return item_data
 
         if role == QtCore.Qt.DisplayRole:
             return "bla"
@@ -73,7 +74,8 @@ class TreeItemModel(QAbstractItemModel):
 
     def get_annotations(self):
         self._get_area_annotations()
-        #self._get_line_annotations()
+        if self.prefix == "slice":
+            self._get_line_annotations()
 
     def _get_line_annotations(self):
         pass
@@ -116,11 +118,17 @@ class TreeItemModel(QAbstractItemModel):
     def setData(self, index: QtCore.QModelIndex, value, role=None):
         if role == QtCore.Qt.EditRole:
             item = self.getItem(index)
-            for k, v in {"current_color": value.color,
-                         "visible": value.visible,
-                         "name": value.label.text()}.items():
-                item.setData(k, v)
-            return True
+            if type(item) is ItemGroup:
+                for k, v in {"visible": value.visible,
+                             "name": value.label.text()}.items():
+                    item.setData(k, v)
+                return True
+            else:
+                for k, v in {"current_color": value.color,
+                             "visible": value.visible,
+                             "name": value.label.text()}.items():
+                    item.setData(k, v)
+                return True
         return False
 
     def insertRows(self, row, count, parent=QtCore.QModelIndex(), *args,

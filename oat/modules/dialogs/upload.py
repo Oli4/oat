@@ -4,13 +4,13 @@ from pathlib import Path
 from PyQt5 import QtWidgets, QtCore
 
 from oat import config
-from oat.utils.api import upload_vol, upload_enface
+from oat.utils.api import upload_vol, upload_enface_file, upload_hexml, upload_folder
 from oat.modules.dialogs import AddPatientDialog, AddCollectionDialog
 from oat.views.ui.ui_upload_dialog import Ui_UploadDialog
 
 logger = logging.getLogger(__name__)
 
-class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
+class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
     def __init__(self, models, parent=None, filefilter=None):
         super().__init__(parent)
         self.setupUi(self)
@@ -95,20 +95,48 @@ class UploadDialog(QtWidgets.QDialog, Ui_UploadDialog):
         pass
 
 
-class UploadCfpDialog(UploadDialog):
+class ImportCfpDialog(ImportDialog):
     def __init__(self, models, parent=None):
         super().__init__(models, parent, filefilter="CFP (*.bmp *.BMP *.tif *.TIF"
                                                     " *.tiff *.TIFF)")
 
     def upload(self):
-        return upload_enface(self.fname, self.patient_id, 'CFP',
-                             collection_id=self.collection_id)
+        return upload_enface_file(self.fname, self.patient_id,
+                                  self.collection_id, 'CFP',)
 
 
-class UploadVolDialog(UploadDialog):
+class ImportVolDialog(ImportDialog):
     def __init__(self, models, parent=None):
         super().__init__(models, parent, filefilter="Heyex Raw (*.vol)")
 
     def upload(self):
         return upload_vol(self.fname, self.patient_id,
+                          collection_id=self.collection_id)
+
+class ImportHexmlDialog(ImportDialog):
+    def __init__(self, models, parent=None):
+        super().__init__(models, parent)
+
+    def select_file(self):
+        self.fname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select HEYEX XML folder", config.import_path)
+        if self.fname != '':
+            self.fileName.setText(str(Path(self.fname).name))
+
+    def upload(self):
+        return upload_hexml(self.fname, self.patient_id,
+                            collection_id=self.collection_id)
+
+class ImportFolderDialog(ImportDialog):
+    def __init__(self, models, parent=None):
+        super().__init__(models, parent)
+
+    def select_file(self):
+        self.fname = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select folder with B-Scans", config.import_path)
+        if self.fname != '':
+            self.fileName.setText(str(Path(self.fname).name))
+
+    def upload(self):
+        return upload_folder(self.fname, self.patient_id,
                           collection_id=self.collection_id)

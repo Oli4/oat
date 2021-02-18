@@ -5,7 +5,7 @@ from typing import List, Dict
 import numpy as np
 import qimage2ndarray
 import requests
-from PyQt5 import Qt, QtCore
+from PyQt5 import Qt, QtCore, QtWidgets
 
 from oat import config
 
@@ -25,6 +25,9 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         self.paintable=True
         self.type = type
         # Dict of pixels for every
+        if not data is None:
+            at = data.pop("annotationtype")
+            data = {**at, **data}
         self._data = data
         height, width = self.shape
         self.qimage = Qt.QImage(width, height,
@@ -89,8 +92,13 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         if response.status_code == 200:
             return response.json()
         else:
-            raise ValueError(f"Status Code: {response.status_code}\n"
-                             f"{response.json()}")
+            msg = QtWidgets.QMessageBox()
+            msg.setIcon(QtWidgets.QMessageBox.Critical)
+            msg.setText(f"Status Code: {response.status_code}")
+            msg.setInformativeText(f"{response.json()}")
+            msg.setWindowTitle("Error")
+            msg.exec_()
+            raise ValueError()
 
     @staticmethod
     def get_annotation(annotation_id, type="enface"):
@@ -102,7 +110,11 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             f"{config.api_server}/{type}areaannotations/{annotation_id}",
             headers=config.auth_header)
         if response.status_code == 200:
-            return response.json()
+            r = response.json()
+            annotation_type = r.pop("annotationtype")
+            r = {**annotation_type, **r}
+            print(r)
+            return r
         else:
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")

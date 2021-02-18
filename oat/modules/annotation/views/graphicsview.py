@@ -1,7 +1,7 @@
 import logging
 
 import math
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui, Qt
 from PyQt5.QtWidgets import QGraphicsView
 from oat.modules.annotation.tools import tools
 
@@ -27,6 +27,10 @@ class CustomGraphicsView(QGraphicsView):
 
         self.tool = tools()["inspection"]
 
+        self.setLineWidth(3)
+        self.setPalette(Qt.QPalette(QtCore.Qt.red, QtCore.Qt.black))
+        self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
+
     def unlink_navigation(self):
         self.linked_navigation = False
 
@@ -37,6 +41,7 @@ class CustomGraphicsView(QGraphicsView):
         self.tool = tool
 
     def enterEvent(self, event):
+        self.setFrameStyle(Qt.QFrame.Raised | Qt.QFrame.Panel)
         self.grabKeyboard()
         if not self.scene().mouseGrabberItem() is None:
             self.tool.paint_preview.setParentItem(
@@ -45,6 +50,7 @@ class CustomGraphicsView(QGraphicsView):
         super().enterEvent(event)
 
     def leaveEvent(self, event):
+        self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
         self.releaseKeyboard()
         if self.tool.paint_preview.scene() == self.scene():
             self.scene().removeItem(self.tool.paint_preview)
