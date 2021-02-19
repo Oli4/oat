@@ -19,8 +19,17 @@ class AddCollectionDialog(QtWidgets.QDialog, Ui_AddCollectionDialog):
         self.buttonBox.accepted.connect(self.add_collection)
         self.buttonBox.rejected.connect(self.close)
 
+        self.button_group = QtWidgets.QButtonGroup(self)
+        self.button_group.setExclusive(True)
+        self.button_group.addButton(self.od_button)
+        self.button_group.addButton(self.os_button)
+        self.button_group.addButton(self.na_button)
+
     def add_collection(self):
-        data = {"name": self.nameEdit.text()}
+        laterality = self.button_group.checkedButton().text()
+
+        data = {"name": self.nameEdit.text(),
+                "laterality": laterality}
 
         data = {**{"patient_id": self.patient_id}, **data}
         # Only pseudonym is uploaded

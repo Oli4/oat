@@ -10,6 +10,9 @@ class CollectionsModel(QtCore.QAbstractTableModel):
     def __init__(self):
         super().__init__()
 
+        self.column_order = ["dropdown_text", "name", "patient_id", "registered",
+                             "created_by", "created_at", "enfaceimages",
+                             "volumeimages", "laterality", "id",]
         self._data = None
         self.reload_data()
 
@@ -20,10 +23,14 @@ class CollectionsModel(QtCore.QAbstractTableModel):
             headers=config.auth_header)
 
         self._data = pd.DataFrame.from_records(response.json())
+        self._data["dropdown_text"] = self._data["name"] + " (" + self._data["laterality"] + ")"
+        self._data["created_at"] = pd.to_datetime(self._data["created_at"])
+
+        self._data = self._data[self.column_order]
 
         if len(self._data) == 0:  # Produce empty collection model if no patients available
-            self._data = pd.DataFrame(columns=["name", "id", "patient_id", "registered",
-                                               "created_by", "enfaceimages", "volumeimages"])
+            self._data = pd.DataFrame(
+                columns=self.column_order)
 
         self._data.set_index("id", inplace=True)
 
@@ -36,6 +43,7 @@ class CollectionsModel(QtCore.QAbstractTableModel):
             # .row() indexes into the outer list,
             # .column() indexes into the sub-list
             return str(self._data.iloc[index.row(), index.column()])
+
         elif role == DATA_ROLE:
             if len(self._data) > 0:
                 row = self._data.iloc[index.row(), :]

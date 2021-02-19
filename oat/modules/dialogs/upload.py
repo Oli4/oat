@@ -26,6 +26,7 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
         self.collection_model = QtCore.QSortFilterProxyModel(self)
         self.collection_model.setSourceModel(models["collections"])
         self.collectionDropdown.setModel(self.collection_model)
+        self.collectionDropdown.setModelColumn(0)
         self.update_collections(0)
         self.addCollectionButton.clicked.connect(self.add_collection)
 
@@ -61,11 +62,15 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.patient_model.sourceModel().reload_data()
             self.collection_model.sourceModel().reload_data()
+            self.patientDropdown.setCurrentIndex(
+                self.patient_model_model.rowCount()-1)
 
     def add_collection(self):
         dialog = AddCollectionDialog(patient_id=self.patient_id)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.collection_model.sourceModel().reload_data()
+            self.collectionDropdown.setCurrentIndex(
+                self.collection_model.rowCount()-1)
 
     def add_dataset(self):
         pass
