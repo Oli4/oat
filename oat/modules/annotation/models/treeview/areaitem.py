@@ -98,7 +98,6 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             msg.setInformativeText(f"{response.json()}")
             msg.setWindowTitle("Error")
             msg.exec_()
-            raise ValueError()
 
     @staticmethod
     def get_annotation(annotation_id, type="enface"):

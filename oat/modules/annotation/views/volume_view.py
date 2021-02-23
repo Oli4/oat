@@ -26,7 +26,10 @@ class VolumeView(CustomGraphicsView):
         self.volume_dict = get_volume_meta_by_id(volume_id)
         self.slices = sorted(self.volume_dict["slices"],
                              key=lambda x: x["number"])
-        self.slice_lines = self._slice_lines()
+        try:
+            self.slice_lines = self._slice_lines()
+        except TypeError:
+            self.slice_lines = None
 
         self.setScene(self.bscan_scene)
         self.zoomToFit()
@@ -38,6 +41,15 @@ class VolumeView(CustomGraphicsView):
                 parent=self, data=self.slices[self.current_slice],
                 base_name=self.name)
         return self._bscan_scenes[self.current_slice]
+
+    @property
+    def bscan_scenes(self):
+        for i in range(len(self.slices)):
+            if not i in self._bscan_scenes:
+                self._bscan_scenes[i] = BscanGraphicsScene(
+                    parent=self, data=self.slices[i],
+                    base_name=self.name)
+        return self._bscan_scenes.values()
 
 
     def set_current_scene(self):
@@ -118,9 +130,10 @@ class VolumeView(CustomGraphicsView):
         scene_pos = self.mapToScene(event.pos())
         if self.tool.paint_preview.scene() == self.scene():
             self.tool.paint_preview.setPos(scene_pos.toPoint())
-        localizer_pos = self.map_to_localizer(
-            QtCore.QPointF(scene_pos.x(), self.current_slice))
-        self.cursorPosChanged.emit(localizer_pos, self)
+        if not self.volume_dict["localizer_image"] is None:
+            localizer_pos = self.map_to_localizer(
+                QtCore.QPointF(scene_pos.x(), self.current_slice))
+            self.cursorPosChanged.emit(localizer_pos, self)
 
     def _slice_lines(self):
         lines = []

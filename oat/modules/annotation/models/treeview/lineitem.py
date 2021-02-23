@@ -10,10 +10,8 @@ from PyQt5 import Qt, QtCore
 from oat import config
 
 
-class TreeLineItem(Qt.QGraphicsPixmapItem):
-    _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
-                 "upperleft_y": 0,
-                 "size_x": 0, "size_y": 0}
+class TreeLineItem(Qt.QGraphicsPathItem):
+    _defaults = {"visible": True, "heights": ""}
 
     def __init__(self, *args, parent=None, data=None, is_panel=True,
                  type="enface", shape, **kwargs):

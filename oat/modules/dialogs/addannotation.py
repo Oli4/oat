@@ -6,39 +6,159 @@ from oat.models.config import DATA_ROLE
 from oat.models.db import AreaTypeModel
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.views.ui.ui_add_areaannotation_dialog import Ui_AreaAnnotationDialog
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.views.ui.ui_add_annotation_dialog import Ui_AnnotationDialog
 
 logger = logging.getLogger(__name__)
 
 
-class AddAnnotationDialog(QtWidgets.QDialog, Ui_AreaAnnotationDialog):
-    def __init__(self, layer_model: TreeItemModel, parent=None):
+class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
+    def __init__(self, tab_widget: QtWidgets.QTabWidget, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.layer_model = layer_model
+        self.tab_widget = tab_widget
 
-        model = AreaTypeModel(self)
-        self.typeDropdown.setModel(model)
-        self.typeDropdown.update()
-        self.buttonBox.accepted.connect(self.add_areaannotation)
+        self.areatype_model = AreaTypeModel(self)
+
+        self.area_checkboxes = []
+        self.layer_checkboxes = []
+
+        self.buttonBox.accepted.connect(self.add_annotations)
         self.buttonBox.rejected.connect(self.close)
 
-    def add_areaannotation(self):
-        # Create AreaAnnotation of selected Type
-        area_type_data = self.typeDropdown.currentData(role=DATA_ROLE)
-        area_annotation = {"annotationtype_id": area_type_data["id"],
-                           "current_color": area_type_data["default_color"],
-                           "image_id": self.layer_model.scene.image_id,
-                           "z_value": self.layer_model.rowCount()
-                           }
+        self.add_area_options()
+        # Add layer options only for OCT Tab
+        if self.tab_widget.currentWidget().scene.urlprefix == "slice":
+            self.add_layer_options()
+        else:
+            self.addLayerTypeButton.setParent(None)
+            self.layerLabel.setParent(None)
+            self.line.setParent(None)
 
-        t = self.layer_model.scene.urlprefix
-        try:
-            new_item = TreeAreaItem.create(area_annotation, type=t,
-                                           shape=self.layer_model.scene.shape)
-            self.layer_model.appendRow(
-                new_item,
-                parent=QtCore.QModelIndex(self.layer_model.area_index))
-        except:
-            return
+    def get_checkbox(self, type_dict):
+        checkBox = QtWidgets.QCheckBox(self)
+        checkBox.setEnabled(True)
+        checkBox.setCheckable(True)
+        checkBox.setChecked(False)
+        checkBox.setTristate(False)
+        checkBox.setProperty("type_dict", type_dict)
+        checkBox.setObjectName(f"{type_dict['name']}_{type_dict['id']}")
+        checkBox.setText(type_dict["name"])
+        return checkBox
+
+    def add_area_options(self):
+        # Iterate over area types
+        area_types = self.areatype_model.get_area_types()
+        for i, at in enumerate(area_types):
+            if i % 3 == 0:
+                rowLayout = QtWidgets.QHBoxLayout()
+                self.areaLayout.addLayout(rowLayout)
+            # Add checkbox for area type
+            self.area_checkboxes.append(self.get_checkbox(at))
+            rowLayout.addWidget(self.area_checkboxes[-1])
+
+    def add_layer_options(self):
+        # Iterate over layer types
+        #layer_types = self.layertype_model.get_layer_types()
+        layer_types = [{"name": "RPE", "id":1, "default_color": "red"},
+                       {"name": "BM", "id": 2, "default_color": "blue"},]
+        for i, at in enumerate(layer_types):
+            if i % 3 == 0:
+                rowLayout = QtWidgets.QHBoxLayout()
+                self.layerLayout.addLayout(rowLayout)
+            # Add checkbox for layer type
+            self.layer_checkboxes.append(self.get_checkbox(at))
+            rowLayout.addWidget(self.layer_checkboxes[-1])
+
+            # Add checkbox for layer type
+
+    def add_area_annotations(self, layer_model):
+        for cb in self.area_checkboxes:
+            if cb.isChecked():
+                area_type_dict = cb.property("type_dict")
+                area_annotation = {
+                    "annotationtype_id": area_type_dict["id"],
+                    "current_color": area_type_dict["default_color"],
+                    "image_id": layer_model.scene.image_id,
+                    "z_value": layer_model.rowCount(layer_model.area_root)
+                                   }
+
+                try:
+                    new_item = TreeAreaItem.create(
+                        area_annotation, type=layer_model.scene.urlprefix,
+                        shape=layer_model.scene.shape)
+                    layer_model.appendRow(
+                        new_item,
+                        parent=QtCore.QModelIndex(layer_model.area_index))
+                except:
+                    pass
+                    #TODO: Log here
+
+    def add_layer_annotations(self, layer_model):
+        for cb in self.layer_checkboxes:
+            if cb.isChecked():
+                layer_type_dict = cb.property("type_dict")
+                layer_annotation = {
+                    "annotationtype_id": layer_type_dict["id"],
+                    "current_color": layer_type_dict["default_color"],
+                    "image_id": layer_model.scene.image_id,
+                    "z_value": (layer_model.rowCount(layer_model.area_root) +
+                                layer_model.rowCount(layer_model.layer_root))
+                                   }
+
+                try:
+                    new_item = TreeLineItem.create(
+                        layer_annotation, type=layer_model.scene.urlprefix,
+                        shape=layer_model.scene.shape)
+                    layer_model.appendRow(
+                        new_item,
+                        parent=QtCore.QModelIndex(layer_model.layer_index))
+                except:
+                    pass
+                    #TODO: Log here
+
+
+    def get_all_layer_models(self):
+        tabs = [self.tab_widget.widget(i)
+                for i in range(self.tab_widget.count())]
+        scenes = {"enface":[], "slice":[]}
+        for tab in tabs:
+            # get all scenes for enface tabs
+            if tab.scene.urlprefix == "enface":
+                scenes["enface"].append(tab.model)
+            elif tab.scene.urlprefix == "slice":
+                bscan_scenes = tab.scene.views()[0].bscan_scenes
+                for bs in bscan_scenes:
+                    scenes["slice"].append(bs.scene_tab.model)
+            else:
+                raise ValueError("The urlprefix has to be 'enface' or 'slice'")
+
+        return scenes
+
+    def add_annotations(self):
+        # Get all tabs in the tabview
+        if self.modalitiesCheckBox.isChecked():
+            scenes = self.get_all_layer_models()
+        else:
+            tab = self.tab_widget.currentWidget()
+            if tab.scene.urlprefix == "enface":
+                scenes = {"enface": [tab.model], "slice": []}
+            elif tab.scene.urlprefix == "slice":
+                bscan_scenes = tab.scene.views()[0].bscan_scenes
+                scenes = {"enface": [], "slice": []}
+                for bs in bscan_scenes:
+                    scenes["slice"].append(bs.scene_tab.model)
+            else:
+                raise ValueError("The urlprefix has to be 'enface' or 'slice'")
+
+        # Create AreaAnnotation of selected Type
+        for t in ["enface", "slice"]:
+            selected_scenes = scenes[t]
+            for scene in selected_scenes:
+                self.add_area_annotations(scene)
+
+        # If current tab is OCT create LayerAnnotation of selected Type
+        if self.tab_widget.currentWidget().scene.urlprefix == "slice":
+            for scene in scenes["slice"]:
+                self.add_layer_annotations(scene)
 

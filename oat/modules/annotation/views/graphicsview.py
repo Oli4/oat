@@ -105,14 +105,11 @@ class CustomGraphicsView(QGraphicsView):
             self.zoom_out()
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        #self.zoomToFit()
         super().resizeEvent(event)
-        # self.zoomToFit()
-        # height = event.size().height()
-        # width = self.widthForHeight(height)
-        # self.setBaseSize(width, height)
-        # self.setMinimumSize(width, height)
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
+        super().showEvent(event)
         self.zoomToFit()
 
     def keyPressEvent(self, event):

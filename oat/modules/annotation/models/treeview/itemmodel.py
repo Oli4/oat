@@ -131,17 +131,18 @@ class TreeItemModel(QAbstractItemModel):
                 return True
         return False
 
-    def insertRows(self, row, count, parent=QtCore.QModelIndex(), *args,
-                   **kwargs):
-        """ Insert count rows before the given row under the given parent """
-        self.beginInsertRows(parent, row, row + count - 1)
-        self.getItem(parent).insertChildren(row, count)
-        self.endInsertRows()
-        self.scene.update()
-        return True
+    #def insertRows(self, row, count, parent=QtCore.QModelIndex(), *args,
+    #               **kwargs):
+    #    """ Insert count rows before the given row under the given parent """
+    #    self.beginInsertRows(parent, row, row + count - 1)
+    #    self.getItem(parent).insertChildren(row, count)
+    #    self.endInsertRows()
+    #    self.scene.update()
+    #    return True
 
     def appendRow(self, data, parent=QtCore.QModelIndex()):
-        self.beginInsertRows(parent, self.rowCount(), self.rowCount())
+        self.beginInsertRows(parent, self.rowCount(parent),
+                             self.rowCount(parent))
         self.getItem(parent).appendChild(data)
         self.endInsertRows()
         self.scene.update()
@@ -153,7 +154,7 @@ class TreeItemModel(QAbstractItemModel):
         self.scene.update()
 
     def removeRows(self, row, count, parent=QtCore.QModelIndex()):
-        if parent.isValid():
+        if parent.isValid() and parent.internalPointer() != self.root_item:
             self.beginRemoveRows(parent, row, row + count - 1)
             parent = self.getItem(parent)
             parent.removeChildren(row, count)

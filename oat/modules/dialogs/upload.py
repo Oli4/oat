@@ -63,7 +63,7 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
             self.patient_model.sourceModel().reload_data()
             self.collection_model.sourceModel().reload_data()
             self.patientDropdown.setCurrentIndex(
-                self.patient_model_model.rowCount()-1)
+                self.patient_model.rowCount()-1)
 
     def add_collection(self):
         dialog = AddCollectionDialog(patient_id=self.patient_id)

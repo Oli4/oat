@@ -81,7 +81,8 @@ class SceneTab(QWidget, Ui_SceneTab):
             #    self.model.index(row2, 0, parent))
 
     def add_annotation_layer(self):
-        dialog = AddAnnotationDialog(self.model)
+        tab_widget = self.parent().parent()
+        dialog = AddAnnotationDialog(tab_widget)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.model.layoutChanged.emit()
             self.scene.update()

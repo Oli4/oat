@@ -90,7 +90,6 @@ class ItemGroup(Qt.QGraphicsItem):
 
     def removeChildren(self, row: int, count: int):
         items = self.childItems()
-
         for i in range(row, row + count):
             item = items[i]
             item.scene().removeItem(item)
@@ -104,6 +103,10 @@ class ItemGroup(Qt.QGraphicsItem):
         child2_z = child2.zValue()
         child1.setData("z_value", child2_z)
         child2.setData("z_value", child1_z)
+
+    def delete_annotation(self, *args, **kwargs):
+        # This method is intended to do nothing
+        pass
 
     def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
               widget: typing.Optional[Qt.QWidget] = ...) -> None:

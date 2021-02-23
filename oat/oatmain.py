@@ -43,10 +43,20 @@ class oat(QMainWindow, Ui_MainWindow):
     def open_annotation_view(self):
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
-        volume_id = data["volumeimages"][0]["id"]
-        cfp_id = data["enfaceimages"][0]["id"]
 
-        ao = AnnotationView(volume_id, cfp_id, parent=self)
+        volume_ids = [v["id"] for v in data["volumeimages"]]
+        volume_ids_with_localizer = [v["id"] for v in data["volumeimages"]
+                                     if not v["localizer_image"] is None]
+        volume_ids_without_localizer = list(set(volume_ids)-set(volume_ids_with_localizer))
+
+        enface_ids = [e["id"] for e in data["enfaceimages"]]
+
+        localizer_ids = [v["localizer_image"]["id"] for v in data["volumeimages"]
+                         if not v["localizer_image"] is None]
+        other_enface_ids = list(set(enface_ids) - set(localizer_ids))
+
+        ao = AnnotationView(volume_ids_with_localizer, volume_ids_without_localizer,
+                            other_enface_ids, parent=self)
         self.setCentralWidget(ao)
 
     def open_registration_view(self):
