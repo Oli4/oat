@@ -3,7 +3,7 @@ import logging
 from PyQt5 import QtWidgets, QtCore
 
 from oat.models.config import DATA_ROLE
-from oat.models.db import AreaTypeModel
+from oat.models.db import LineTypeModel, AreaTypeModel
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
@@ -18,6 +18,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
         self.setupUi(self)
         self.tab_widget = tab_widget
 
+        self.linetype_model = LineTypeModel(self)
         self.areatype_model = AreaTypeModel(self)
 
         self.area_checkboxes = []
@@ -29,7 +30,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
         self.add_area_options()
         # Add layer options only for OCT Tab
         if self.tab_widget.currentWidget().scene.urlprefix == "slice":
-            self.add_layer_options()
+            self.add_line_options()
         else:
             self.addLayerTypeButton.setParent(None)
             self.layerLabel.setParent(None)
@@ -57,12 +58,12 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
             self.area_checkboxes.append(self.get_checkbox(at))
             rowLayout.addWidget(self.area_checkboxes[-1])
 
-    def add_layer_options(self):
+    def add_line_options(self):
         # Iterate over layer types
-        #layer_types = self.layertype_model.get_layer_types()
-        layer_types = [{"name": "RPE", "id":1, "default_color": "red"},
-                       {"name": "BM", "id": 2, "default_color": "blue"},]
-        for i, at in enumerate(layer_types):
+        line_types = self.linetype_model.get_line_types()
+        #line_types = [{"name": "RPE", "id":1, "default_color": "red"},
+        #               {"name": "BM", "id": 2, "default_color": "blue"},]
+        for i, at in enumerate(line_types):
             if i % 3 == 0:
                 rowLayout = QtWidgets.QHBoxLayout()
                 self.layerLayout.addLayout(rowLayout)
@@ -94,7 +95,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     pass
                     #TODO: Log here
 
-    def add_layer_annotations(self, layer_model):
+    def add_line_annotations(self, layer_model):
         for cb in self.layer_checkboxes:
             if cb.isChecked():
                 layer_type_dict = cb.property("type_dict")
@@ -102,8 +103,8 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     "annotationtype_id": layer_type_dict["id"],
                     "current_color": layer_type_dict["default_color"],
                     "image_id": layer_model.scene.image_id,
-                    "z_value": (layer_model.rowCount(layer_model.area_root) +
-                                layer_model.rowCount(layer_model.layer_root))
+                    "z_value": (layer_model.rowCount(QtCore.QModelIndex(layer_model.area_index)) +
+                                layer_model.rowCount(QtCore.QModelIndex(layer_model.line_index)))
                                    }
 
                 try:
@@ -112,7 +113,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                         shape=layer_model.scene.shape)
                     layer_model.appendRow(
                         new_item,
-                        parent=QtCore.QModelIndex(layer_model.layer_index))
+                        parent=QtCore.QModelIndex(layer_model.line_index))
                 except:
                     pass
                     #TODO: Log here
@@ -160,5 +161,5 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
         # If current tab is OCT create LayerAnnotation of selected Type
         if self.tab_widget.currentWidget().scene.urlprefix == "slice":
             for scene in scenes["slice"]:
-                self.add_layer_annotations(scene)
+                self.add_line_annotations(scene)
 

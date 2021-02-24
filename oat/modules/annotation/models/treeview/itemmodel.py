@@ -4,6 +4,7 @@ from PyQt5.QtCore import QAbstractItemModel
 
 from oat import config
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
 from oat.modules.annotation.models.treeview.itemgroup import ItemGroup
 
 
@@ -78,9 +79,16 @@ class TreeItemModel(QAbstractItemModel):
             self._get_line_annotations()
 
     def _get_line_annotations(self):
-        pass
-        #item = TreeLineItem()
-        #self.appendRow(item, parent=QtCore.QModelIndex(self.line_index))
+        image_id = self.scene.image_id
+
+        r = requests.get(
+            f"{config.api_server}/{self.prefix}lineannotations/image/{image_id}",
+            headers=config.auth_header)
+        if r.status_code == 200:
+            for data in sorted(r.json(), key=lambda x: x["z_value"]):
+                item = TreeLineItem(data=data, type=self.prefix,
+                                    shape=self.scene.shape)
+                self.appendRow(item, parent=QtCore.QModelIndex(self.line_index))
 
     def _get_area_annotations(self):
         # Retrive image annotations and create tree item for every annotation

@@ -7,32 +7,8 @@ import eyepy as ep
 
 from io import BytesIO
 import imageio
-
-
-def upload_vol_old(filepath, patient_id, collection_id=None):
-    files = {'upl_file': (str(Path(filepath).name),
-                          open(filepath, 'rb'),
-                          "multipart/form-data"),
-             "patient_id": (None, patient_id)}
-
-    new_volume = requests.post(f"{config.api_server}/volumeimages/upload/vol",
-                               files=files,
-                               headers=config.auth_header)
-    new_id = new_volume.json()["id"]
-
-    # Add volume to collection if provided
-    if collection_id:
-        response = requests.get(f"{config.api_server}/collections/{collection_id}",
-                                headers=config.auth_header)
-        collection = response.json()
-        volumeimage_ids = [x["id"] for x in collection["volumeimages"]]
-        data = {"volumeimages": [new_id, ] + volumeimage_ids}
-
-        requests.put(f"{config.api_server}/collections/{collection_id}",
-                     headers=config.auth_header,
-                     json=data)
-
-    return new_volume
+import numpy as np
+import json
 
 def upload_hexml(filepath, patient_id, collection_id):
     data = ep.Oct.from_heyex_xml(filepath)
@@ -93,6 +69,8 @@ def upload_eyepy_Oct(data, patient_id, collection_id):
                                   collection_id=collection_id, modality="NIR",
                                   **localizer_kwargs)
 
+    linetypes = requests.get(f"{config.api_server}/linetypes/me",
+                             headers=config.auth_header).json()
     for i, slice in enumerate(data):
         if has_meta:
             slice_kwargs = dict(volumeimage_id=volumeimage.json()["id"],
@@ -108,7 +86,37 @@ def upload_eyepy_Oct(data, patient_id, collection_id):
         with BytesIO() as fileobj:
             imageio.imwrite(fileobj, slice.scan, format="png")
             file_obj = fileobj.getvalue()
-        s = upload_slice(file_obj, "png", **slice_kwargs)
+        slice_response = upload_slice(file_obj, "png", **slice_kwargs)
+
+        # upload line annotations
+        for l_name in slice.layers:
+            try:
+                heights = slice.layers[l_name]
+            except KeyError:
+                continue
+            points = {"points": [(x, np.round(float(y), 1))
+                                 for x, y in enumerate(heights)]}
+
+            if l_name not in [l["name"] for l in linetypes]:
+                new_type = requests.post(
+                    f"{config.api_server}/linetypes/",
+                    json={"description": "","name": l_name,"public": True},
+                    headers=config.auth_header).json()
+                linetypes.append(new_type)
+
+            type_id, color = [(l["id"], l["default_color"])
+                       for l in linetypes if l["name"]==l_name][0]
+
+            lineannotation_data = {
+                "line_data": json.dumps(points),
+                "image_id": slice_response.json()["id"],
+                "current_color": color,
+                "annotationtype_id": type_id}
+            requests.post(
+                f"{config.api_server}/slicelineannotations/",
+                json=lineannotation_data,
+                headers=config.auth_header)
+
 
 def upload_slice_file(filepath, volumeimage_id, number, type="standard"):
     return upload_slice(file_object=open(filepath, 'rb'),

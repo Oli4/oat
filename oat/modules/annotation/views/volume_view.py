@@ -118,9 +118,10 @@ class VolumeView(CustomGraphicsView):
             else:
                 self.last_slice()
 
-            pos_on_localizer = self.map_to_localizer(
-                QPointF(self.mapToScene(event.pos()).x(), self.current_slice))
-            self.cursorPosChanged.emit(pos_on_localizer, self)
+            if not self.volume_dict["localizer_image"] is None:
+                pos_on_localizer = self.map_to_localizer(
+                    QPointF(self.mapToScene(event.pos()).x(), self.current_slice))
+                self.cursorPosChanged.emit(pos_on_localizer, self)
             event.accept()
         else:
             super().wheelEvent(event)

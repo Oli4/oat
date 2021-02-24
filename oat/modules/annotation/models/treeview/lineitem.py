@@ -3,8 +3,9 @@ import zlib
 from typing import List, Dict
 
 import numpy as np
-import qimage2ndarray
 import requests
+import json
+
 from PyQt5 import Qt, QtCore
 
 from oat import config
@@ -14,78 +15,87 @@ class TreeLineItem(Qt.QGraphicsPathItem):
     _defaults = {"visible": True, "heights": ""}
 
     def __init__(self, *args, parent=None, data=None, is_panel=True,
-                 type="enface", shape, **kwargs):
+                 type="slice", shape, **kwargs):
         """ Provide data to create a new annotation or the id of an existing
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
+        if not data is None:
+            at = data.pop("annotationtype")
+            data = {**at, **data}
+        self._data = data
+        self.type = type
         self.shape = shape
-        #self.setOffset(Qt.QPointF(-0.5, -0.5))
+        [setattr(self, key, value) for key, value in self._data.items()]
+
+        self.points = None
+        self.set_data()
+
+
+        # self.toSubpathPolygons() for saving
+
+
+
+
+        """
         self.paintable = False
         if is_panel:
             self.paintable=True
-            self.type = type
-            # Dict of pixels for every
-            self._data = data
-            height, width = self.shape
-            self.qimage = Qt.QImage(width, height,
-                                    Qt.QImage.Format_ARGB32)
-            color = Qt.QColor()
-            color.setNamedColor(f"#{self.current_color}")
-            self.qimage.fill(color)
-            self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
-            self.setPixmap(Qt.QPixmap())
             self.set_data()
 
-
-            self.pixels = self._data["mask"]
             self.changed = False
             self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
             self.timer.timeout.connect(self.sync)
 
-            [setattr(self, key, value) for key, value in self._data.items()]
+        """
 
-    def update_pixmap(self):
-        pixmap = self.pixmap()
-        pixmap.convertFromImage(self.qimage)
-        self.setPixmap(pixmap)
+    def update_line(self):
+        path = Qt.QPainterPath()
+        for p in self.polygons:
+            path.addPolygon(p)
+        self.setPath(path)
+        self.update()
 
     def set_data(self):
-        self.alpha_array[...] = 0.0
-        y_start = self._data["upperleft_y"]
-        y_end = self._data["upperleft_y"] + self._data["size_y"]
-        x_start = self._data["upperleft_x"]
-        x_end = self._data["upperleft_x"] + self._data["size_x"]
+        if self.line_data == "":
+            polygons = [Qt.QPolygonF([Qt.QPointF(i, self.shape[0]/2)
+                      for i in [0, self.shape[1]]])]
+        else:
+            points = json.loads(self.line_data)["points"]
+            polygons = []
+            path = []
+            # Add a polygon for every subpath (not interupted by nan)
+            for point in points:
+                if not np.isnan(point[1]):
+                    path.append(Qt.QPointF(point[0]+0.5, point[1]))
+                else:
+                    if not path == []:
+                        polygons.append(Qt.QPolygonF(path))
+                        path = []
+            if not path == []:
+                polygons.append(Qt.QPolygonF(path))
 
-        if self._data["mask"] != "":
-            mask = base64.b64decode(self._data["mask"])
-            mask = zlib.decompress(mask)
-            size = self._data["size_x"] * self._data["size_y"]
-            shape = (self._data["size_y"], self._data["size_x"])
-            mask = np.unpackbits(
-                np.frombuffer(mask, dtype=np.uint8))[:size].reshape(shape)
-            self.alpha_array[y_start:y_end,x_start:x_end] = mask.astype(float)*255
-            self.update_pixmap()
-
+        self.polygons = polygons
+        self.update_line()
 
     @classmethod
-    def create(cls, data, shape, parent=None, type="enface"):
+    def create(cls, data, shape, parent=None, type="slice"):
         data = {**cls._defaults, **data}
         item_data = cls.post_annotation(data, type=type)
         return cls(data=item_data, parent=parent, is_panel=True, type=type,
                    shape=shape)
 
     @classmethod
-    def from_annotation_id(cls, id, parent=None, type="enface"):
+    def from_annotation_id(cls, id, parent=None, type="slice"):
         item_data = cls.get_annotation(id, type=type)
         return cls(data=item_data, parent=parent, is_panel=True, type=type)
 
     @staticmethod
-    def post_annotation(data, type="enface"):
+    def post_annotation(data, type="slice"):
         response = requests.post(
-            f"{config.api_server}/{type}areaannotations/",
+            f"{config.api_server}/{type}lineannotations/",
             headers=config.auth_header, json=data)
         if response.status_code == 200:
             return response.json()
@@ -94,13 +104,13 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                              f"{response.json()}")
 
     @staticmethod
-    def get_annotation(annotation_id, type="enface"):
+    def get_annotation(annotation_id, type="slice"):
         if type not in ["enface", "slice"]:
             msg = f"Parameter type has to be (enface|slice) not {type}"
             raise ValueError(msg)
 
         response = requests.get(
-            f"{config.api_server}/{type}areaannotations/{annotation_id}",
+            f"{config.api_server}/{type}lineannotations/{annotation_id}",
             headers=config.auth_header)
         if response.status_code == 200:
             return response.json()
@@ -109,9 +119,9 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                              f"{response.json()}")
 
     @staticmethod
-    def put_annotation(annotation_id, data, type="enface"):
+    def put_annotation(annotation_id, data, type="slice"):
         response = requests.put(
-            f"{config.api_server}/{type}areaannotations/{annotation_id}",
+            f"{config.api_server}/{type}lineannotations/{annotation_id}",
             json=data, headers=config.auth_header)
         if response.status_code == 200:
             return response.json()
@@ -120,9 +130,9 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                              f"{response.json()}")
 
     @staticmethod
-    def delete_annotation(annotation_id, type="enface"):
+    def delete_annotation(annotation_id, type="slice"):
         response = requests.delete(
-            f"{config.api_server}/{type}areaannotations/{annotation_id}",
+            f"{config.api_server}/{type}lineannotations/{annotation_id}",
             headers=config.auth_header)
         if response.status_code == 200:
             return response.json()
@@ -168,28 +178,6 @@ class TreeLineItem(Qt.QGraphicsPathItem):
             self.set_data()
             self.changed=False
 
-    def add_pixels(self, pos, mask):
-        size_x, size_y = mask.shape
-        offset_x = pos.x() - (size_x - 1) / 2
-        offset_y = pos.y() - (size_y - 1) / 2
-
-        for ix, iy in np.ndindex(mask.shape):
-            if mask[ix, iy]:
-                self.alpha_array[int(offset_y+iy), int(offset_x+ix)] = 255.0
-
-        self.update_pixmap()
-        self.changed = True
-
-    def remove_pixels(self, pos, mask):
-        size_x, size_y = mask.shape
-        offset_x = pos.x() - (size_x - 1) / 2
-        offset_y = pos.y() - (size_y - 1) / 2
-        for ix, iy in np.ndindex(mask.shape):
-            if mask[ix, iy]:
-                self.alpha_array[int(offset_y + iy), int(offset_x + ix)] = 0.0
-
-        self.update_pixmap()
-        self.changed = True
 
     # Functions to make the QGraphicsItemGroup work as a item in a model tree
 
@@ -218,9 +206,11 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         self._data["current_color"] = value
         color = Qt.QColor()
         color.setNamedColor(f"#{self.current_color}")
-        self.qimage.fill(color)
-        self.set_data()
-        self.update_pixmap()
+        pen = Qt.QPen(color)
+        pen.setWidth(2)
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.update()
 
     def childNumber(self):
         if self.parentItem():
@@ -255,7 +245,7 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         self.scene().update(self.scene().sceneRect())
         return True
 
-    def appendChild(self, data: "TreeAreaItem"):
+    def appendChild(self, data: "TreeLineItem"):
         items = self.childItems()
 
         if items:
@@ -277,22 +267,6 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         else:
             z = 0.0
         z_values = [float(x) for x in range(z, z + count)]
-        # if self.childCount() == 0:
-        #    z_values = list(range(0, count))
-
-        # If no other item: Set z-Values from 0 to -count
-        # elif row == 0:
-        #    z_values = np.linspace(0, items[0].zValue(), count + 2)[1:-1]
-
-        # If appended: Set z-Value of last item + 1
-        # elif row == self.childCount():
-        #    z_values = [items[-1].zValue() + i for i in range(1, count + 1)]
-
-        # If inserted: Set z-Values to linspace between last and next items z_value
-        # else:
-        #    z_values = [items[-1].zValue() + i for i in range(1, count + 1)]
-        # z_values = np.linspace(items[row-1].zValue(),
-        #                       items[row].zValue(), count + 2)[1:-1]
 
         for i, z_value in enumerate(z_values):
             if data:
@@ -300,7 +274,7 @@ class TreeLineItem(Qt.QGraphicsPathItem):
             else:
                 item_data = {}
             item_data.update(z_value=z_value)
-            layer = TreeAreaItem(data=item_data)
+            layer = TreeLineItem(data=item_data)
             layer.setParentItem(self)
 
     def removeChildren(self, row: int, count: int):
