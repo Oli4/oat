@@ -1,5 +1,6 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
 
 class PaintPreview(Qt.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):
@@ -17,10 +18,10 @@ class PaintPreview(Qt.QGraphicsItem):
               widget) -> None:
         return None
 
-class Inspection(object):
+class Spline(object):
     def __init__(self):
         """ """
-        self.name = "inspection"
+        self.name = "spline"
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()
         self.hot_key = None
@@ -42,30 +43,24 @@ class Inspection(object):
         return QtGui.QCursor(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"), hotX=0, hotY=0)
 
-    @staticmethod
-    def mouse_move_handler(gitem, event):
+    def mouse_move_handler(self, gitem, event):
         pass
 
-    @staticmethod
-    def mouse_press_handler(gitem, event):
+    def mouse_press_handler(self, gitem, event):
+        pos = gitem.mapToScene(event.pos())
+        gitem.add_knot(pos)
+
+    def mouse_doubleclick_handler(self, gitem, event):
         pass
 
-    @staticmethod
-    def mouse_doubleclick_handler(gitem, event):
+    def mouse_release_handler(self, gitem, event):
         pass
 
-    @staticmethod
-    def mouse_release_handler(gitem, event):
+    def mouse_release_handler(self, gitem, event):
         pass
 
-    @staticmethod
-    def mouse_release_handler(gitem, event):
+    def key_press_handler(self, gitem, event):
         pass
 
-    @staticmethod
-    def key_press_handler(gitem, event):
-        pass
-
-    @staticmethod
-    def key_release_handler(gitem, event):
+    def key_release_handler(self, gitem, event):
         pass

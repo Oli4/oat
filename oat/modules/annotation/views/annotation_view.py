@@ -11,6 +11,9 @@ from oat.modules.annotation.views.volume_localizer_view import VolumeLocalizerVi
 from oat.modules.annotation.views.volume_view import VolumeView
 from oat.modules.annotation.views.enface_view import EnfaceView
 
+from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+
 logger = logging.getLogger(__name__)
 
 
@@ -135,6 +138,14 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             for view in self.graphic_views:
                 view.link_navigation()
 
+    def current_tools(self):
+        crrnt_item = self.layerOverview.currentWidget().scene.mouseGrabberItem()
+        if type(crrnt_item) == TreeAreaItem:
+            return "areatools"
+        elif type(crrnt_item) == TreeLineItem:
+            return "linetools"
+        else:
+            return None
 
     def set_tool_buttons(self):
         for i, (name, tool) in enumerate(self.tools.items()):

@@ -28,6 +28,10 @@ class TreeItemModel(QAbstractItemModel):
         self.scene.addItem(self.root_item)
         self.get_annotations()
 
+    #@property
+    #def current_subtree(self):
+    #    self.i
+
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)
         return parent_item.childCount()
