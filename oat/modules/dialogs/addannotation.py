@@ -81,7 +81,9 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     "annotationtype_id": area_type_dict["id"],
                     "current_color": area_type_dict["default_color"],
                     "image_id": layer_model.scene.image_id,
-                    "z_value": layer_model.rowCount(layer_model.area_root)
+                    "z_value": layer_model.rowCount(
+                        QtCore.QModelIndex(layer_model.area_index)
+                    )
                                    }
 
                 try:

@@ -18,22 +18,6 @@ class VolumeView(CustomGraphicsView):
         self._bscan_scenes = {}
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-    def get_data(self, volume_id, name="OCT"):
-        self.volume_id = volume_id
-        self.name = name
-        self.current_slice = 0
-
-        self.volume_dict = get_volume_meta_by_id(volume_id)
-        self.slices = sorted(self.volume_dict["slices"],
-                             key=lambda x: x["number"])
-        try:
-            self.slice_lines = self._slice_lines()
-        except TypeError:
-            self.slice_lines = None
-
-        self.setScene(self.bscan_scene)
-        self.zoomToFit()
-
     @property
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
@@ -51,6 +35,21 @@ class VolumeView(CustomGraphicsView):
                     base_name=self.name)
         return self._bscan_scenes.values()
 
+    def get_data(self, volume_id, name="OCT"):
+        self.volume_id = volume_id
+        self.name = name
+        self.current_slice = 0
+
+        self.volume_dict = get_volume_meta_by_id(volume_id)
+        self.slices = sorted(self.volume_dict["slices"],
+                             key=lambda x: x["number"])
+        try:
+            self.slice_lines = self._slice_lines()
+        except TypeError:
+            self.slice_lines = None
+
+        self.setScene(self.bscan_scene)
+        self.zoomToFit()
 
     def set_current_scene(self):
         if self.tool.paint_preview.scene() == self.scene():

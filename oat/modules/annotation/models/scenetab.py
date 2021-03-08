@@ -12,6 +12,7 @@ class SceneTab(QWidget, Ui_SceneTab):
         super().__init__(parent)
         self.setupUi(self)
 
+
         self.scene = scene
         self.model = TreeItemModel(self.scene)
         self.configure_imageTreeView()
@@ -24,7 +25,6 @@ class SceneTab(QWidget, Ui_SceneTab):
 
 
         self.opacitySlider.valueChanged.connect(self.set_opacity)
-
         #self.upButton.setEnabled(False)
         #self.downButton.setEnabled(False)
         #self.upButton.hide()
@@ -48,8 +48,10 @@ class SceneTab(QWidget, Ui_SceneTab):
     def on_currentChanged(self, current, previous):
         if self.model.getItem(previous) == self.model.scene.mouseGrabberItem():
             self.model.getItem(previous).ungrabMouse()
+            self.model.getItem(previous).hide_controlls()
         if self.model.getItem(current).isVisible():
             self.model.getItem(current).grabMouse()
+            self.model.getItem(current).show_controlls()
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

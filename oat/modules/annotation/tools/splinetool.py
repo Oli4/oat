@@ -47,11 +47,11 @@ class Spline(object):
         pass
 
     def mouse_press_handler(self, gitem, event):
-        pos = gitem.mapToScene(event.pos())
-        gitem.add_knot(pos)
+        pass
 
     def mouse_doubleclick_handler(self, gitem, event):
-        pass
+        pos = gitem.mapToScene(event.pos())
+        gitem.add_knot(pos)
 
     def mouse_release_handler(self, gitem, event):
         pass

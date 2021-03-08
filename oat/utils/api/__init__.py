@@ -5,6 +5,7 @@ import requests
 from oat import config
 import eyepy as ep
 
+import random
 from io import BytesIO
 import imageio
 import numpy as np
@@ -94,13 +95,19 @@ def upload_eyepy_Oct(data, patient_id, collection_id):
                 heights = slice.layers[l_name]
             except KeyError:
                 continue
-            points = {"points": [(x, np.round(float(y), 1))
-                                 for x, y in enumerate(heights)]}
+            line_data = {"points": [(x, np.round(float(y), 1))
+                                 for x, y in enumerate(heights)],
+                         "curves": []}
 
             if l_name not in [l["name"] for l in linetypes]:
+                if l_name in ep.core.config.layers_color:
+                    color = '#%02x%02x%02x' % ep.core.config.layers_color[l_name]
+                else:
+                    color = '%06x' % random.randrange(16**6)
                 new_type = requests.post(
                     f"{config.api_server}/linetypes/",
-                    json={"description": "","name": l_name,"public": True},
+                    json={"description": "","name": l_name,"public": True,
+                          "default_color": color},
                     headers=config.auth_header).json()
                 linetypes.append(new_type)
 
@@ -108,7 +115,7 @@ def upload_eyepy_Oct(data, patient_id, collection_id):
                        for l in linetypes if l["name"]==l_name][0]
 
             lineannotation_data = {
-                "line_data": json.dumps(points),
+                "line_data": json.dumps(line_data),
                 "image_id": slice_response.json()["id"],
                 "current_color": color,
                 "annotationtype_id": type_id}

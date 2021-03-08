@@ -6,7 +6,7 @@ import numpy as np
 import requests
 import json
 
-from PyQt5 import Qt, QtCore, QtWidgets
+from PyQt5 import Qt, QtCore, QtWidgets, QtGui
 
 from oat import config
 
@@ -28,13 +28,13 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
     def center(self):
         return self.mapToScene(self.boundingRect().center())
 
-    @property
-    def c_item(self):
-        return self.mapFromParent(self.boundingRect().center())
+    def as_tuple(self):
+        center = self.center
+        return center.x(), center.y()
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super().mouseMoveEvent(event)
-        self.parentItem().parentItem().buildPath()
+        self.parentItem().parentItem().update_line()
         self.parentItem().set_lines()
 
 
@@ -43,13 +43,13 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         super().__init__(parent=parent, **kwargs)
 
         self.setRect(Qt.QRectF(Qt.QPoint(0,0), Qt.QPoint(5,5)))
-        #self.setTransformOriginPoint(self.boundingRect().center())
         self.setPos(pos-self.rect().center())
 
         pen = Qt.QPen(Qt.QColor("red"))
         pen.setCosmetic(True)
         self.setPen(pen)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
         #self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
 
         self._cp_in = None
@@ -57,18 +57,50 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         self._line_in = None
         self._line_out = None
 
+    def focusInEvent(self, event: QtGui.QFocusEvent) -> None:
+        super().focusInEvent(event)
+        pen = Qt.QPen(Qt.QColor("yellow"))
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.update()
+
+    def focusOutEvent(self, event: QtGui.QFocusEvent) -> None:
+        super().focusOutEvent(event)
+        pen = Qt.QPen(Qt.QColor("red"))
+        pen.setCosmetic(True)
+        self.setPen(pen)
+        self.update()
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        super().keyPressEvent(event)
+        if event.key() == QtCore.Qt.Key_Delete:
+            self.parentItem().delete_knot(self)
+
+    @classmethod
+    def from_dict(cls, data, parent=None):
+        new = cls(parent, Qt.QPointF(*data["knot"]))
+        if "cpin" in data:
+            new.cp_in = Qt.QPointF(*data["cpin"])
+        if "cpout" in data:
+            new.cp_out = Qt.QPointF(*data["cpout"])
+        return new
+
+    def to_dict(self):
+        return {"knot": self.as_tuple(),
+                "cpin": self.cp_in.as_tuple(),
+                "cpout": self.cp_out.as_tuple()}
 
     @property
     def center(self):
         return self.mapToScene(self.boundingRect().center())
 
-    @property
-    def c_item(self):
-        return self.mapFromParent(self.boundingRect().center())
+    def as_tuple(self):
+        center = self.center
+        return center.x(), center.y()
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super().mouseMoveEvent(event)
-        self.parentItem().buildPath()
+        self.parentItem().update_line()
 
     @property
     def cp_in(self) -> ControllPointGraphicsItem:
@@ -86,6 +118,9 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
                     Qt.QLineF(self.mapFromScene(self.center),
                               self.mapFromScene(self.cp_in.center)),
                     parent=self)
+                pen = Qt.QPen(Qt.QColor("blue"))
+                pen.setCosmetic(True)
+                self._line_in.setPen(pen)
             else:
                 self._line_in.setLine(Qt.QLineF(
                     self.mapFromScene(self.center),
@@ -107,6 +142,9 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
                     Qt.QLineF(self.mapFromScene(self.center),
                               self.mapFromScene(self.cp_out.center)),
                     parent=self)
+                pen = Qt.QPen(Qt.QColor("blue"))
+                pen.setCosmetic(True)
+                self._line_out.setPen(pen)
             else:
                 self._line_out.setLine(Qt.QLineF(
                     self.mapFromScene(self.center),
@@ -118,7 +156,7 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
 
 
 class TreeLineItem(Qt.QGraphicsPathItem):
-    _defaults = {"visible": True, "heights": ""}
+    _defaults = {"visible": True, "line_data": {"points":[], "curves":[]}}
 
     def __init__(self, *args, parent=None, data=None, is_panel=True,
                  type="slice", shape, **kwargs):
@@ -129,65 +167,134 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         if not data is None:
             at = data.pop("annotationtype")
             data = {**at, **data}
+        if "heights" in data:
+            data.pop("heights")
+            data["line_data"] = json.dumps({"curves": [], "points": []})
+        if data["line_data"] == '':
+            data["line_data"] = json.dumps({"curves": [], "points": []})
         self._data = data
         self.type = type
         self.shape = shape
         [setattr(self, key, value) for key, value in self._data.items()]
+        self.line_data = json.loads(self.line_data)
 
         self.points = None
-        self.knots = []
+        self.curve_knots = []
         self.set_data()
+        self.changed = False
+        self.hide_controlls()
 
-        #self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
-        #self.setFlag(Qt.QGraphicsItem.ItemIsFocusable, True)
+        self.setFlag(Qt.QGraphicsItem.ItemIsFocusable, True)
 
-        # self.toSubpathPolygons() for saving
+        self.timer = QtCore.QTimer()
+        self.timer.start(5000)
+        self.timer.timeout.connect(self.sync)
 
-
-
-
-        """
-        self.paintable = False
-        if is_panel:
-            self.paintable=True
-            self.set_data()
-
-            self.changed = False
-            
-            self.timer = QtCore.QTimer()
-            self.timer.start(2500)
-            self.timer.timeout.connect(self.sync)
-
-        """
 
     def hide_controlls(self):
-        pass
+        for knots in self.curve_knots:
+            [k.hide() for k in knots]
 
     def show_controlls(self):
-        pass
+        for knots in self.curve_knots:
+            [k.show() for k in knots]
 
-    def add_knot(self, pos):
+    def add_knot(self, pos, cpin_pos=None, cpout_pos=None):
         # if first knot, just add knot on the current path
         if not self.view._ctrl_pressed:
+            self.changed = True
             new_knot = PointGraphicsItem(self, pos)
-            self.knots.append(new_knot)
-            self.knots = sorted(self.knots, key=lambda x: x.center.x())
+            if not cpin_pos is None:
+                new_knot.cp_in = cpin_pos
+            if not cpout_pos is None:
+                new_knot.cp_out = cpout_pos
 
-            if len(self.knots) > 3:
-                self.buildPath()
+            self.current_curve_knots.append(new_knot)
+            self.current_curve_knots = sorted(
+                self.current_curve_knots, key=lambda x: x.center.x())
 
-    def buildPath(self):
-        factor = 0.25
-        path = Qt.QPainterPath(self.knots[0].center)
-        for p, current_point in enumerate(self.knots[1:-1], 1):
+            if len(self.current_curve_knots) > 1:
+                self.update_line()
 
-            last_point = self.knots[p - 1]
-            current=current_point.center
+    def delete_knot(self, knot):
+        self.scene().removeItem(knot)
+        for knots in self.curve_knots:
+            if knot in knots:
+                knots.remove(knot)
+        self.update_line()
 
-            # previous segment
-            source = QtCore.QLineF(self.knots[p - 1].center, current)
-            # next segment
-            target = QtCore.QLineF(current, self.knots[p + 1].center)
+
+    @property
+    def current_curve_knots(self):
+        # This is enough as long as we support only a single curve per layer
+        # We might want to support multiple curves to support ungraded regions
+        if len(self.curve_knots) == 0:
+            self.curve_knots.append([])
+        return self.curve_knots[0]
+
+    @current_curve_knots.setter
+    def current_curve_knots(self, value):
+        self.curve_knots[0] = value
+
+    @property
+    def curve_paths(self):
+        paths = []
+        for knots in self.curve_knots:
+            if len(knots) > 1:
+                paths.append(self.build_path(knots, factor=0.25))
+        return paths
+
+    @property
+    def line_paths(self):
+        # Create polygons for annotated non curve regions
+        paths = []
+        if not self.line_data == {}:
+            points = self.line_data["points"]
+
+            # Remove curve regions from points
+            points = np.array(points)
+            for start, end in self.curve_regions:
+                points[start: end + 1] = np.nan
+
+            # Create QPainterPaths for every point collection.
+
+            line = []
+            for point in points:
+                point_x, point_y = point
+                if not (np.isnan(point_x) | np.isnan(point_y)):
+                    line.append(Qt.QPointF(point[0] + 0.5, point[1] + 0.5))
+                else:
+                    if not line == []:
+                        new_line = Qt.QPainterPath(line[0])
+                        new_line.addPolygon(Qt.QPolygonF(line[1:]))
+                        paths.append(new_line)
+                        line = []
+
+            if not line == []:
+                new_line = Qt.QPainterPath(line[0])
+                new_line.addPolygon(Qt.QPolygonF(line[1:]))
+                paths.append(new_line)
+
+        return paths
+
+
+    def build_path(self, knots, factor=0.25):
+        for p, current_point in enumerate(knots):
+            current = current_point.center
+
+            if p == 0:
+                target = QtCore.QLineF(current, knots[p + 1].center)
+                source = QtCore.QLineF().fromPolar(
+                    target.length(), 180+target.angle()).translated(current)
+                source.setPoints(source.p2(), source.p1())
+            elif p == len(knots) - 1:
+                source = QtCore.QLineF(knots[p - 1].center, current)
+                target = QtCore.QLineF().fromPolar(
+                    source.length(), source.angle()).translated(current)
+            else:
+                source = QtCore.QLineF(knots[p - 1].center, current)
+                target = QtCore.QLineF(current, knots[p + 1].center)
+
             targetAngle = target.angleTo(source)
             if targetAngle > 180:
                 angle = (source.angle() + source.angleTo(target) / 2) % 360
@@ -200,52 +307,64 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                 cp2 = revTarget.p2()
                 current_point.cp_in = cp2
 
-            if p == 1:
-                path.quadTo(current_point.cp_in.center, current)
-            else:
-                # use the control point "cp1" set in the *previous* cycle
-                path.cubicTo(last_point.cp_out.center,
-                             current_point.cp_in.center, current)
-
             if current_point.cp_out is None:
                 revSource = QtCore.QLineF.fromPolar(target.length() * factor,
                                                     angle).translated(current)
                 cp1 = revSource.p2()
                 current_point.cp_out = cp1
 
-        # the final curve, that joins to the last point
-        path.quadTo(current_point.cp_out.center, self.knots[-1].center)
-        self.setPath(path)
-        self.update()
+            if p == 0:
+                path = Qt.QPainterPath(current)
+                last_point = current_point
+            else:
+                path.cubicTo(last_point.cp_out.center,
+                             current_point.cp_in.center, current)
+                last_point = current_point
+
+        return path
 
     def update_line(self):
-        path = Qt.QPainterPath()
-        for p in self.polygons:
-            path.addPolygon(p)
-        self.setPath(path)
-        self.update()
+        self.changed=True
+        paths = self.line_paths + self.curve_paths
+        paths = sorted(paths, key=lambda x: x.elementAt(0).x)
+        if len(paths) > 0:
+            path = paths[0]
+            if len(paths) > 1:
+                for i in range(len(paths)-1):
+                    path.connectPath(paths[i+1])
+            self.setPath(path)
+            self.update()
+
+    @property
+    def curve_regions(self):
+        regions = []
+        for knots in self.curve_knots:
+            if len(knots) > 0:
+                start_x = int(np.floor(knots[0].as_tuple()[0]))
+                end_x = int(np.ceil(knots[-1].as_tuple()[0]))
+                regions.append((start_x, end_x))
+            else:
+                self.curve_knots.remove(knots)
+        return regions
 
     def set_data(self):
-        if self.line_data == "":
-            polygons = [Qt.QPolygonF([Qt.QPointF(i, self.shape[0]/2)
-                      for i in [0, self.shape[1]]])]
-        else:
-            points = json.loads(self.line_data)["points"]
-            polygons = []
-            path = []
-            # Add a polygon for every subpath (not interupted by nan)
-            for point in points:
-                if not np.isnan(point[1]):
-                    path.append(Qt.QPointF(point[0]+0.5, point[1]))
-                else:
-                    if not path == []:
-                        polygons.append(Qt.QPolygonF(path))
-                        path = []
-            if not path == []:
-                polygons.append(Qt.QPolygonF(path))
+        if not self.line_data == {}:
+            if not "curves" in self.line_data:
+                self.line_data["curves"] = []
+            curves = self.line_data["curves"]
 
-        self.polygons = polygons
-        self.update_line()
+            # Remove current knots before setting new knots
+            [[self.scene().removeItem(k) for k in c] for c in self.curve_knots]
+            self.curve_knots = []
+
+            # Add knots and controll points for every Curve
+            for curve in curves:
+                knots = [PointGraphicsItem.from_dict(p, parent=self)
+                         for p in curve]
+                knots = sorted(knots, key=lambda x: x.as_tuple()[0])
+                self.curve_knots.append(knots)
+
+            self.update_line()
 
     @classmethod
     def create(cls, data, shape, parent=None, type="slice"):
@@ -338,17 +457,34 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         self.view.tool.mouse_move_handler(self, event)
         event.accept()
 
+    def as_dict(self):
+        points = self.line_data["points"]
+
+        all_curves = []
+        for knots in self.curve_knots:
+            curve_knots = []
+            for knot in knots:
+                knot_dict = {"knot": knot.as_tuple()}
+                if not knot.cp_in is None:
+                    knot_dict["cpin"] = knot.cp_in.as_tuple()
+                if not knot.cp_out is None:
+                    knot_dict["cpout"] = knot.cp_out.as_tuple()
+                curve_knots.append(knot_dict)
+            all_curves.append(curve_knots)
+        return {"points": points, "curves": all_curves}
+
     def sync(self):
         # Upload local changes if the layer is active
-        if self.changed:
-            mask = self.alpha_array == 255.0
-            mask = np.packbits(mask).tobytes()
-            mask = zlib.compress(mask)
-            mask = base64.b64encode(mask).decode("ascii")
-            self._data.update(mask=mask, size_x=self.shape[1], size_y=self.shape[0],
-                              upperleft_y=0, upperleft_x=0)
-            self._data = self.put_annotation(annotation_id=self._data["id"],
+        if self.changed and not self.view._ctrl_pressed:
+            self._data.update(line_data=json.dumps(self.as_dict()))
+            data = self.put_annotation(annotation_id=self._data["id"],
                                              data=self._data, type=self.type)
+            at = data.pop("annotationtype")
+            data = {**at, **data}
+            self._data = data
+            [setattr(self, key, value) for key, value in self._data.items()]
+            self.line_data = json.loads(self.line_data)
+
             self.set_data()
             self.changed=False
 
@@ -392,12 +528,13 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         return 0
 
     def childCount(self):
-        return len(self.childItems())
+        return 0
+    #    return len(self.childItems())
 
-    def child(self, number: int):
-        if number < 0 or number >= self.childCount():
-            return False
-        return self.childItems()[number]
+    #def child(self, number: int):
+    #    if number < 0 or number >= self.childCount():
+    #        return False
+    #    return self.childItems()[number]
 
     def columnCount(self):
         return 1

@@ -34,6 +34,8 @@ class TreeItemModel(QAbstractItemModel):
 
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)
+        if type(parent_item) in [TreeLineItem, TreeAreaItem]:
+            return 0
         return parent_item.childCount()
 
     def columnCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
@@ -88,6 +90,7 @@ class TreeItemModel(QAbstractItemModel):
         r = requests.get(
             f"{config.api_server}/{self.prefix}lineannotations/image/{image_id}",
             headers=config.auth_header)
+
         if r.status_code == 200:
             for data in sorted(r.json(), key=lambda x: x["z_value"]):
                 item = TreeLineItem(data=data, type=self.prefix,

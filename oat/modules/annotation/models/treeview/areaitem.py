@@ -203,6 +203,12 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
 
     # Functions to make the QGraphicsItemGroup work as a item in a model tree
 
+    def hide_controlls(self):
+        pass
+
+    def show_controlls(self):
+        pass
+
     @property
     def visible(self):
         return self.isVisible()
@@ -238,12 +244,13 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         return 0
 
     def childCount(self):
-        return len(self.childItems())
+        return 0
+    #    return len(self.childItems())
 
-    def child(self, number: int):
-        if number < 0 or number >= self.childCount():
-            return False
-        return self.childItems()[number]
+    #def child(self, number: int):
+    #    if number < 0 or number >= self.childCount():
+    #        return False
+    #    return self.childItems()[number]
 
     def columnCount(self):
         return 1
