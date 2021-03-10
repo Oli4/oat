@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/path-tool.svg</file>
     <file>icons/navigation.svg</file>
     <file>icons/bxs-magic-wand.svg</file>
     <file>icons/lasso.svg</file>
@@ -23,6 +24,7 @@
     <file>icons/baseline-add_circle-24px.svg</file>
   </qresource>
   <qresource prefix="cursors">
+    <file>cursors/path_cursor.svg</file>
     <file>cursors/navigation_cursor.svg</file>
     <file>cursors/pen_cursor.svg</file>
     <file>cursors/inspection_cursor_vertical.jpeg</file>

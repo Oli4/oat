@@ -31,7 +31,7 @@ class Spline(object):
     def get_tool_button(self):
         button = QtWidgets.QToolButton()
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/icons/icons/navigation.svg"),
+        icon.addPixmap(QtGui.QPixmap(":/icons/icons/path-tool.svg"),
                        QtGui.QIcon.Normal, QtGui.QIcon.Off)
         button.setIcon(icon)
         button.setIconSize(QtCore.QSize(24, 24))
@@ -41,7 +41,7 @@ class Spline(object):
 
     def get_cursor(self):
         return QtGui.QCursor(
-            QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"), hotX=0, hotY=0)
+            QtGui.QPixmap(":/cursors/cursors/path_cursor.svg"), hotX=0, hotY=0)
 
     def mouse_move_handler(self, gitem, event):
         pass

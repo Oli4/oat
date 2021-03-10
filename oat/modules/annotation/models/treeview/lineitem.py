@@ -7,6 +7,7 @@ import requests
 import json
 
 from PyQt5 import Qt, QtCore, QtWidgets, QtGui
+import qimage2ndarray
 
 from oat import config
 
@@ -22,7 +23,7 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         pen.setCosmetic(True)
         self.setPen(pen)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
-        # self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+        #self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
 
     @property
     def center(self):
@@ -34,6 +35,21 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super().mouseMoveEvent(event)
+
+        # Make sure control points move together to keep the curve smooth
+        if self is self.parentItem().cp_in:
+            line = Qt.QLineF(self.center, self.parentItem().center)
+            line2 = Qt.QLineF(self.parentItem().center,
+                              self.parentItem().cp_out.center)
+            line.setLength(line.length()+line2.length())
+            self.parentItem().cp_out = line.p2()
+        elif self is self.parentItem().cp_out:
+            line = Qt.QLineF(self.center, self.parentItem().center)
+            line2 = Qt.QLineF(self.parentItem().center,
+                              self.parentItem().cp_in.center)
+            line.setLength(line.length() + line2.length())
+            self.parentItem().cp_in = line.p2()
+
         self.parentItem().parentItem().update_line()
         self.parentItem().set_lines()
 
@@ -99,7 +115,8 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         return center.x(), center.y()
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        super().mouseMoveEvent(event)
+        if self.scene().sceneRect().contains(self.mapToScene(event.pos())):
+            super().mouseMoveEvent(event)
         self.parentItem().update_line()
 
     @property
@@ -108,6 +125,8 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
 
     @cp_in.setter
     def cp_in(self, cp):
+        if not self._cp_in is None:
+            self._cp_in.setParentItem(None)
         self._cp_in = ControllPointGraphicsItem(self, self.mapFromScene(cp))
         self._set_line_in()
 
@@ -132,6 +151,8 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
 
     @cp_out.setter
     def cp_out(self, cp):
+        if not self._cp_out is None:
+            self._cp_out.setParentItem(None)
         self._cp_out = ControllPointGraphicsItem(self, self.mapFromScene(cp))
         self._set_line_out()
 
@@ -223,6 +244,52 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                 knots.remove(knot)
         self.update_line()
 
+        self.as_array()
+
+
+    def as_array(self):
+        """ Return the annotated path as an array of shape (image width)
+
+        The array has the same shape as the annotated image width. Regions
+        which are not annoted become np.nan
+
+        The array is build by painting the annotated path on a pixmap,
+        converting it to a numpy array and computing the column-wise center of
+        mass for the first channel.
+        """
+
+        height, width = self.scene().shape
+        qimage = Qt.QImage(width, height, Qt.QImage.Format_RGB32)
+        pixmap = QtGui.QPixmap().fromImage(qimage)
+        pixmap.convertFromImage(qimage)
+        pixmap.fill(QtCore.Qt.black)
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(QtGui.QPen(QtGui.QColor("white")))
+        painter.drawPath(self.path())
+        painter.end()
+
+        qimage = pixmap.toImage()
+        array = qimage2ndarray.rgb_view(qimage)
+        indices = np.ones(array.shape[:-1]) * np.arange(height)[..., np.newaxis]
+
+        # Without annotation, set the array to nan
+        annotated_region = array[...,0].sum(axis=0) != 0
+        heights = np.full(width, np.nan)
+        heights[annotated_region] = np.average(
+            indices[:,annotated_region], axis=0,
+            weights=array[:, annotated_region, 0])
+        return heights
+
+    @property
+    def as_points(self):
+        """Return the annotated path as discrete points
+
+        There is one point returned for every image column even if there is no
+        annotation for this column. In this case a point with a y-value of
+        np.nan is returned """
+        width = self.scene().shape[1]
+        return [(x, self.as_array()[x]) for x in range(width)]
 
     @property
     def current_curve_knots(self):
@@ -254,6 +321,7 @@ class TreeLineItem(Qt.QGraphicsPathItem):
             # Remove curve regions from points
             points = np.array(points)
             for start, end in self.curve_regions:
+                #points = [p for p in points if p[0]>=start and p[0]<=end]
                 points[start: end + 1] = np.nan
 
             # Create QPainterPaths for every point collection.
