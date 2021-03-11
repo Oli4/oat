@@ -95,6 +95,7 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
                                           'No collection selected.')
         else:
             self.upload()
+            self.collection_model.sourceModel().reload_data()
 
     def upload(self):
         pass

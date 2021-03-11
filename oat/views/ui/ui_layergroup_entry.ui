@@ -33,6 +33,9 @@
     <pointsize>10</pointsize>
    </font>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::PreventContextMenu</enum>
+  </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
@@ -75,6 +78,9 @@
        <height>26</height>
       </size>
      </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
+     </property>
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>
@@ -113,6 +119,9 @@
        <weight>75</weight>
        <bold>true</bold>
       </font>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::NoContextMenu</enum>
      </property>
      <property name="text">
       <string>Layer Group Name</string>

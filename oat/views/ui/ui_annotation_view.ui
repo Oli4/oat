@@ -169,7 +169,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Tool Options Test</string>
+               <string>Tool Options</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

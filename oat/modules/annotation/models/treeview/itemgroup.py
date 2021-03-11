@@ -20,6 +20,12 @@ class ItemGroup(Qt.QGraphicsItem):
         self.paintable = False
         self._data = {"visible": True, "z_value": 0.0, "name": name}
 
+    def hide_controlls(self):
+        pass
+
+    def show_controlls(self):
+        pass
+
     @property
     def view(self):
         return self.scene().views()[0]

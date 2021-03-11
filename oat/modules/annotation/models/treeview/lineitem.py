@@ -16,14 +16,13 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         super().__init__(parent=parent, **kwargs)
 
         self.setRect(Qt.QRectF(Qt.QPoint(0, 0), Qt.QPoint(5, 5)))
-        # self.setTransformOriginPoint(self.boundingRect().center())
+        self.setTransformOriginPoint(self.rect().center())
         self.setPos(pos - self.rect().center())
 
         pen = Qt.QPen(Qt.QColor("blue"))
         pen.setCosmetic(True)
         self.setPen(pen)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
-        #self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
 
     @property
     def center(self):
@@ -59,6 +58,7 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         super().__init__(parent=parent, **kwargs)
 
         self.setRect(Qt.QRectF(Qt.QPoint(0,0), Qt.QPoint(5,5)))
+        self.setTransformOriginPoint(self.rect().center())
         self.setPos(pos-self.rect().center())
 
         pen = Qt.QPen(Qt.QColor("red"))
@@ -66,7 +66,8 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         self.setPen(pen)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
-        #self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+
+
 
         self._cp_in = None
         self._cp_out = None
@@ -90,6 +91,11 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(event)
         if event.key() == QtCore.Qt.Key_Delete:
+            self.parentItem().delete_knot(self)
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        super().mousePressEvent(event)
+        if event.buttons() & QtCore.Qt.RightButton:
             self.parentItem().delete_knot(self)
 
     @classmethod

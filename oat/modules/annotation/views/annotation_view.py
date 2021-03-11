@@ -52,7 +52,6 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                 [vw.graphicsViewVolume for vw in self.volume_widgets] +
                 [vw.graphicsViewLocalizer for vw in self.volume_widgets])
 
-        self.scenes = [view.scene() for view in self.graphic_views]
         self.set_tabs()
 
         # Connect all VolumeLocalizerViews to all EnfaceViews
@@ -78,6 +77,10 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
         self._switch_to_tool("inspection")()
         self.linked_navigation = False
+
+    @property
+    def scenes(self):
+        return [view.scene() for view in self.graphic_views]
 
     def add_volumelocalizer_widgets(self):
         for volume_id in self.volume_ids_with_localizer:
@@ -172,12 +175,10 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                 view.set_tool(tool)
         return func
 
-    def set_tabs(self, scene=None):
+    def set_tabs(self):
         # Todo: this is highly inefficient
         index = self.layerOverview.currentIndex()
         self.layerOverview.clear()
-        if not scene is None:
-            self.scenes[0] = scene
         for scene in self.scenes:
             self.layerOverview.addTab(scene.scene_tab, scene.name)
         self.layerOverview.setCurrentIndex(index)

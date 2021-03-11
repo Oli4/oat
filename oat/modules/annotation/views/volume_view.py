@@ -9,7 +9,7 @@ import numpy as np
 
 class VolumeView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
-    sceneChanged = QtCore.pyqtSignal(Qt.QGraphicsScene)
+    sceneChanged = QtCore.pyqtSignal()
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -58,7 +58,7 @@ class VolumeView(CustomGraphicsView):
         if not self.scene().mouseGrabberItem() is None:
             self.tool.paint_preview.setParentItem(
                 self.scene().mouseGrabberItem())
-        self.sceneChanged.emit(self.bscan_scene)
+        self.sceneChanged.emit()
 
     def next_slice(self):
         if self.current_slice < len(self.slices) - 1:

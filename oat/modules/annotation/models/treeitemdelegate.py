@@ -16,6 +16,7 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
+        # SceneTab: parent.parent().parent()
         if index.parent().parent() == QtCore.QModelIndex():
             self.editor = LayerGroupEntry(parent)
         else:
@@ -31,6 +32,11 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         data = index.model().data(index, QtCore.Qt.EditRole)
         editor.label.setText(str(data["name"]))
+        if data["name"] == "RPE":
+            idealRPE_action = QtWidgets.QAction("idealRPE", editor)
+            scene_tab = editor.parent().parent().parent()
+            idealRPE_action.triggered.connect(scene_tab.compute_idealRPE)
+            editor.addAction(idealRPE_action)
         editor.set_visible(data["visible"])
         if type(editor) == LayerEntry:
             editor.set_color(data["current_color"].upper())

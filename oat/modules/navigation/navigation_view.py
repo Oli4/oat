@@ -47,14 +47,6 @@ class NavigationView(QWidget, Ui_OverviewView):
             # QtCore.Qt.Key_Delete: self.tableView.delete_current_row,
         }
 
-        # Connect the parts
-
-        # Set scenes: The first image is in the selection view and second in
-        # patch view
-        # self.scenes = self.model.scenes
-        # self.set_scenes(self.model.createIndex(0, 0),
-        #                self.model.createIndex(0, 1))
-
     def toggle_buttons(self):
         data = self.model.data(self.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
         if len(data["enfaceimages"]) > 0 or len(data["volumeimages"]) > 0:
@@ -66,51 +58,6 @@ class NavigationView(QWidget, Ui_OverviewView):
             self.registerButton.setEnabled(True)
         else:
             self.registerButton.setEnabled(False)
-
-    def showEvent(self, a0: QtGui.QShowEvent) -> None:
-        # Make sure images are filling the view when Widget is opened
-        pass
-        # self.graphicsViewPointSelection.zoomToFit()
-
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        pass
-        # self.graphicsViewPointSelection.zoomToFit()
-
-    @QtCore.pyqtSlot(QModelIndex, QModelIndex)
-    def set_scenes(self, current_index: QModelIndex,
-                   previous_index: QModelIndex):
-        pass
-        """
-        :param current_index: The new model index.
-        :param previous_index:
-        :return:
-        
-        self.graphicsViewCheckerboard.setScene(self.scenes[-1])
-        self.graphicsViewCheckerboard.zoomToFit()
-
-        feat1_index = current_index
-
-        # Find out which image to show in the patch view
-        if self.match_changed(current_index, previous_index):
-            if self.modality_changed(current_index, previous_index):
-                feat2_index = self.model.createIndex(current_index.row(),
-                                                     previous_index.column())
-            else:
-                feat2_index = self.model.createIndex(
-                    current_index.row(), self.graphicsViewPatch.scene().column)
-        else:
-            feat2_index = previous_index
-
-        # Set GraphicsViewPointSelection to current Index
-        self.graphicsViewPointSelection.setScene(
-            self.scenes[feat1_index.column()])
-        self.center_PointSelection(self.model.data(feat1_index,
-                                                   role=POINT_ROLE))
-
-        self.graphicsViewPatch.setScene(self.scenes[feat2_index.column()])
-        self.center_Patch(self.model.data(feat2_index,
-                                          role=POINT_ROLE))
-        """
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         try:

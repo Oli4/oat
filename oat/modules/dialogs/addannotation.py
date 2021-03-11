@@ -8,7 +8,7 @@ from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
 from oat.views.ui.ui_add_annotation_dialog import Ui_AnnotationDialog
-
+import json
 logger = logging.getLogger(__name__)
 
 
@@ -106,8 +106,8 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     "current_color": layer_type_dict["default_color"],
                     "image_id": layer_model.scene.image_id,
                     "z_value": (layer_model.rowCount(QtCore.QModelIndex(layer_model.area_index)) +
-                                layer_model.rowCount(QtCore.QModelIndex(layer_model.line_index)))
-                                   }
+                                layer_model.rowCount(QtCore.QModelIndex(layer_model.line_index))),
+                    "line_data": json.dumps({"curves":[], "points":[]})}
 
                 try:
                     new_item = TreeLineItem.create(
@@ -147,10 +147,15 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
             if tab.scene.urlprefix == "enface":
                 scenes = {"enface": [tab.model], "slice": []}
             elif tab.scene.urlprefix == "slice":
-                bscan_scenes = tab.scene.views()[0].bscan_scenes
                 scenes = {"enface": [], "slice": []}
-                for bs in bscan_scenes:
-                    scenes["slice"].append(bs.scene_tab.model)
+                if self.slicesCheckBox.isChecked():
+                    bscan_scenes = tab.scene.views()[0].bscan_scenes
+                    for bs in bscan_scenes:
+                        scenes["slice"].append(bs.scene_tab.model)
+                else:
+                    scenes["slice"].append(
+                        tab.scene.views()[0].bscan_scene.scene_tab.model)
+
             else:
                 raise ValueError("The urlprefix has to be 'enface' or 'slice'")
 

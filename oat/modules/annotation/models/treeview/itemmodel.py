@@ -1,5 +1,5 @@
 import requests
-from PyQt5 import Qt, QtCore
+from PyQt5 import Qt, QtCore, QtWidgets
 from PyQt5.QtCore import QAbstractItemModel
 
 from oat import config
@@ -28,9 +28,16 @@ class TreeItemModel(QAbstractItemModel):
         self.scene.addItem(self.root_item)
         self.get_annotations()
 
-    #@property
-    #def current_subtree(self):
-    #    self.i
+    def get_layer_height(self, layer):
+        layer_item = [self.line_root.child(i)
+                      for i in range(self.line_root.childCount())
+                      if self.line_root.child(i).data("name") == layer]
+        if len(layer_item) == 0:
+            raise ValueError(f'The requested layer "{layer}" is not available')
+        if len(layer_item) > 1:
+            raise ValueError(f'Make sure that there is only a single Layer of Type "{layer}"')
+        return layer_item[0].as_array()
+
 
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)

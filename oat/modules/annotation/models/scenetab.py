@@ -5,6 +5,12 @@ from oat.modules.annotation.models.treeitemdelegate import TreeItemDelegate
 from oat.modules.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.models.db import LineTypeModel
+
+import json
+import numpy as np
+import eyepy as ep
 
 
 class SceneTab(QWidget, Ui_SceneTab):
@@ -25,10 +31,50 @@ class SceneTab(QWidget, Ui_SceneTab):
 
 
         self.opacitySlider.valueChanged.connect(self.set_opacity)
-        #self.upButton.setEnabled(False)
-        #self.downButton.setEnabled(False)
-        #self.upButton.hide()
-        #self.downButton.hide()
+
+    def compute_idealRPE(self):
+        try:
+            rpe_height = self.ImageTreeView.model().get_layer_height("RPE")
+            bm_height = self.ImageTreeView.model().get_layer_height("BM")
+        except ValueError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Layer Warning", "Computing the idealRPE requires a BM and"
+                                       " RPE annotation. \n\n{}".format(str(e)))
+            return None
+        ideal_rpe = ep.core.drusen.normal_rpe(
+            rpe_height, bm_height, self.scene.shape)
+
+        linetype_model = LineTypeModel(self)
+        line_types = linetype_model.get_line_types()
+        try:
+            layer_type_dict = [l for l in line_types
+                               if l["name"] == "idealRPE"][0]
+        except IndexError:
+            layer_type_dict = linetype_model.create_type(
+                {"name": "idealRPE", "public":True, "default_color": "ff0000",
+                 "description": "The ideal RPE position", })
+
+        layer_data = {
+            "annotationtype_id": layer_type_dict["id"],
+            "current_color": layer_type_dict["default_color"],
+            "image_id": self.scene.image_id,
+            "z_value": (self.model.rowCount(
+                QtCore.QModelIndex(self.model.area_index)) +
+                        self.model.rowCount(
+                            QtCore.QModelIndex(self.model.line_index))),
+            "line_data": json.dumps({"curves": [], "points": [(x, ideal_rpe[x])
+                                     for x in range(len(ideal_rpe))]})
+        }
+        self.add_line_annotation(layer_data)
+
+    def add_line_annotation(self, data):
+        new_item = TreeLineItem.create(
+            data, type=self.model.scene.urlprefix,
+            shape=self.model.scene.shape)
+        self.model.appendRow(
+            new_item,
+            parent=QtCore.QModelIndex(self.model.line_index))
+
 
     def configure_imageTreeView(self):
         self.ImageTreeView.setModel(self.model)

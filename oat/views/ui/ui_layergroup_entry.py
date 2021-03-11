@@ -25,6 +25,7 @@ class Ui_LayerGroupEntry(object):
         font = QtGui.QFont()
         font.setPointSize(10)
         LayerGroupEntry.setFont(font)
+        LayerGroupEntry.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         LayerGroupEntry.setAutoFillBackground(True)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(LayerGroupEntry)
         self.horizontalLayout_2.setContentsMargins(2, 2, 2, 2)
@@ -38,6 +39,7 @@ class Ui_LayerGroupEntry(object):
         self.hideButton.setSizePolicy(sizePolicy)
         self.hideButton.setMinimumSize(QtCore.QSize(26, 26))
         self.hideButton.setMaximumSize(QtCore.QSize(26, 26))
+        self.hideButton.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.hideButton.setAutoFillBackground(False)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/icons/icons/baseline-visibility-24px.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -53,6 +55,7 @@ class Ui_LayerGroupEntry(object):
         font.setBold(True)
         font.setWeight(75)
         self.label.setFont(font)
+        self.label.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.label.setObjectName("label")
         self.horizontalLayout_2.addWidget(self.label)
 

@@ -25,6 +25,7 @@ class oat(QMainWindow, Ui_MainWindow):
         """Initialize the components of the main window."""
         super().__init__(parent)
         self.setupUi(self)
+
         self.models = {"patients": PatientsModel(), "collections": CollectionsModel()}
 
         self.actionImportVol.triggered.connect(partial(self.upload, type="vol"))
@@ -63,7 +64,8 @@ class oat(QMainWindow, Ui_MainWindow):
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
         localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
-        cfp_id = data["enfaceimages"][0]["id"]
+        cfp_id = [enface_image["id"] for enface_image  in data["enfaceimages"]
+                  if enface_image["id"] !=localizer_id][0]
 
         model = RegistrationModel(localizer_id, cfp_id)
         rv = RegistrationView(model)

@@ -23,6 +23,14 @@ class LineTypeModel(Qt.QAbstractTableModel):
 
         return r.json()
 
+    def create_type(self, data):
+        """Create a new Layer Annotation Type
+
+        Available fields are: name, description, public and default_color
+        """
+        return requests.post(f"{config.api_server}/linetypes/",
+                             json=data, headers=config.auth_header).json()
+
     def columnCount(self, parent=QtCore.QModelIndex()) -> int:
         return len(self.columns)
 

@@ -44,7 +44,7 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         self.changed = False
         self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
         self.timer = QtCore.QTimer()
-        self.timer.start(2500)
+        self.timer.start(10000) # Sync every 10 seconds
         self.timer.timeout.connect(self.sync)
 
         [setattr(self, key, value) for key, value in self._data.items()]
@@ -168,11 +168,20 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         # Upload local changes if the layer is active
         if self.changed:
             mask = self.alpha_array == 255.0
-            mask = np.packbits(mask).tobytes()
+            # Compute the annotations bounding box
+            rows = np.any(mask, axis=1)
+            cols = np.any(mask, axis=0)
+            upperleft_y, rmax = np.where(rows)[0][[0, -1]]
+            upperleft_x, cmax = np.where(cols)[0][[0, -1]]
+            size_y = int(rmax - upperleft_y) +1
+            size_x = int(cmax - upperleft_x) +1
+
+            mask = np.packbits(mask[upperleft_y:rmax+1,
+                                    upperleft_x:cmax+1]).tobytes()
             mask = zlib.compress(mask)
             mask = base64.b64encode(mask).decode("ascii")
-            self._data.update(mask=mask, size_x=self.shape[1], size_y=self.shape[0],
-                              upperleft_y=0, upperleft_x=0)
+            self._data.update(mask=mask, size_x=size_x, size_y=size_y,
+                              upperleft_y=int(upperleft_y), upperleft_x=int(upperleft_x))
             self._data = self.put_annotation(annotation_id=self._data["id"],
                                              data=self._data, type=self.type)
             self.set_data()

@@ -131,5 +131,5 @@ class Ui_AnnotationView(object):
         AnnotationView.setWindowTitle(_translate("AnnotationView", "Multimodal Annotation"))
         self.label_4.setText(_translate("AnnotationView", "Layers"))
         self.toolsLabel.setText(_translate("AnnotationView", "Tools"))
-        self.optionsLabel.setText(_translate("AnnotationView", "Tool Options Test"))
+        self.optionsLabel.setText(_translate("AnnotationView", "Tool Options"))
 from . import resources_rc
