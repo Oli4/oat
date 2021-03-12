@@ -101,7 +101,9 @@ def upload_eyepy_Oct(data, patient_id, collection_id):
 
             if l_name not in [l["name"] for l in linetypes]:
                 if l_name in ep.core.config.layers_color:
-                    color = '#%02x%02x%02x' % ep.core.config.layers_color[l_name]
+                    float_color = ep.core.config.layers_color[l_name]
+                    int_color = [int(x*255) for x in float_color]
+                    color = '#%02x%02x%02x' % int_color
                 else:
                     color = '%06x' % random.randrange(16**6)
                 new_type = requests.post(
