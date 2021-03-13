@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 requirements = [
     'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio',
-    'sqlalchemy', 'cryptography', "requests", "pandas", "scikit-image"
+    'sqlalchemy', 'cryptography', "requests", "pandas", "scikit-image",
 ]
 
 test_requirements = [

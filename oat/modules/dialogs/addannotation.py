@@ -27,6 +27,9 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
         self.buttonBox.accepted.connect(self.add_annotations)
         self.buttonBox.rejected.connect(self.close)
 
+        self.addLayerTypeButton.clicked.connect(self.add_layer_type)
+        self.addAreaTypeButton.clicked.connect(self.add_area_type)
+
         self.add_area_options()
         # Add layer options only for OCT Tab
         if self.tab_widget.currentWidget().scene.urlprefix == "slice":
