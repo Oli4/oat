@@ -5,7 +5,7 @@ from oat.modules.annotation.models.treeitemdelegate import TreeItemDelegate
 from oat.modules.dialogs import AddAnnotationDialog
 from oat.views.ui.ui_scene_tab import Ui_SceneTab
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 from oat.models.db import LineTypeModel
 
 import json
@@ -68,9 +68,7 @@ class SceneTab(QWidget, Ui_SceneTab):
         self.add_line_annotation(layer_data)
 
     def add_line_annotation(self, data):
-        new_item = TreeLineItem.create(
-            data, type=self.model.scene.urlprefix,
-            shape=self.model.scene.shape)
+        new_item = TreeLineItemDB.create(data, shape=self.model.scene.shape)
         self.model.appendRow(
             new_item,
             parent=QtCore.QModelIndex(self.model.line_index))
@@ -94,10 +92,10 @@ class SceneTab(QWidget, Ui_SceneTab):
     def on_currentChanged(self, current, previous):
         if self.model.getItem(previous) == self.model.scene.mouseGrabberItem():
             self.model.getItem(previous).ungrabMouse()
-            self.model.getItem(previous).hide_controlls()
+            self.model.getItem(previous).hide_knots()
         if self.model.getItem(current).isVisible():
             self.model.getItem(current).grabMouse()
-            self.model.getItem(current).show_controlls()
+            self.model.getItem(current).show_knots()
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

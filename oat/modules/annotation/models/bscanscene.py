@@ -12,9 +12,6 @@ class BscanGraphicsScene(CustomGrahpicsScene):
         self.base_name = base_name
         self.urlprefix = "slice"
         super().__init__(*args, **kwargs, parent=parent, image_id=data["id"])
-
-        # Set Scene to first B-Scan
-
         self.fake_cursor = self.addPixmap(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
         self.fake_cursor.setFlag(Qt.QGraphicsItem.ItemIgnoresTransformations)

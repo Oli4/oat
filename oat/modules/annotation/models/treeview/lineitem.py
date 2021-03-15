@@ -1,6 +1,6 @@
 import base64
 import zlib
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import numpy as np
 import requests
@@ -15,9 +15,9 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
     def __init__(self, parent, pos, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
-        self.setRect(Qt.QRectF(Qt.QPoint(0, 0), Qt.QPoint(5, 5)))
-        self.setTransformOriginPoint(self.rect().center())
-        self.setPos(pos - self.rect().center())
+        self.setRect(Qt.QRectF(Qt.QPoint(-4, -4), Qt.QPoint(4, 4)))
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+        self.setPos(pos)
 
         pen = Qt.QPen(Qt.QColor("blue"))
         pen.setCosmetic(True)
@@ -26,11 +26,11 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
 
     @property
     def center(self):
-        return self.mapToScene(self.boundingRect().center())
+        return self.mapToScene(Qt.QPointF(0,0))
 
     def as_tuple(self):
         center = self.center
-        return center.x(), center.y()
+        return np.round(center.x(), 2), np.round(center.y(), 2)
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super().mouseMoveEvent(event)
@@ -53,26 +53,31 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         self.parentItem().set_lines()
 
 
-class PointGraphicsItem(Qt.QGraphicsEllipseItem):
+class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
     def __init__(self, parent, pos, **kwargs):
         super().__init__(parent=parent, **kwargs)
-
-        self.setRect(Qt.QRectF(Qt.QPoint(0,0), Qt.QPoint(5,5)))
-        self.setTransformOriginPoint(self.rect().center())
-        self.setPos(pos-self.rect().center())
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+        self.setRect(Qt.QRectF(Qt.QPoint(-4, -4), Qt.QPoint(4, 4)))
+        self.setPos(pos)
 
         pen = Qt.QPen(Qt.QColor("red"))
         pen.setCosmetic(True)
         self.setPen(pen)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
+    def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
+              widget: Optional[QtWidgets.QWidget] = ...) -> None:
+        super().paint(painter, option, widget)
 
+    @property
+    def center(self):
+        return self.mapToScene(Qt.QPointF(0,0))
 
-        self._cp_in = None
-        self._cp_out = None
-        self._line_in = None
-        self._line_out = None
+    def as_tuple(self):
+        center = self.center
+        return np.round(center.x(), 2), np.round(center.y(), 2)
 
     def focusInEvent(self, event: QtGui.QFocusEvent) -> None:
         super().focusInEvent(event)
@@ -89,41 +94,98 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
         self.update()
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        super().keyPressEvent(event)
         if event.key() == QtCore.Qt.Key_Delete:
-            self.parentItem().delete_knot(self)
+            self.parentItem().parentItem().delete_knot(self.parentItem())
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        super().mousePressEvent(event)
         if event.buttons() & QtCore.Qt.RightButton:
-            self.parentItem().delete_knot(self)
+            self.parentItem().parentItem().delete_knot(self.parentItem())
 
-    @classmethod
-    def from_dict(cls, data, parent=None):
-        new = cls(parent, Qt.QPointF(*data["knot"]))
-        if "cpin" in data:
-            new.cp_in = Qt.QPointF(*data["cpin"])
-        if "cpout" in data:
-            new.cp_out = Qt.QPointF(*data["cpout"])
-        return new
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().parentItem().update_line()
 
-    def to_dict(self):
-        return {"knot": self.as_tuple(),
-                "cpin": self.cp_in.as_tuple(),
-                "cpout": self.cp_out.as_tuple()}
+
+
+class CubicSplineKnotItem(Qt.QGraphicsItem):
+    def __init__(self, parent, knot_pos: Qt.QPointF,
+                 cp_in_pos: Optional[Qt.QPointF],
+                 cp_out_pos: Optional[Qt.QPointF], **kwargs):
+        """"""
+
+        super().__init__(parent=parent, **kwargs)
+        # Create knot
+        self._knot = KnotGraphicsItem(self, self.mapFromScene(knot_pos))
+        # Create control points
+        pen = Qt.QPen(Qt.QColor("blue"))
+        pen.setCosmetic(True)
+        self.cps_visible = True
+
+        if cp_in_pos is None:
+            cp_in_pos = Qt.QPointF(knot_pos.x()-10, knot_pos.y())
+
+        self._cp_in = ControllPointGraphicsItem(self, cp_in_pos)
+        self._line_in = Qt.QGraphicsLineItem(
+            Qt.QLineF(self.mapFromScene(self.knot.center),
+                      self.mapFromScene(self.cp_in.center)),
+            parent=self)
+        self._line_in.setPen(pen)
+
+        if cp_out_pos is None:
+            cp_out_pos = Qt.QPointF(knot_pos.x() + 10, knot_pos.y())
+
+        self._cp_out = ControllPointGraphicsItem(self, cp_out_pos)
+        self._line_out = Qt.QGraphicsLineItem(
+            Qt.QLineF(self.mapFromScene(self.knot.center),
+                      self.mapFromScene(self.cp_out.center)),
+            parent=self)
+        self._line_out.setPen(pen)
+
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemHasNoContents, True)
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.childrenBoundingRect()
+
+    def shape(self) -> QtGui.QPainterPath:
+        d = Qt.QPointF(4, 4)
+        r = Qt.QRectF(self.knot.center - d, self.knot.center + d)
+
+        path = Qt.QPainterPath()
+        path.addEllipse(r)
+        return path
 
     @property
     def center(self):
-        return self.mapToScene(self.boundingRect().center())
+        return self.knot.center
 
-    def as_tuple(self):
-        center = self.center
-        return center.x(), center.y()
+    @classmethod
+    def from_dict(cls, data, parent=None):
+        new = cls(parent, Qt.QPointF(*data["knot"]), Qt.QPointF(*data["cpin"]),
+                  Qt.QPointF(*data["cpout"]))
+        return new
 
-    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        if self.scene().sceneRect().contains(self.mapToScene(event.pos())):
-            super().mouseMoveEvent(event)
-        self.parentItem().update_line()
+    def as_dict(self):
+        return {"knot": self.knot.as_tuple(),
+                "cpin": self.cp_in.as_tuple(),
+                "cpout": self.cp_out.as_tuple()}
+
+    def hide_control_points(self):
+        self.cps_visible = False
+        self._cp_in.hide()
+        self._cp_out.hide()
+        self._line_in.hide()
+        self._line_out.hide()
+
+    def show_control_points(self):
+        self.cps_visible = True
+        self._cp_in.show()
+        self._cp_out.show()
+        self._line_in.show()
+        self._line_out.show()
+
+    @property
+    def knot(self) -> KnotGraphicsItem:
+        return self._knot
 
     @property
     def cp_in(self) -> ControllPointGraphicsItem:
@@ -131,25 +193,9 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
 
     @cp_in.setter
     def cp_in(self, cp):
-        if not self._cp_in is None:
-            self._cp_in.setParentItem(None)
-        self._cp_in = ControllPointGraphicsItem(self, self.mapFromScene(cp))
+        # Remove previous controllpoint
+        self._cp_in.setPos(self.mapFromScene(cp))
         self._set_line_in()
-
-    def _set_line_in(self):
-        if not self._cp_in is None:
-            if self._line_in is None:
-                self._line_in = Qt.QGraphicsLineItem(
-                    Qt.QLineF(self.mapFromScene(self.center),
-                              self.mapFromScene(self.cp_in.center)),
-                    parent=self)
-                pen = Qt.QPen(Qt.QColor("blue"))
-                pen.setCosmetic(True)
-                self._line_in.setPen(pen)
-            else:
-                self._line_in.setLine(Qt.QLineF(
-                    self.mapFromScene(self.center),
-                    self.mapFromScene(self.cp_in.center)))
 
     @property
     def cp_out(self) -> ControllPointGraphicsItem:
@@ -157,91 +203,79 @@ class PointGraphicsItem(Qt.QGraphicsEllipseItem):
 
     @cp_out.setter
     def cp_out(self, cp):
-        if not self._cp_out is None:
-            self._cp_out.setParentItem(None)
-        self._cp_out = ControllPointGraphicsItem(self, self.mapFromScene(cp))
+        self.cp_out.setPos(self.mapFromScene(cp))
         self._set_line_out()
-
-    def _set_line_out(self):
-        if not self._cp_out is None:
-            if self._line_out is None:
-                self._line_out = Qt.QGraphicsLineItem(
-                    Qt.QLineF(self.mapFromScene(self.center),
-                              self.mapFromScene(self.cp_out.center)),
-                    parent=self)
-                pen = Qt.QPen(Qt.QColor("blue"))
-                pen.setCosmetic(True)
-                self._line_out.setPen(pen)
-            else:
-                self._line_out.setLine(Qt.QLineF(
-                    self.mapFromScene(self.center),
-                    self.mapFromScene(self.cp_out.center)))
 
     def set_lines(self):
-        self._set_line_out()
-        self._set_line_in()
+        if self.cps_visible:
+            self._set_line_out()
+            self._set_line_in()
+
+    def _set_line_in(self):
+        self._line_in.setLine(Qt.QLineF(
+            self.mapFromScene(self.center),
+            self.mapFromScene(self.cp_in.center)))
+
+    def _set_line_out(self):
+        self._line_out.setLine(Qt.QLineF(
+            self.mapFromScene(self.center),
+            self.mapFromScene(self.cp_out.center)))
+
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        super().mouseMoveEvent(event)
+        self.parentItem().update_line()
 
 
-class TreeLineItem(Qt.QGraphicsPathItem):
-    _defaults = {"visible": True, "line_data": {"points":[], "curves":[]}}
+class TreeLineItemBase(Qt.QGraphicsPathItem):
+    _defaults = {"visible": True, "line_data": '{"points":[], "curves":[]}'}
 
-    def __init__(self, *args, parent=None, data=None, is_panel=True,
-                 type="slice", shape, **kwargs):
-        """ Provide data to create a new annotation or the id of an existing
-        annotation.
-        """
+    def __init__(self, *args, data, shape, parent=None, **kwargs):
         super().__init__(*args, parent=parent, **kwargs)
-        if not data is None:
-            at = data.pop("annotationtype")
-            data = {**at, **data}
-        if "heights" in data:
-            data.pop("heights")
-            data["line_data"] = json.dumps({"curves": [], "points": []})
-        if data["line_data"] == '':
-            data["line_data"] = json.dumps({"curves": [], "points": []})
-        self._data = data
-        self.type = type
         self.shape = shape
+        data["line_data"] = json.loads(data["line_data"])
+        self._data = data
         [setattr(self, key, value) for key, value in self._data.items()]
-        self.line_data = json.loads(self.line_data)
 
-        self.points = None
         self.curve_knots = []
         self.set_data()
         self.changed = False
-        self.hide_controlls()
+        self.hide_knots()
 
-        self.setFlag(Qt.QGraphicsItem.ItemIsFocusable, True)
+    def shape(self) -> QtGui.QPainterPath:
+        # Create a path which closes without increasing its "area"
+        # Only clicking exactly the line should activate this item
+        path = self.path()
+        path.connectPath(self.path().toReversed())
+        return path
 
-        self.timer = QtCore.QTimer()
-        self.timer.start(5000)
-        self.timer.timeout.connect(self.sync)
-
-
-    def hide_controlls(self):
+    def hide_knots(self):
         for knots in self.curve_knots:
             [k.hide() for k in knots]
 
-    def show_controlls(self):
+    def show_knots(self):
         for knots in self.curve_knots:
             [k.show() for k in knots]
 
+    def hide_control_points(self):
+        for knots in self.curve_knots:
+            [k.hide_control_points() for k in knots]
+
+    def show_control_points(self):
+        for knots in self.curve_knots:
+            [k.show_control_points() for k in knots]
+
     def add_knot(self, pos, cpin_pos=None, cpout_pos=None):
         # if first knot, just add knot on the current path
-        if not self.view._ctrl_pressed:
-            self.changed = True
-            new_knot = PointGraphicsItem(self, pos)
-            if not cpin_pos is None:
-                new_knot.cp_in = cpin_pos
-            if not cpout_pos is None:
-                new_knot.cp_out = cpout_pos
 
-            self.current_curve_knots.append(new_knot)
-            self.current_curve_knots = sorted(
-                self.current_curve_knots, key=lambda x: x.center.x())
+        self.changed = True
+        new_knot = CubicSplineKnotItem(self, pos, cpin_pos, cpout_pos)
 
-            if len(self.current_curve_knots) > 1:
-                self.update_line()
+        self.current_curve_knots.append(new_knot)
+        self.current_curve_knots = sorted(
+            self.current_curve_knots, key=lambda x: x.knot.center.x())
+
+        if len(self.current_curve_knots) > 1:
+            self.update_line()
 
     def delete_knot(self, knot):
         self.scene().removeItem(knot)
@@ -249,8 +283,6 @@ class TreeLineItem(Qt.QGraphicsPathItem):
             if knot in knots:
                 knots.remove(knot)
         self.update_line()
-
-        self.as_array()
 
 
     def as_array(self):
@@ -348,26 +380,24 @@ class TreeLineItem(Qt.QGraphicsPathItem):
                 new_line = Qt.QPainterPath(line[0])
                 new_line.addPolygon(Qt.QPolygonF(line[1:]))
                 paths.append(new_line)
-
         return paths
 
 
     def build_path(self, knots, factor=0.25):
         for p, current_point in enumerate(knots):
-            current = current_point.center
-
+            current = current_point.knot.center
             if p == 0:
-                target = QtCore.QLineF(current, knots[p + 1].center)
+                target = QtCore.QLineF(current, knots[p + 1].knot.center)
                 source = QtCore.QLineF().fromPolar(
                     target.length(), 180+target.angle()).translated(current)
                 source.setPoints(source.p2(), source.p1())
             elif p == len(knots) - 1:
-                source = QtCore.QLineF(knots[p - 1].center, current)
+                source = QtCore.QLineF(knots[p - 1].knot.center, current)
                 target = QtCore.QLineF().fromPolar(
                     source.length(), source.angle()).translated(current)
             else:
-                source = QtCore.QLineF(knots[p - 1].center, current)
-                target = QtCore.QLineF(current, knots[p + 1].center)
+                source = QtCore.QLineF(knots[p - 1].knot.center, current)
+                target = QtCore.QLineF(current, knots[p + 1].knot.center)
 
             targetAngle = target.angleTo(source)
             if targetAngle > 180:
@@ -414,8 +444,8 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         regions = []
         for knots in self.curve_knots:
             if len(knots) > 0:
-                start_x = int(np.floor(knots[0].as_tuple()[0]))
-                end_x = int(np.ceil(knots[-1].as_tuple()[0]))
+                start_x = int(np.floor(knots[0].knot.as_tuple()[0]))
+                end_x = int(np.ceil(knots[-1].knot.as_tuple()[0]))
                 regions.append((start_x, end_x))
             else:
                 self.curve_knots.remove(knots)
@@ -423,8 +453,6 @@ class TreeLineItem(Qt.QGraphicsPathItem):
 
     def set_data(self):
         if not self.line_data == {}:
-            if not "curves" in self.line_data:
-                self.line_data["curves"] = []
             curves = self.line_data["curves"]
 
             # Remove current knots before setting new knots
@@ -433,72 +461,12 @@ class TreeLineItem(Qt.QGraphicsPathItem):
 
             # Add knots and controll points for every Curve
             for curve in curves:
-                knots = [PointGraphicsItem.from_dict(p, parent=self)
+                knots = [CubicSplineKnotItem.from_dict(p, parent=self)
                          for p in curve]
-                knots = sorted(knots, key=lambda x: x.as_tuple()[0])
+                knots = sorted(knots, key=lambda x: x.knot.as_tuple()[0])
                 self.curve_knots.append(knots)
 
             self.update_line()
-
-    @classmethod
-    def create(cls, data, shape, parent=None, type="slice"):
-        data = {**cls._defaults, **data}
-        item_data = cls.post_annotation(data, type=type)
-        return cls(data=item_data, parent=parent, is_panel=True, type=type,
-                   shape=shape)
-
-    @classmethod
-    def from_annotation_id(cls, id, parent=None, type="slice"):
-        item_data = cls.get_annotation(id, type=type)
-        return cls(data=item_data, parent=parent, is_panel=True, type=type)
-
-    @staticmethod
-    def post_annotation(data, type="slice"):
-        response = requests.post(
-            f"{config.api_server}/{type}lineannotations/",
-            headers=config.auth_header, json=data)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise ValueError(f"Status Code: {response.status_code}\n"
-                             f"{response.json()}")
-
-    @staticmethod
-    def get_annotation(annotation_id, type="slice"):
-        if type not in ["enface", "slice"]:
-            msg = f"Parameter type has to be (enface|slice) not {type}"
-            raise ValueError(msg)
-
-        response = requests.get(
-            f"{config.api_server}/{type}lineannotations/{annotation_id}",
-            headers=config.auth_header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise ValueError(f"Status Code: {response.status_code}\n"
-                             f"{response.json()}")
-
-    @staticmethod
-    def put_annotation(annotation_id, data, type="slice"):
-        response = requests.put(
-            f"{config.api_server}/{type}lineannotations/{annotation_id}",
-            json=data, headers=config.auth_header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise ValueError(f"Status Code: {response.status_code}\n"
-                             f"{response.json()}")
-
-    @staticmethod
-    def delete_annotation(annotation_id, type="slice"):
-        response = requests.delete(
-            f"{config.api_server}/{type}lineannotations/{annotation_id}",
-            headers=config.auth_header)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise ValueError(f"Status Code: {response.status_code}\n"
-                             f"{response.json()}")
 
     @property
     def view(self):
@@ -538,29 +506,9 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         for knots in self.curve_knots:
             curve_knots = []
             for knot in knots:
-                knot_dict = {"knot": knot.as_tuple()}
-                if not knot.cp_in is None:
-                    knot_dict["cpin"] = knot.cp_in.as_tuple()
-                if not knot.cp_out is None:
-                    knot_dict["cpout"] = knot.cp_out.as_tuple()
-                curve_knots.append(knot_dict)
+                curve_knots.append(knot.as_dict())
             all_curves.append(curve_knots)
         return {"points": points, "curves": all_curves}
-
-    def sync(self):
-        # Upload local changes if the layer is active
-        if self.changed and not self.view._ctrl_pressed:
-            self._data.update(line_data=json.dumps(self.as_dict()))
-            data = self.put_annotation(annotation_id=self._data["id"],
-                                             data=self._data, type=self.type)
-            at = data.pop("annotationtype")
-            data = {**at, **data}
-            self._data = data
-            [setattr(self, key, value) for key, value in self._data.items()]
-            self.line_data = json.loads(self.line_data)
-
-            self.set_data()
-            self.changed=False
 
 
     # Functions to make the QGraphicsItemGroup work as a item in a model tree
@@ -614,9 +562,13 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         return 1
 
     def data(self, column: str):
-        if column not in self._data:
-            raise Exception(f"column {column} not in data")
-        return getattr(self, column)
+        if column in self._data:
+            return getattr(self, column)
+        elif column == "name":
+            return self.annotationtype["name"]
+
+        raise Exception(f"column {column} not in data")
+
 
     def setData(self, column: str, value):
         if (column not in self._data) or type(self._data[column]) != type(value):
@@ -659,7 +611,7 @@ class TreeLineItem(Qt.QGraphicsPathItem):
             else:
                 item_data = {}
             item_data.update(z_value=z_value)
-            layer = TreeLineItem(data=item_data)
+            layer = type(self)(data=item_data)
             layer.setParentItem(self)
 
     def removeChildren(self, row: int, count: int):
@@ -680,3 +632,105 @@ class TreeLineItem(Qt.QGraphicsPathItem):
         child2_z = child2.zValue()
         child1.setData("z_value", child2_z)
         child2.setData("z_value", child1_z)
+
+
+class TreeLineItemDB(TreeLineItemBase):
+    def __init__(self, data, shape, parent=None, **kwargs):
+        super().__init__(data=data, shape=shape, parent=parent, **kwargs)
+        self.timer = QtCore.QTimer()
+        self.timer.start(10000)
+        self.timer.timeout.connect(self.save)
+
+    @classmethod
+    def create(cls, data, shape, parent=None):
+        data = {**cls._defaults, **data}
+        item_data = cls.post_annotation(data, type="slice")
+        return cls(data=item_data, parent=parent, is_panel=True,
+                   shape=shape)
+
+    @classmethod
+    def from_annotation_id(cls, id, parent=None):
+        item_data = cls.get_annotation(id, type="slice")
+        return cls(data=item_data, parent=parent, is_panel=True)
+
+    @staticmethod
+    def post_annotation(data):
+        response = requests.post(
+            f"{config.api_server}/slicelineannotations/",
+            headers=config.auth_header, json=data)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise ValueError(f"Status Code: {response.status_code}\n"
+                             f"{response.json()}")
+
+    @staticmethod
+    def get_annotation(annotation_id):
+        response = requests.get(
+            f"{config.api_server}/slicelineannotations/{annotation_id}",
+            headers=config.auth_header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise ValueError(f"Status Code: {response.status_code}\n"
+                             f"{response.json()}")
+
+    @staticmethod
+    def put_annotation(annotation_id, data):
+        response = requests.put(
+            f"{config.api_server}/slicelineannotations/{annotation_id}",
+            json=data, headers=config.auth_header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise ValueError(f"Status Code: {response.status_code}\n"
+                             f"{response.json()}")
+
+    @staticmethod
+    def delete_annotation(annotation_id):
+        response = requests.delete(
+            f"{config.api_server}/slicelineannotations/{annotation_id}",
+            headers=config.auth_header)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise ValueError(f"Status Code: {response.status_code}\n"
+                             f"{response.json()}")
+
+    def save(self):
+        # Upload local changes if the layer is active
+        if self.changed and not self.view._ctrl_pressed:
+            self._data.update(line_data=json.dumps(self.as_dict()))
+            data = self.put_annotation(annotation_id=self._data["id"],
+                                       data=self._data)
+            self._data = data
+            data["line_data"] = json.loads(data["line_data"])
+            [setattr(self, key, value) for key, value in self._data.items()]
+
+            self.set_data()
+            self.changed = False
+
+
+class TreeLineItemOffline(TreeLineItemBase):
+    def __init__(self, data, shape, parent=None, **kwargs):
+        super().__init__(data=data, shape=shape, parent=parent, **kwargs)
+
+        self.timer = QtCore.QTimer()
+        self.timer.start(10000)
+        self.timer.timeout.connect(self.save)
+
+    @classmethod
+    def create(cls, data, shape, parent=None):
+        data = {**cls._defaults, **data}
+        return cls(data=data, parent=parent, shape=shape)
+
+    @staticmethod
+    def delete_annotation(annotation_id):
+        pass
+
+    def save(self):
+        if self.changed and not self.view._ctrl_pressed:
+            self._data.update(line_data=json.dumps(self.as_dict()))
+            # Todo Save to some folder
+            self.changed=False
+

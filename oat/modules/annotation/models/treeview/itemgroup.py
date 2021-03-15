@@ -20,10 +20,18 @@ class ItemGroup(Qt.QGraphicsItem):
         self.paintable = False
         self._data = {"visible": True, "z_value": 0.0, "name": name}
 
+        self.setFlag(Qt.QGraphicsItem.ItemHasNoContents, True)
+
     def hide_controlls(self):
         pass
 
     def show_controlls(self):
+        pass
+
+    def show_knots(self):
+        pass
+
+    def hide_knots(self):
         pass
 
     @property
@@ -99,7 +107,7 @@ class ItemGroup(Qt.QGraphicsItem):
         for i in range(row, row + count):
             item = items[i]
             item.scene().removeItem(item)
-            item.delete_annotation(item._data["id"], item.type)
+            item.delete_annotation(item._data["id"])
 
     def switchChildren(self, row1: int, row2: int):
         child1 = self.child(row1)
@@ -112,10 +120,6 @@ class ItemGroup(Qt.QGraphicsItem):
 
     def delete_annotation(self, *args, **kwargs):
         # This method is intended to do nothing
-        pass
-
-    def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
-              widget: typing.Optional[Qt.QWidget] = ...) -> None:
         pass
 
     def boundingRect(self) -> QtCore.QRectF:

@@ -4,7 +4,7 @@ from PyQt5.QtCore import QAbstractItemModel
 
 from oat import config
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 from oat.modules.annotation.models.treeview.itemgroup import ItemGroup
 
 
@@ -41,7 +41,7 @@ class TreeItemModel(QAbstractItemModel):
 
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)
-        if type(parent_item) in [TreeLineItem, TreeAreaItem]:
+        if type(parent_item) in [TreeLineItemDB, TreeAreaItem]:
             return 0
         return parent_item.childCount()
 
@@ -100,8 +100,7 @@ class TreeItemModel(QAbstractItemModel):
 
         if r.status_code == 200:
             for data in sorted(r.json(), key=lambda x: x["z_value"]):
-                item = TreeLineItem(data=data, type=self.prefix,
-                                    shape=self.scene.shape)
+                item = TreeLineItemDB(data=data, shape=self.scene.shape)
                 self.appendRow(item, parent=QtCore.QModelIndex(self.line_index))
 
     def _get_area_annotations(self):

@@ -12,7 +12,7 @@ from oat.modules.annotation.views.volume_view import VolumeView
 from oat.modules.annotation.views.enface_view import EnfaceView
 
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 
 logger = logging.getLogger(__name__)
 

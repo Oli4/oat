@@ -133,4 +133,3 @@ class CustomGraphicsView(QGraphicsView):
             event.accept()
         else:
             super().keyReleaseEvent(event)
-

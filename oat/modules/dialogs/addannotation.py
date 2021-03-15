@@ -6,7 +6,7 @@ from oat.models.config import DATA_ROLE
 from oat.models.db import LineTypeModel, AreaTypeModel
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 from oat.views.ui.ui_add_annotation_dialog import Ui_AnnotationDialog
 import json
 logger = logging.getLogger(__name__)
@@ -113,9 +113,8 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     "line_data": json.dumps({"curves":[], "points":[]})}
 
                 try:
-                    new_item = TreeLineItem.create(
-                        layer_annotation, type=layer_model.scene.urlprefix,
-                        shape=layer_model.scene.shape)
+                    new_item = TreeLineItemDB.create(
+                        layer_annotation, shape=layer_model.scene.shape)
                     layer_model.appendRow(
                         new_item,
                         parent=QtCore.QModelIndex(layer_model.line_index))

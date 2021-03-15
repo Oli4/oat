@@ -1,6 +1,6 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItem
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 
 class PaintPreview(Qt.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):

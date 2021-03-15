@@ -28,7 +28,6 @@ class CustomGrahpicsScene(QGraphicsScene):
 
         self._widthForHeightFactor = 1
 
-        self.area_annotations = []
         self.background_on = True
         self.fake_cursor = self.addPixmap(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
@@ -60,7 +59,6 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.image_meta = meta
         pixmap = pixmap_item.pixmap()
         self.shape = (pixmap.height(), pixmap.width())
-
         self.setSceneRect(QRectF(pixmap.rect()))
         self._widthForHeightFactor = \
             1.0 * pixmap.size().width() / pixmap.size().height()
@@ -75,9 +73,6 @@ class CustomGrahpicsScene(QGraphicsScene):
         if not self.background_on:
             self.background_on = True
             self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
-
-    def add_areaannotations(self, image_id):
-        pass
 
     def mouseMoveEvent(self, event):
         self.fake_cursor.hide()
