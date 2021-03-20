@@ -81,6 +81,7 @@ class Pen(object):
         button.setIconSize(QtCore.QSize(24, 24))
         button.setCheckable(True)
         button.setObjectName("penButton")
+        button.setToolTip("Pen tool to make area annotations")
         return button
 
     def get_cursor(self):

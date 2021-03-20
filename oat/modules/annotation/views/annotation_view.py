@@ -12,7 +12,7 @@ from oat.modules.annotation.views.volume_view import VolumeView
 from oat.modules.annotation.views.enface_view import EnfaceView
 
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,10 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.add_enface_views()
 
         self.key_actions = {
-            QtCore.Qt.Key_Alt: self.toggle_linked_navigation
-            # QtCore.Qt.Key_W: self.tableViewPoints.up,
+        }
+        self.ctrl_key_actions = {
+            QtCore.Qt.Key_X: self.toggle_linked_navigation,
+            QtCore.Qt.Key_A: self.toggle_all_annotations,
         }
 
         self.graphic_views = (
@@ -77,6 +79,12 @@ class AnnotationView(QWidget, Ui_AnnotationView):
 
         self._switch_to_tool("inspection")()
         self.linked_navigation = False
+        self.annotations_visible = True
+
+
+    def save(self):
+        for i in range(self.layerOverview.count()):
+            self.layerOverview.widget(i).model.save()
 
     @property
     def scenes(self):
@@ -141,11 +149,21 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             for view in self.graphic_views:
                 view.link_navigation()
 
+    def toggle_all_annotations(self):
+        if self.annotations_visible:
+            self.annotations_visible = False
+            for i in range(self.layerOverview.count()):
+                self.layerOverview.widget(i).model.hide()
+        else:
+            self.annotations_visible = True
+            for i in range(self.layerOverview.count()):
+                self.layerOverview.widget(i).model.show()
+
     def current_tools(self):
         crrnt_item = self.layerOverview.currentWidget().scene.mouseGrabberItem()
         if type(crrnt_item) == TreeAreaItem:
             return "areatools"
-        elif type(crrnt_item) == TreeLineItem:
+        elif type(crrnt_item) == TreeLineItemBase:
             return "linetools"
         else:
             return None
@@ -195,7 +213,11 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         [view.toggle_scroll_bars() for view in self.graphic_views]
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        try:
-            self.key_actions[event.key()]()
-        except:
+        modifiers = QtWidgets.QApplication.keyboardModifiers()
+        if modifiers == QtCore.Qt.ControlModifier:
+            if event.key() in self.ctrl_key_actions:
+                self.ctrl_key_actions[event.key()]()
+                event.accept()
+        if not event.isAccepted():
             super().keyPressEvent(event)
+

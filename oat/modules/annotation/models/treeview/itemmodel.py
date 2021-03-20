@@ -28,6 +28,25 @@ class TreeItemModel(QAbstractItemModel):
         self.scene.addItem(self.root_item)
         self.get_annotations()
 
+    def show(self):
+        self.area_root.show()
+        if self.prefix == "slice":
+            self.line_root.show()
+
+    def hide(self):
+        self.area_root.hide()
+        if self.prefix == "slice":
+            self.line_root.hide()
+
+    def save(self):
+        # Save area annotations
+        for i in range(self.area_root.childCount()):
+            self.area_root.child(i).save()
+        # Save line annotations
+        if self.prefix == "slice":
+            for i in range(self.line_root.childCount()):
+                self.line_root.child(i).save()
+
     def get_layer_height(self, layer):
         layer_item = [self.line_root.child(i)
                       for i in range(self.line_root.childCount())

@@ -36,6 +36,7 @@ class Inspection(object):
         button.setIconSize(QtCore.QSize(24, 24))
         button.setCheckable(True)
         button.setObjectName("inspectionButton")
+        button.setToolTip("Inspection Tool")
         return button
 
     def get_cursor(self):

@@ -11,7 +11,6 @@ from oat.views.ui.ui_add_annotation_dialog import Ui_AnnotationDialog
 import json
 logger = logging.getLogger(__name__)
 
-
 class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
     def __init__(self, tab_widget: QtWidgets.QTabWidget, parent=None):
         super().__init__(parent)
@@ -38,6 +37,12 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
             self.addLayerTypeButton.setParent(None)
             self.layerLabel.setParent(None)
             self.line.setParent(None)
+
+    def add_layer_type(self):
+        pass
+
+    def add_area_type(self):
+        pass
 
     def get_checkbox(self, type_dict):
         checkBox = QtWidgets.QCheckBox(self)
@@ -101,6 +106,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     #TODO: Log here
 
     def add_line_annotations(self, layer_model):
+        logger.debug("Add layer annotations")
         for cb in self.layer_checkboxes:
             if cb.isChecked():
                 layer_type_dict = cb.property("type_dict")
@@ -118,9 +124,8 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                     layer_model.appendRow(
                         new_item,
                         parent=QtCore.QModelIndex(layer_model.line_index))
-                except:
-                    pass
-                    #TODO: Log here
+                except Exception as e:
+                    logger.debug(e)
 
 
     def get_all_layer_models(self):
@@ -141,6 +146,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
         return scenes
 
     def add_annotations(self):
+        logger.debug("Add annotation layers")
         # Get all tabs in the tabview
         if self.modalitiesCheckBox.isChecked():
             scenes = self.get_all_layer_models()

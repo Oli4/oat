@@ -22,12 +22,7 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         """
         super().__init__(*args, parent=parent, **kwargs)
         self.shape = shape
-        self.paintable=True
         self.type = type
-        # Dict of pixels for every
-        if not data is None:
-            at = data.pop("annotationtype")
-            data = {**at, **data}
         self._data = data
         height, width = self.shape
         self.qimage = Qt.QImage(width, height,
@@ -45,7 +40,7 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
         self.timer = QtCore.QTimer()
         self.timer.start(10000) # Sync every 10 seconds
-        self.timer.timeout.connect(self.sync)
+        self.timer.timeout.connect(self.save)
 
         [setattr(self, key, value) for key, value in self._data.items()]
 
@@ -110,9 +105,6 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             headers=config.auth_header)
         if response.status_code == 200:
             r = response.json()
-            annotation_type = r.pop("annotationtype")
-            r = {**annotation_type, **r}
-            print(r)
             return r
         else:
             raise ValueError(f"Status Code: {response.status_code}\n"
@@ -164,7 +156,7 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         self.view.tool.mouse_move_handler(self, event)
         event.accept()
 
-    def sync(self):
+    def save(self):
         # Upload local changes if the layer is active
         if self.changed:
             mask = self.alpha_array == 255.0
@@ -265,9 +257,12 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         return 1
 
     def data(self, column: str):
-        if column not in self._data:
-            raise Exception(f"column {column} not in data")
-        return getattr(self, column)
+        if column in self._data:
+            return getattr(self, column)
+        elif column == "name":
+            return self.annotationtype["name"]
+
+        raise Exception(f"column {column} not in data")
 
     def setData(self, column: str, value):
         if (column not in self._data) or type(self._data[column]) != type(value):

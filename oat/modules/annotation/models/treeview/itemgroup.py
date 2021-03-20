@@ -17,7 +17,6 @@ class ItemGroup(Qt.QGraphicsItem):
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
-        self.paintable = False
         self._data = {"visible": True, "z_value": 0.0, "name": name}
 
         self.setFlag(Qt.QGraphicsItem.ItemHasNoContents, True)
@@ -107,7 +106,7 @@ class ItemGroup(Qt.QGraphicsItem):
         for i in range(row, row + count):
             item = items[i]
             item.scene().removeItem(item)
-            item.delete_annotation(item._data["id"])
+            item.delete_annotation(item._data["id"], item.type)
 
     def switchChildren(self, row1: int, row2: int):
         child1 = self.child(row1)

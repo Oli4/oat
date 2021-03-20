@@ -2,7 +2,7 @@ import logging
 from functools import partial
 
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
@@ -42,6 +42,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.navigationDock.setWidget(self.overview_view)
 
     def open_annotation_view(self):
+        self.save()
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
 
@@ -61,6 +62,7 @@ class oat(QMainWindow, Ui_MainWindow):
         self.setCentralWidget(ao)
 
     def open_registration_view(self):
+        self.save()
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
         localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
@@ -87,10 +89,17 @@ class oat(QMainWindow, Ui_MainWindow):
             pass
 
     def save(self):
-        pass
+        if type(self.centralWidget()) == RegistrationView or \
+                type(self.centralWidget()) == AnnotationView:
+            self.centralWidget().save()
 
     def export(self):
         pass
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        # Save all unchanged annotations
+        self.save()
+        super().closeEvent(a0)
 
 
 def main(log_level=logging.DEBUG):
@@ -105,9 +114,9 @@ def main(log_level=logging.DEBUG):
     ch.setLevel(log_level)
     # create formatter and add it to the handlers
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        '%(asctime)s - %(levelname)s - %(name)s - %(message)s')
     cmd_formatter = logging.Formatter(
-        '%(name)s - %(levelname)s - %(message)s')
+        '%(levelname)s - %(name)s - %(message)s')
     fh.setFormatter(file_formatter)
     ch.setFormatter(cmd_formatter)
     # add the handlers to the logger

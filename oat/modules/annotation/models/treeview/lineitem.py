@@ -11,6 +11,9 @@ import qimage2ndarray
 
 from oat import config
 
+import logging
+logger = logging.getLogger(__name__)
+
 class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
     def __init__(self, parent, pos, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -57,7 +60,7 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
     def __init__(self, parent, pos, **kwargs):
         super().__init__(parent=parent, **kwargs)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
-        self.setRect(Qt.QRectF(Qt.QPoint(-4, -4), Qt.QPoint(4, 4)))
+        self.setRect(Qt.QRectF(Qt.QPoint(-5, -5), Qt.QPoint(5, 5)))
         self.setPos(pos)
 
         pen = Qt.QPen(Qt.QColor("red"))
@@ -98,11 +101,10 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
             self.parentItem().parentItem().delete_knot(self.parentItem())
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        logger.debug("mousePress on Knot")
         if event.buttons() & QtCore.Qt.RightButton:
             self.parentItem().parentItem().delete_knot(self.parentItem())
-
-    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        self.parentItem().parentItem().update_line()
+        self.ungrabMouse()
 
 
 
@@ -221,6 +223,10 @@ class CubicSplineKnotItem(Qt.QGraphicsItem):
             self.mapFromScene(self.center),
             self.mapFromScene(self.cp_out.center)))
 
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        logger.debug("mousePress CubicSplineKnot")
+        super().mousePressEvent(event)
+
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         super().mouseMoveEvent(event)
         self.parentItem().update_line()
@@ -271,8 +277,6 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         new_knot = CubicSplineKnotItem(self, pos, cpin_pos, cpout_pos)
 
         self.current_curve_knots.append(new_knot)
-        self.current_curve_knots = sorted(
-            self.current_curve_knots, key=lambda x: x.knot.center.x())
 
         if len(self.current_curve_knots) > 1:
             self.update_line()
@@ -345,6 +349,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
     def curve_paths(self):
         paths = []
         for knots in self.curve_knots:
+            knots = sorted(knots, key=lambda x: x.center.x())
             if len(knots) > 1:
                 paths.append(self.build_path(knots, factor=0.25))
         return paths
@@ -644,17 +649,17 @@ class TreeLineItemDB(TreeLineItemBase):
     @classmethod
     def create(cls, data, shape, parent=None):
         data = {**cls._defaults, **data}
-        item_data = cls.post_annotation(data, type="slice")
-        return cls(data=item_data, parent=parent, is_panel=True,
-                   shape=shape)
+        item_data = cls.post_annotation(data)
+        return cls(data=item_data, parent=parent, shape=shape)
 
     @classmethod
     def from_annotation_id(cls, id, parent=None):
         item_data = cls.get_annotation(id, type="slice")
-        return cls(data=item_data, parent=parent, is_panel=True)
+        return cls(data=item_data, parent=parent)
 
     @staticmethod
     def post_annotation(data):
+        logger.debug("post annotation")
         response = requests.post(
             f"{config.api_server}/slicelineannotations/",
             headers=config.auth_header, json=data)
@@ -666,6 +671,7 @@ class TreeLineItemDB(TreeLineItemBase):
 
     @staticmethod
     def get_annotation(annotation_id):
+        logger.debug("get annotation")
         response = requests.get(
             f"{config.api_server}/slicelineannotations/{annotation_id}",
             headers=config.auth_header)
@@ -677,6 +683,7 @@ class TreeLineItemDB(TreeLineItemBase):
 
     @staticmethod
     def put_annotation(annotation_id, data):
+        logger.debug("put annotation")
         response = requests.put(
             f"{config.api_server}/slicelineannotations/{annotation_id}",
             json=data, headers=config.auth_header)
@@ -688,6 +695,7 @@ class TreeLineItemDB(TreeLineItemBase):
 
     @staticmethod
     def delete_annotation(annotation_id):
+        logger.debug("delete annotation")
         response = requests.delete(
             f"{config.api_server}/slicelineannotations/{annotation_id}",
             headers=config.auth_header)
@@ -700,6 +708,7 @@ class TreeLineItemDB(TreeLineItemBase):
     def save(self):
         # Upload local changes if the layer is active
         if self.changed and not self.view._ctrl_pressed:
+            logger.debug(f"Save {self.annotationtype['name']} annotation")
             self._data.update(line_data=json.dumps(self.as_dict()))
             data = self.put_annotation(annotation_id=self._data["id"],
                                        data=self._data)
