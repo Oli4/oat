@@ -103,12 +103,27 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
 class ImportCfpDialog(ImportDialog):
     def __init__(self, models, parent=None):
-        super().__init__(models, parent, filefilter="CFP (*.bmp *.BMP *.tif *.TIF"
-                                                    " *.tiff *.TIFF)")
+        super().__init__(
+            models,
+            parent,
+            filefilter="CFP (*.bmp *.BMP *.tif *.TIF *.tiff *.TIFF *.jpeg *.jpg "
+                       "*.JPEG *.JPG *.png *.PNG)")
 
     def upload(self):
         return upload_enface_file(self.fname, self.patient_id,
                                   self.collection_id, 'CFP',)
+
+class ImportNirDialog(ImportDialog):
+    def __init__(self, models, parent=None):
+        super().__init__(
+            models,
+            parent,
+            filefilter="CFP (*.bmp *.BMP *.tif *.TIF *.tiff *.TIFF *.jpeg *.jpg "
+                       "*.JPEG *.JPG *.png *.PNG)")
+
+    def upload(self):
+        return upload_enface_file(self.fname, self.patient_id,
+                                  self.collection_id, 'NIR',)
 
 
 class ImportVolDialog(ImportDialog):

@@ -38,6 +38,7 @@
      <addaction name="actionImportBSFolder"/>
      <addaction name="separator"/>
      <addaction name="actionImportCfp"/>
+     <addaction name="actionImportNir"/>
     </widget>
     <addaction name="separator"/>
     <addaction name="menuUpload"/>
@@ -46,14 +47,32 @@
     <addaction name="actionExport"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="tearOffEnabled">
+     <bool>false</bool>
+    </property>
     <property name="title">
-     <string>Edit</string>
+     <string/>
     </property>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
    </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionIntroduction"/>
+    <addaction name="actionLayerAnnotationGuide"/>
+    <addaction name="actionAreaAnnotationGuide"/>
+    <addaction name="actionRegistrationGuide"/>
+    <addaction name="separator"/>
+    <addaction name="actionShortcutSheet"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="navigationDock">
@@ -117,6 +136,12 @@
    </property>
   </action>
   <action name="actionUndo">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/icons/icons/baseline-undo-24px.svg</normaloff>:/icons/icons/baseline-undo-24px.svg</iconset>
@@ -157,7 +182,7 @@
   </action>
   <action name="actionImportCfp">
    <property name="text">
-    <string>CFP (.tiff/.bmp)</string>
+    <string>CFP</string>
    </property>
   </action>
   <action name="actionSave">
@@ -173,6 +198,36 @@
   <action name="actionImportBSFolder">
    <property name="text">
     <string>B-Scans from folder</string>
+   </property>
+  </action>
+  <action name="actionLayerAnnotationGuide">
+   <property name="text">
+    <string>Layer Annotation Guide</string>
+   </property>
+  </action>
+  <action name="actionAreaAnnotationGuide">
+   <property name="text">
+    <string>Area Annotation Guide</string>
+   </property>
+  </action>
+  <action name="actionRegistrationGuide">
+   <property name="text">
+    <string>Registration Guide</string>
+   </property>
+  </action>
+  <action name="actionShortcutSheet">
+   <property name="text">
+    <string>Shortcut Sheet</string>
+   </property>
+  </action>
+  <action name="actionImportNir">
+   <property name="text">
+    <string>NIR</string>
+   </property>
+  </action>
+  <action name="actionIntroduction">
+   <property name="text">
+    <string>Introduction</string>
    </property>
   </action>
  </widget>

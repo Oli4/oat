@@ -90,7 +90,7 @@ class ItemGroup(Qt.QGraphicsItem):
         self.scene().update(self.scene().sceneRect())
         return True
 
-    def appendChild(self, data: "TreeAreaItem"):
+    def appendChild(self, data: "TreeAreaItemDB"):
         items = self.childItems()
 
         if items:
@@ -105,6 +105,7 @@ class ItemGroup(Qt.QGraphicsItem):
         items = self.childItems()
         for i in range(row, row + count):
             item = items[i]
+            item.changed = False
             item.scene().removeItem(item)
             item.delete_annotation(item._data["id"], item.type)
 
@@ -123,5 +124,17 @@ class ItemGroup(Qt.QGraphicsItem):
 
     def boundingRect(self) -> QtCore.QRectF:
         return self.childrenBoundingRect()
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        event.ignore()
+
+    def mouseDoubleClickEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        event.ignore()
+
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        event.ignore()
+
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        event.ignore()
 
 

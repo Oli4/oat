@@ -21,18 +21,23 @@ class VolumeView(CustomGraphicsView):
     @property
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
-            self._bscan_scenes[self.current_slice] = BscanGraphicsScene(
+             scene = BscanGraphicsScene(
                 parent=self, data=self.slices[self.current_slice],
                 base_name=self.name)
+             scene.toolChanged.connect(self.update_tool)
+             self._bscan_scenes[self.current_slice] = scene
+
         return self._bscan_scenes[self.current_slice]
 
     @property
     def bscan_scenes(self):
         for i in range(len(self.slices)):
             if not i in self._bscan_scenes:
-                self._bscan_scenes[i] = BscanGraphicsScene(
+                scene = BscanGraphicsScene(
                     parent=self, data=self.slices[i],
                     base_name=self.name)
+                scene.toolChanged.connect(self.update_tool)
+                self._bscan_scenes[i] = scene
         return self._bscan_scenes.values()
 
     def get_data(self, volume_id, name="OCT"):

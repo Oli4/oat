@@ -39,6 +39,12 @@ class Inspection(object):
         button.setToolTip("Inspection Tool")
         return button
 
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
+
     def get_cursor(self):
         return QtGui.QCursor(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"), hotX=0, hotY=0)

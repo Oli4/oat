@@ -5,12 +5,11 @@ from typing import List, Dict
 import numpy as np
 import qimage2ndarray
 import requests
-from PyQt5 import Qt, QtCore, QtWidgets
+from PyQt5 import Qt, QtCore, QtWidgets, QtGui
 
 from oat import config
 
-
-class TreeAreaItem(Qt.QGraphicsPixmapItem):
+class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
     _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
                  "upperleft_y": 0,
                  "size_x": 0, "size_y": 0}
@@ -21,10 +20,9 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
         annotation.
         """
         super().__init__(*args, parent=parent, **kwargs)
-        self.shape = shape
         self.type = type
         self._data = data
-        height, width = self.shape
+        height, width = shape
         self.qimage = Qt.QImage(width, height,
                                 Qt.QImage.Format_ARGB32)
         color = Qt.QColor()
@@ -37,12 +35,20 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
 
         self.pixels = self._data["mask"]
         self.changed = False
-        self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
-        self.timer = QtCore.QTimer()
-        self.timer.start(10000) # Sync every 10 seconds
-        self.timer.timeout.connect(self.save)
 
         [setattr(self, key, value) for key, value in self._data.items()]
+
+        self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
+        #self.setPanelModality(Qt.QGraphicsItem.PanelModal)
+        self.interaction_ongoing = False
+
+    def shape(self) -> QtGui.QPainterPath:
+        path = Qt.QPainterPath()
+        path.addRect(Qt.QRectF(self.qimage.rect()))
+        return path
+
+    def setActive(self, active: bool) -> None:
+        super().setActive(active)
 
     def update_pixmap(self):
         pixmap = self.pixmap()
@@ -66,6 +72,175 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             self.alpha_array[y_start:y_end,x_start:x_end] = mask.astype(float)*255
             self.update_pixmap()
 
+    def view(self):
+        return self.scene().views()[0]
+
+    def mousePressEvent(self, event):
+        self.interaction_ongoing = True
+        self.view().tool.mouse_press_handler(self, event)
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        self.interaction_ongoing = False
+        self.view().tool.mouse_release_handler(self, event)
+        event.accept()
+
+    def keyPressEvent(self, event):
+        self.view().tool.key_press_handler(self, event)
+        event.accept()
+
+    def keyReleaseEvent(self, event):
+        self.view().tool.key_release_handler(self, event)
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        self.view().tool.mouse_move_handler(self, event)
+        event.accept()
+
+    def add_pixels(self, pos, mask):
+        size_x, size_y = mask.shape
+        offset_x = pos.x() - (size_x - 1) / 2
+        offset_y = pos.y() - (size_y - 1) / 2
+
+        for ix, iy in np.ndindex(mask.shape):
+            if mask[ix, iy]:
+                self.alpha_array[int(offset_y+iy), int(offset_x+ix)] = 255.0
+
+        self.update_pixmap()
+        self.changed = True
+
+    def remove_pixels(self, pos, mask):
+        size_x, size_y = mask.shape
+        offset_x = pos.x() - (size_x - 1) / 2
+        offset_y = pos.y() - (size_y - 1) / 2
+        for ix, iy in np.ndindex(mask.shape):
+            if mask[ix, iy]:
+                self.alpha_array[int(offset_y + iy), int(offset_x + ix)] = 0.0
+
+        self.update_pixmap()
+        self.changed = True
+
+    # Functions to make the QGraphicsItemGroup work as a item in a model tree
+
+    def hide_controlls(self):
+        pass
+
+    def show_controlls(self):
+        pass
+
+    @property
+    def visible(self):
+        return self.isVisible()
+
+    @visible.setter
+    def visible(self, value):
+        self.setVisible(value)
+
+    @property
+    def z_value(self):
+        return self.zValue()
+
+    @z_value.setter
+    def z_value(self, value):
+        self.setZValue(value)
+
+    @property
+    def current_color(self):
+        return self._data["current_color"]
+
+    @current_color.setter
+    def current_color(self, value):
+        self._data["current_color"] = value
+        color = Qt.QColor()
+        color.setNamedColor(f"#{self.current_color}")
+        qimage2ndarray.rgb_view(self.qimage)[:] = \
+            np.array([color.red(), color.green(), color.blue()])
+        self.update_pixmap()
+
+    def childNumber(self):
+        if self.parentItem():
+            return self.parentItem().childItems().index(self)
+        return 0
+
+    def childCount(self):
+        return 0
+
+    def columnCount(self):
+        return 1
+
+    def data(self, column: str):
+        if column in self._data:
+            return getattr(self, column)
+        elif column == "name":
+            return self.annotationtype["name"]
+
+        raise Exception(f"column {column} not in data")
+
+    def setData(self, column: str, value):
+        if (column not in self._data) or type(self._data[column]) != type(value):
+            return False
+        setattr(self, column, value)
+
+        self.scene().update(self.scene().sceneRect())
+        return True
+
+    def appendChild(self, data: "TreeAreaItemDB"):
+        items = self.childItems()
+
+        if items:
+            z_value = float(items[-1].zValue() + 1)
+        else:
+            z_value = 0.0
+
+        data.z_value = z_value
+        data.setParentItem(self)
+
+    def insertChildren(self, row: int, count: int, data: List[Dict] = None):
+        if row < 0:
+            return False
+
+        items = self.childItems()
+
+        if items:
+            z = float(items[-1].zValue() + 1)
+        else:
+            z = 0.0
+        z_values = [float(x) for x in range(z, z + count)]
+
+        for i, z_value in enumerate(z_values):
+            if data:
+                item_data = data[i]
+            else:
+                item_data = {}
+            item_data.update(z_value=z_value)
+            layer = TreeAreaItemDB(data=item_data)
+            layer.setParentItem(self)
+
+    def removeChildren(self, row: int, count: int):
+        if row < 0 or row > self.childCount():
+            raise Exception("what went wrong here?")
+        items = self.childItems()
+
+        for i in range(row, row + count):
+            item = items[i]
+            item.scene().removeItem(item)
+            self.delete_annotation(item._data["id"], item.type)
+
+    def switchChildren(self, row1: int, row2: int):
+        child1 = self.child(row1)
+        child2 = self.child(row2)
+
+        child1_z = child1.zValue()
+        child2_z = child2.zValue()
+        child1.setData("z_value", child2_z)
+        child2.setData("z_value", child1_z)
+
+class TreeAreaItemDB(TreeAreaItemBase):
+    def __init__(self, data, shape, type, parent=None):
+        super().__init__(data=data, shape=shape, parent=parent, type=type)
+        self.timer = QtCore.QTimer()
+        self.timer.start(10000)
+        self.timer.timeout.connect(self.save)
 
     @classmethod
     def create(cls, data, shape, parent=None, type="enface"):
@@ -132,39 +307,18 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")
 
-    @property
-    def view(self):
-        return self.scene().views()[0]
-
-    def mousePressEvent(self, event):
-        self.view.tool.mouse_press_handler(self, event)
-        event.accept()
-
-    def mouseReleaseEvent(self, event):
-        self.view.tool.mouse_release_handler(self, event)
-        event.accept()
-
-    def keyPressEvent(self, event):
-        self.view.tool.key_press_handler(self, event)
-        event.accept()
-
-    def keyReleaseEvent(self, event):
-        self.view.tool.key_release_handler(self, event)
-        event.accept()
-
-    def mouseMoveEvent(self, event):
-        self.view.tool.mouse_move_handler(self, event)
-        event.accept()
-
     def save(self):
         # Upload local changes if the layer is active
-        if self.changed:
+        if self.changed and not self.interaction_ongoing:
             mask = self.alpha_array == 255.0
             # Compute the annotations bounding box
             rows = np.any(mask, axis=1)
             cols = np.any(mask, axis=0)
-            upperleft_y, rmax = np.where(rows)[0][[0, -1]]
-            upperleft_x, cmax = np.where(cols)[0][[0, -1]]
+            if np.sum(rows) == 0:
+                upperleft_y, rmax, upperleft_x, cmax = 0,-1,0,-1
+            else:
+                upperleft_y, rmax = np.where(rows)[0][[0, -1]]
+                upperleft_x, cmax = np.where(cols)[0][[0, -1]]
             size_y = int(rmax - upperleft_y) +1
             size_x = int(cmax - upperleft_x) +1
 
@@ -179,166 +333,22 @@ class TreeAreaItem(Qt.QGraphicsPixmapItem):
             self.set_data()
             self.changed=False
 
-    def add_pixels(self, pos, mask):
-        size_x, size_y = mask.shape
-        offset_x = pos.x() - (size_x - 1) / 2
-        offset_y = pos.y() - (size_y - 1) / 2
+class TreeAreaItemOffline(TreeAreaItemBase):
+    def __init__(self, data, shape, type, parent=None):
+        super().__init__(data=data, shape=shape, parent=parent, type=type)
 
-        for ix, iy in np.ndindex(mask.shape):
-            if mask[ix, iy]:
-                self.alpha_array[int(offset_y+iy), int(offset_x+ix)] = 255.0
+        self.timer = QtCore.QTimer()
+        self.timer.start(10000)
+        self.timer.timeout.connect(self.save)
 
-        self.update_pixmap()
-        self.changed = True
+    @classmethod
+    def create(cls, data, shape, parent, type):
+        data = {**cls._defaults, **data}
+        return cls(data=data, parent=parent, shape=shape, type=type)
 
-    def remove_pixels(self, pos, mask):
-        size_x, size_y = mask.shape
-        offset_x = pos.x() - (size_x - 1) / 2
-        offset_y = pos.y() - (size_y - 1) / 2
-        for ix, iy in np.ndindex(mask.shape):
-            if mask[ix, iy]:
-                self.alpha_array[int(offset_y + iy), int(offset_x + ix)] = 0.0
-
-        self.update_pixmap()
-        self.changed = True
-
-    # Functions to make the QGraphicsItemGroup work as a item in a model tree
-
-    def hide_controlls(self):
+    @staticmethod
+    def delete_annotation(annotation_id):
         pass
 
-    def show_controlls(self):
+    def save(self):
         pass
-
-    @property
-    def visible(self):
-        return self.isVisible()
-
-    @visible.setter
-    def visible(self, value):
-        self.setVisible(value)
-
-    @property
-    def z_value(self):
-        return self.zValue()
-
-    @z_value.setter
-    def z_value(self, value):
-        self.setZValue(value)
-
-    @property
-    def current_color(self):
-        return self._data["current_color"]
-
-    @current_color.setter
-    def current_color(self, value):
-        self._data["current_color"] = value
-        color = Qt.QColor()
-        color.setNamedColor(f"#{self.current_color}")
-        self.qimage.fill(color)
-        self.set_data()
-        self.update_pixmap()
-
-    def childNumber(self):
-        if self.parentItem():
-            return self.parentItem().childItems().index(self)
-        return 0
-
-    def childCount(self):
-        return 0
-    #    return len(self.childItems())
-
-    #def child(self, number: int):
-    #    if number < 0 or number >= self.childCount():
-    #        return False
-    #    return self.childItems()[number]
-
-    def columnCount(self):
-        return 1
-
-    def data(self, column: str):
-        if column in self._data:
-            return getattr(self, column)
-        elif column == "name":
-            return self.annotationtype["name"]
-
-        raise Exception(f"column {column} not in data")
-
-    def setData(self, column: str, value):
-        if (column not in self._data) or type(self._data[column]) != type(value):
-            return False
-
-        setattr(self, column, value)
-        if column == "visible" and value == True:
-            if self.scene().mouseGrabberItem() is None:
-                self.grabMouse()
-
-        self.scene().update(self.scene().sceneRect())
-        return True
-
-    def appendChild(self, data: "TreeAreaItem"):
-        items = self.childItems()
-
-        if items:
-            z_value = float(items[-1].zValue() + 1)
-        else:
-            z_value = 0.0
-
-        data.z_value = z_value
-        data.setParentItem(self)
-
-    def insertChildren(self, row: int, count: int, data: List[Dict] = None):
-        if row < 0:
-            return False
-
-        items = self.childItems()
-
-        if items:
-            z = float(items[-1].zValue() + 1)
-        else:
-            z = 0.0
-        z_values = [float(x) for x in range(z, z + count)]
-        # if self.childCount() == 0:
-        #    z_values = list(range(0, count))
-
-        # If no other item: Set z-Values from 0 to -count
-        # elif row == 0:
-        #    z_values = np.linspace(0, items[0].zValue(), count + 2)[1:-1]
-
-        # If appended: Set z-Value of last item + 1
-        # elif row == self.childCount():
-        #    z_values = [items[-1].zValue() + i for i in range(1, count + 1)]
-
-        # If inserted: Set z-Values to linspace between last and next items z_value
-        # else:
-        #    z_values = [items[-1].zValue() + i for i in range(1, count + 1)]
-        # z_values = np.linspace(items[row-1].zValue(),
-        #                       items[row].zValue(), count + 2)[1:-1]
-
-        for i, z_value in enumerate(z_values):
-            if data:
-                item_data = data[i]
-            else:
-                item_data = {}
-            item_data.update(z_value=z_value)
-            layer = TreeAreaItem(data=item_data)
-            layer.setParentItem(self)
-
-    def removeChildren(self, row: int, count: int):
-        if row < 0 or row > self.childCount():
-            raise Exception("what went wrong here?")
-        items = self.childItems()
-
-        for i in range(row, row + count):
-            item = items[i]
-            item.scene().removeItem(item)
-            self.delete_annotation(item._data["id"], item.type)
-
-    def switchChildren(self, row1: int, row2: int):
-        child1 = self.child(row1)
-        child2 = self.child(row2)
-
-        child1_z = child1.zValue()
-        child2_z = child2.zValue()
-        child1.setData("z_value", child2_z)
-        child2.setData("z_value", child1_z)

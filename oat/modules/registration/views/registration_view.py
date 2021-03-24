@@ -50,6 +50,9 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
         self.grabKeyboard()
 
+    def save(self):
+        pass
+
     def add_feature(self, feature: QtCore.QPoint):
         self.model.setData(self.tableViewPoints.selectionModel().currentIndex(),
                            feature, role=QtCore.Qt.EditRole)

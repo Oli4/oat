@@ -6,13 +6,10 @@ from PyQt5.QtWidgets import QWidget
 
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 
-from oat.modules.annotation.tools import tools
+
 from oat.modules.annotation.views.volume_localizer_view import VolumeLocalizerView
 from oat.modules.annotation.views.volume_view import VolumeView
 from oat.modules.annotation.views.enface_view import EnfaceView
-
-from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItemBase
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +22,7 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.tools = tools()
-        self.set_tool_buttons()
-
+        self._tools = {}
 
         # self.collection = get_collection_by_id(collection_id)
         self.volume_widgets = []
@@ -42,11 +37,11 @@ class AnnotationView(QWidget, Ui_AnnotationView):
         self.add_volume_views()
         self.add_enface_views()
 
-        self.key_actions = {
-        }
         self.ctrl_key_actions = {
             QtCore.Qt.Key_X: self.toggle_linked_navigation,
             QtCore.Qt.Key_A: self.toggle_all_annotations,
+            QtCore.Qt.Key_1: self.select_tool_0,
+            QtCore.Qt.Key_2: self.select_tool_1,
         }
 
         self.graphic_views = (
@@ -77,10 +72,8 @@ class AnnotationView(QWidget, Ui_AnnotationView):
                     volume_widget.cursorPosChanged.connect(volume_widget2.set_fake_cursor)
                     volume_widget2.cursorPosChanged.connect(volume_widget.set_fake_cursor)
 
-        self._switch_to_tool("inspection")()
         self.linked_navigation = False
         self.annotations_visible = True
-
 
     def save(self):
         for i in range(self.layerOverview.count()):
@@ -159,39 +152,19 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             for i in range(self.layerOverview.count()):
                 self.layerOverview.widget(i).model.show()
 
-    def current_tools(self):
-        crrnt_item = self.layerOverview.currentWidget().scene.mouseGrabberItem()
-        if type(crrnt_item) == TreeAreaItem:
-            return "areatools"
-        elif type(crrnt_item) == TreeLineItemBase:
-            return "linetools"
-        else:
-            return None
+    def select_tool_0(self):
+        self.select_tool(0)
 
-    def set_tool_buttons(self):
-        for i, (name, tool) in enumerate(self.tools.items()):
-            self.toolsWidget.layout().addWidget(tool.button, 1,i,1,1)
-            tool.button.clicked.connect(self._switch_to_tool(name))
+    def select_tool_1(self):
+        self.select_tool(1)
 
-    def _switch_to_tool(self, name):
-        def func():
-            tool = self.tools[name]
-            for n, t in self.tools.items():
-                t.button.setChecked(False)
-            tool.button.setChecked(True)
-
-            # Show tool options
-            self.toolboxWidget.layout().removeWidget(self.optionsWidget)
-            self.optionsWidget.setParent(None)
-            self.toolboxWidget.layout().addWidget(tool.options_widget)
-
-            self.optionsWidget = tool.options_widget
-            self.toolboxWidget.repaint()
-
-            # Set the tool and preview
-            for view in self.graphic_views:
-                view.set_tool(tool)
-        return func
+    def select_tool(self, number):
+        for view in self.graphic_views:
+            if view.isEnabled():
+                layout = view.scene().scene_tab.toolsWidget.layout()
+                widget = layout.itemAt(number).widget()
+                if not widget is None:
+                    widget.click()
 
     def set_tabs(self):
         # Todo: this is highly inefficient
@@ -218,6 +191,7 @@ class AnnotationView(QWidget, Ui_AnnotationView):
             if event.key() in self.ctrl_key_actions:
                 self.ctrl_key_actions[event.key()]()
                 event.accept()
+
         if not event.isAccepted():
             super().keyPressEvent(event)
 

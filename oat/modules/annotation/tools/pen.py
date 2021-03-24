@@ -49,6 +49,12 @@ class Pen(object):
         self.options_widget = self.get_options_widget()
         self.paint_preview = self.get_paint_preview()
 
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
+
     @property
     def mask(self):
         diameter = self.options_widget.sizeSlider.value()
@@ -120,7 +126,7 @@ class Pen(object):
         gitem.update_pixmap()
         gitem.changed = True
 
-    def mouse_move_handler(self, gitem: "TreeAreaItem", event):
+    def mouse_move_handler(self, gitem: "TreeAreaItemDB", event):
         pos = gitem.mapToScene(event.pos()).toPoint()
         if event.buttons() & QtCore.Qt.LeftButton:
             self.draw(gitem, pos)

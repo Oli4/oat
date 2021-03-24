@@ -7,6 +7,7 @@ from PyQt5.QtCore import QRectF
 from PyQt5.QtWidgets import QGraphicsScene
 
 from .scenetab import SceneTab
+from oat.modules.annotation.tools import Inspection
 
 Line = namedtuple("Line", ["a", "b", "c"])
 Point = namedtuple("Point", ["x", "y"])
@@ -15,12 +16,14 @@ Point = namedtuple("Point", ["x", "y"])
 class CustomGrahpicsScene(QGraphicsScene):
     number = 0
     base_name = "Default"
+    toolChanged = QtCore.pyqtSignal(object)
 
     def __init__(self, parent, image_id, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=parent)
         self.image_id = image_id
         self._set_name()
-        self.tool = None
+        self._current_tool = None
+        self.current_tool = Inspection()
 
         self.image = None
         self.image_meta = None
@@ -36,6 +39,15 @@ class CustomGrahpicsScene(QGraphicsScene):
 
         self.set_image()
         self.scene_tab = SceneTab(self)
+
+    @property
+    def current_tool(self):
+        return self._current_tool
+
+    @current_tool.setter
+    def current_tool(self, tool):
+        self.toolChanged.emit(tool)
+        self._current_tool = tool
 
     def _set_name(self):
         if self.number == 0:
@@ -77,4 +89,19 @@ class CustomGrahpicsScene(QGraphicsScene):
     def mouseMoveEvent(self, event):
         self.fake_cursor.hide()
         super().mouseMoveEvent(event)
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        # Do not handle the event in ScrollHandDrag Mode to not interfere
+        if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
+            return
+
+        super().mousePressEvent(event)
+        if not event.isAccepted():
+            self.grabber_cache = self.mouseGrabberItem()
+            self.grabber_cache.ungrabMouse()
+            super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        super().mouseReleaseEvent(event)
+        self.grabber_cache.grabMouse()
 

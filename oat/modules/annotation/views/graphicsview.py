@@ -3,16 +3,16 @@ import logging
 import math
 from PyQt5 import QtCore, QtWidgets, QtGui, Qt
 from PyQt5.QtWidgets import QGraphicsView
-from oat.modules.annotation.tools import tools
 
 logger = logging.getLogger(__name__)
 
 
 class CustomGraphicsView(QGraphicsView):
+    viewChanged = QtCore.pyqtSignal(QGraphicsView)
+
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self._zoom = 0
-        self._ctrl_pressed = False
 
         self.linked_navigation=False
 
@@ -25,11 +25,9 @@ class CustomGraphicsView(QGraphicsView):
         self.deactivate_scroll_bars()
         self.mouse_grabber_cache = None
 
-        self.tool = tools()["inspection"]
-
         self.setLineWidth(3)
         self.setPalette(Qt.QPalette(QtCore.Qt.red, QtCore.Qt.black))
-        self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
+        self.setEnabled(False)
 
     def unlink_navigation(self):
         self.linked_navigation = False
@@ -37,20 +35,33 @@ class CustomGraphicsView(QGraphicsView):
     def link_navigation(self):
         self.linked_navigation = True
 
-    def set_tool(self, tool):
-        self.tool = tool
+    @property
+    def tool(self):
+        return self.scene().current_tool
+
+    def setEnabled(self, a0: bool) -> None:
+        if a0:
+            self.setFrameStyle(Qt.QFrame.Raised | Qt.QFrame.Panel)
+        else:
+            self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
+
+        super().setEnabled(a0)
 
     def enterEvent(self, event):
-        self.setFrameStyle(Qt.QFrame.Raised | Qt.QFrame.Panel)
+        self.setEnabled(True)
         self.grabKeyboard()
-        if not self.scene().mouseGrabberItem() is None:
-            self.tool.paint_preview.setParentItem(
-                self.scene().mouseGrabberItem())
-        self.setCursor(self.tool.cursor)
+
+        if self.linked_navigation:
+            tab_widget = self.scene().scene_tab.parent().parent()
+            index = tab_widget.indexOf(self.scene().scene_tab)
+            tab_widget.setCurrentIndex(index)
+
+        self.tool.paint_preview.setParentItem(
+            self.scene().activePanel())
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
+        self.setEnabled(False)
         self.releaseKeyboard()
         if self.tool.paint_preview.scene() == self.scene():
             self.scene().removeItem(self.tool.paint_preview)
@@ -104,32 +115,23 @@ class CustomGraphicsView(QGraphicsView):
         else:
             self.zoom_out()
 
-    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
-        #self.zoomToFit()
-        super().resizeEvent(event)
-
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
         self.zoomToFit()
 
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Control:
-            self.mouse_grabber_cache = self.scene().mouseGrabberItem()
-            if not self.mouse_grabber_cache is None:
-                self.mouse_grabber_cache.ungrabMouse()
-            self.setDragMode(QGraphicsView.ScrollHandDrag)
-            self._ctrl_pressed = True
-            event.accept()
-        else:
-            super().keyPressEvent(event)
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+        self.update_tool()
 
-    def keyReleaseEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Control:
-            if not self.mouse_grabber_cache is None:
-                self.mouse_grabber_cache.grabMouse()
-            self.setDragMode(QGraphicsView.NoDrag)
-            self._ctrl_pressed = False
-            self.setCursor(self.tool.cursor)
-            event.accept()
+    def setScene(self, scene) -> None:
+        super().setScene(scene)
+        self.update_tool()
+
+    def update_tool(self, tool=None):
+        if tool is None:
+            tool = self.scene().current_tool
+        if tool.name == "inspection":
+            self.setDragMode(Qt.QGraphicsView.ScrollHandDrag)
         else:
-            super().keyReleaseEvent(event)
+            self.setDragMode(Qt.QGraphicsView.NoDrag)
+        self.viewport().setCursor(tool.cursor)

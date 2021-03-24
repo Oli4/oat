@@ -3,13 +3,14 @@ from .pen import Pen
 from .splinetool import Spline
 
 
-#def tools():
-#    return {"areatools": {"pen": Pen(),
-#                          "inspection": Inspection()},
-#            "linetools": {},
-#            }
-
-def tools():
-    return {"pen": Pen(),
-            "inspection": Inspection(),
+def line_tools():
+    return {"inspection": Inspection(),
             "spline": Spline()}
+
+
+def area_tools():
+    return {"inspection": Inspection(),
+            "pen": Pen()}
+
+def basic_tools():
+    return {"inspection": Inspection()}

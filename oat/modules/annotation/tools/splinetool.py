@@ -1,6 +1,6 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 
-from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
+#from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 
 class PaintPreview(Qt.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):
@@ -27,6 +27,12 @@ class Spline(object):
         self.hot_key = None
         self.options_widget = QtWidgets.QWidget()
         self.paint_preview = PaintPreview(self.options_widget)
+
+    def enable(self):
+        pass
+
+    def disable(self):
+        pass
 
     def get_tool_button(self):
         button = QtWidgets.QToolButton()

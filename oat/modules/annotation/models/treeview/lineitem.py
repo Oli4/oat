@@ -36,6 +36,7 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         return np.round(center.x(), 2), np.round(center.y(), 2)
 
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().parentItem().interaction_ongoing = True
         super().mouseMoveEvent(event)
 
         # Make sure control points move together to keep the curve smooth
@@ -55,11 +56,16 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         self.parentItem().parentItem().update_line()
         self.parentItem().set_lines()
 
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().parentItem().interaction_ongoing = False
+        super().mouseReleaseEvent(event)
+
 
 class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
     def __init__(self, parent, pos, **kwargs):
         super().__init__(parent=parent, **kwargs)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setRect(Qt.QRectF(Qt.QPoint(-5, -5), Qt.QPoint(5, 5)))
         self.setPos(pos)
 
@@ -67,8 +73,8 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         pen.setCosmetic(True)
         self.setPen(pen)
 
+        #self.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemStacksBehindParent, True)
 
     def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
               widget: Optional[QtWidgets.QWidget] = ...) -> None:
@@ -81,6 +87,27 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
     def as_tuple(self):
         center = self.center
         return np.round(center.x(), 2), np.round(center.y(), 2)
+
+    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().parentItem().interaction_ongoing = True
+        if event.buttons() & QtCore.Qt.RightButton:
+            self.parentItem().parentItem().delete_knot(self.parentItem())
+            event.accept()
+        else:
+            self.parentItem().mousePressEvent(event)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if event.key() == QtCore.Qt.Key_Delete:
+            self.parentItem().parentItem().delete_knot(self.parentItem())
+
+    def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().mouseReleaseEvent(event)
+        self.parentItem().parentItem().interaction_ongoing = False
+
+    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        self.parentItem().mouseMoveEvent(event)
+        self.parentItem().parentItem().optimize_controllpoints(self.parentItem())
+        self.parentItem().parentItem().update_line()
 
     def focusInEvent(self, event: QtGui.QFocusEvent) -> None:
         super().focusInEvent(event)
@@ -95,17 +122,6 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         pen.setCosmetic(True)
         self.setPen(pen)
         self.update()
-
-    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.key() == QtCore.Qt.Key_Delete:
-            self.parentItem().parentItem().delete_knot(self.parentItem())
-
-    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        logger.debug("mousePress on Knot")
-        if event.buttons() & QtCore.Qt.RightButton:
-            self.parentItem().parentItem().delete_knot(self.parentItem())
-        self.ungrabMouse()
-
 
 
 class CubicSplineKnotItem(Qt.QGraphicsItem):
@@ -142,18 +158,28 @@ class CubicSplineKnotItem(Qt.QGraphicsItem):
             parent=self)
         self._line_out.setPen(pen)
 
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemHasNoContents, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable, True)
+
+    def set_cp_out_length(self, length):
+        line = Qt.QLineF(self.center, self.cp_out.center)
+        line.setLength(length)
+        self.cp_out = line.p2()
+
+    def set_cp_in_length(self, length):
+        line = Qt.QLineF(self.center, self.cp_in.center)
+        line.setLength(length)
+        self.cp_in = line.p2()
 
     def boundingRect(self) -> QtCore.QRectF:
         return self.childrenBoundingRect()
 
     def shape(self) -> QtGui.QPainterPath:
-        d = Qt.QPointF(4, 4)
-        r = Qt.QRectF(self.knot.center - d, self.knot.center + d)
+        #d = Qt.QPointF(5, 5)
+        #r = Qt.QRectF(self.knot.center - d, self.knot.center + d)
 
         path = Qt.QPainterPath()
-        path.addEllipse(r)
+        #path.addEllipse(r)
         return path
 
     @property
@@ -223,14 +249,6 @@ class CubicSplineKnotItem(Qt.QGraphicsItem):
             self.mapFromScene(self.center),
             self.mapFromScene(self.cp_out.center)))
 
-    def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        logger.debug("mousePress CubicSplineKnot")
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        super().mouseMoveEvent(event)
-        self.parentItem().update_line()
-
 
 class TreeLineItemBase(Qt.QGraphicsPathItem):
     _defaults = {"visible": True, "line_data": '{"points":[], "curves":[]}'}
@@ -246,6 +264,36 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         self.set_data()
         self.changed = False
         self.hide_knots()
+
+        self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
+        #self.setPanelModality(Qt.QGraphicsItem.PanelModal)
+        self.interaction_ongoing = False
+
+    def optimize_beziercontrollpoints(self, knot1, knot2):
+        # Compute distance between knots
+        dist = knot2.center.x() - knot1.center.x()
+        # Set control point length
+        knot1.set_cp_out_length(0.25 * dist)
+        knot2.set_cp_in_length(0.25 * dist)
+
+    def optimize_controllpoints(self, knot):
+        self.current_curve_knots = sorted(self.current_curve_knots,
+                                          key=lambda x: x.center.x())
+        index = self.current_curve_knots.index(knot)
+        if index > 0:
+            last_knot = self.current_curve_knots[index-1]
+            self.optimize_beziercontrollpoints(last_knot, knot)
+
+        if index < len(self.current_curve_knots)-1:
+            next_knot = self.current_curve_knots[index+1]
+            self.optimize_beziercontrollpoints(knot, next_knot)
+
+    def setActive(self, active: bool) -> None:
+        if active:
+            self.show_knots()
+        else:
+            self.hide_knots()
+        super().setActive(active)
 
     def shape(self) -> QtGui.QPainterPath:
         # Create a path which closes without increasing its "area"
@@ -277,6 +325,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         new_knot = CubicSplineKnotItem(self, pos, cpin_pos, cpout_pos)
 
         self.current_curve_knots.append(new_knot)
+        self.optimize_controllpoints(new_knot)
 
         if len(self.current_curve_knots) > 1:
             self.update_line()
@@ -285,7 +334,15 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         self.scene().removeItem(knot)
         for knots in self.curve_knots:
             if knot in knots:
+                index = knots.index(knot)
+                if index > 0 and index < len(knots):
+                    last_knot = knots[index-1]
+                    next_knot = knots[index+1]
+                    self.optimize_beziercontrollpoints(last_knot, next_knot)
                 knots.remove(knot)
+
+
+
         self.update_line()
 
 
@@ -432,8 +489,8 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
 
         return path
 
-    def update_line(self):
-        self.changed=True
+    def update_line(self, changed=True):
+        self.changed=changed
         paths = self.line_paths + self.curve_paths
         paths = sorted(paths, key=lambda x: x.elementAt(0).x)
         if len(paths) > 0:
@@ -457,6 +514,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         return regions
 
     def set_data(self):
+        logger.debug(f"Set data for {self.annotationtype['name']}")
         if not self.line_data == {}:
             curves = self.line_data["curves"]
 
@@ -470,39 +528,46 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
                          for p in curve]
                 knots = sorted(knots, key=lambda x: x.knot.as_tuple()[0])
                 self.curve_knots.append(knots)
+            if not self.isActive():
+                self.hide_knots()
+            self.update_line(changed=False)
 
-            self.update_line()
-
-    @property
     def view(self):
         return self.scene().views()[0]
 
     def mousePressEvent(self, event):
-        super().mousePressEvent(event)
-        self.view.tool.mouse_press_handler(self, event)
-        event.accept()
+        print("line press")
+        event.ignore()
+        #print("line press")
+        #super().mousePressEvent(event)
+        #self.view().tool.mouse_press_handler(self, event)
+        #event.accept()
 
     def mouseDoubleClickEvent(self, event):
-        self.view.tool.mouse_doubleclick_handler(self, event)
-        event.accept()
+        self.view().tool.mouse_doubleclick_handler(self, event)
+        #event.accept()
 
     def mouseReleaseEvent(self, event):
-        super().mouseReleaseEvent(event)
-        self.view.tool.mouse_release_handler(self, event)
-        event.accept()
+        event.ignore()
+        #super().mouseReleaseEvent(event)
+        #self.view().tool.mouse_release_handler(self, event)
+        #event.accept()
 
     def keyPressEvent(self, event):
-        self.view.tool.key_press_handler(self, event)
-        event.accept()
+        event.ignore()
+        #self.view().tool.key_press_handler(self, event)
+        #event.accept()
 
     def keyReleaseEvent(self, event):
-        self.view.tool.key_release_handler(self, event)
-        event.accept()
+        event.ignore()
+        #self.view().tool.key_release_handler(self, event)
+        #event.accept()
 
     def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
-        self.view.tool.mouse_move_handler(self, event)
-        event.accept()
+        event.ignore()
+        #super().mouseMoveEvent(event)
+        #self.view().tool.mouse_move_handler(self, event)
+        #event.accept()
 
     def as_dict(self):
         points = self.line_data["points"]
@@ -580,9 +645,6 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
             return False
 
         setattr(self, column, value)
-        if column == "visible" and value == True:
-            if self.scene().mouseGrabberItem() is None:
-                self.grabMouse()
 
         self.scene().update(self.scene().sceneRect())
         return True
@@ -627,7 +689,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         for i in range(row, row + count):
             item = items[i]
             item.scene().removeItem(item)
-            self.delete_annotation(item._data["id"], item.type)
+            self.delete_annotation(item._data["id"])
 
     def switchChildren(self, row1: int, row2: int):
         child1 = self.child(row1)
@@ -694,7 +756,7 @@ class TreeLineItemDB(TreeLineItemBase):
                              f"{response.json()}")
 
     @staticmethod
-    def delete_annotation(annotation_id):
+    def delete_annotation(annotation_id, *args, **kwargs):
         logger.debug("delete annotation")
         response = requests.delete(
             f"{config.api_server}/slicelineannotations/{annotation_id}",
@@ -707,7 +769,7 @@ class TreeLineItemDB(TreeLineItemBase):
 
     def save(self):
         # Upload local changes if the layer is active
-        if self.changed and not self.view._ctrl_pressed:
+        if self.changed and not self.interaction_ongoing:
             logger.debug(f"Save {self.annotationtype['name']} annotation")
             self._data.update(line_data=json.dumps(self.as_dict()))
             data = self.put_annotation(annotation_id=self._data["id"],
@@ -738,7 +800,7 @@ class TreeLineItemOffline(TreeLineItemBase):
         pass
 
     def save(self):
-        if self.changed and not self.view._ctrl_pressed:
+        if self.changed:
             self._data.update(line_data=json.dumps(self.as_dict()))
             # Todo Save to some folder
             self.changed=False

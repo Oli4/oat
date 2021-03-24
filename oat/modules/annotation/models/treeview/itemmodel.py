@@ -3,7 +3,7 @@ from PyQt5 import Qt, QtCore, QtWidgets
 from PyQt5.QtCore import QAbstractItemModel
 
 from oat import config
-from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
+from oat.modules.annotation.models.treeview.areaitem import TreeAreaItemDB
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 from oat.modules.annotation.models.treeview.itemgroup import ItemGroup
 
@@ -60,7 +60,7 @@ class TreeItemModel(QAbstractItemModel):
 
     def rowCount(self, parent=QtCore.QModelIndex(), *args, **kwargs):
         parent_item = self.getItem(parent)
-        if type(parent_item) in [TreeLineItemDB, TreeAreaItem]:
+        if type(parent_item) in [TreeLineItemDB, TreeAreaItemDB]:
             return 0
         return parent_item.childCount()
 
@@ -131,8 +131,8 @@ class TreeItemModel(QAbstractItemModel):
             headers=config.auth_header)
         if r.status_code == 200:
             for data in sorted(r.json(), key=lambda x: x["z_value"]):
-                item = TreeAreaItem(data=data, type=self.prefix,
-                                    shape=self.scene.shape)
+                item = TreeAreaItemDB(data=data, type=self.prefix,
+                                      shape=self.scene.shape)
                 self.appendRow(item, parent=QtCore.QModelIndex(self.area_index))
 
     def headerData(self, column, Qt_Orientation, role=None):

@@ -3,7 +3,6 @@ import logging
 import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QGraphicsView
-from oat.modules.annotation.tools import tools
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,6 @@ class CustomGraphicsView(QGraphicsView):
         self.setMouseTracking(True)
         self.deactivate_scroll_bars()
         self.mouse_grabber_cache = None
-
-        self.tool = tools()["inspection"]
 
     def hasWidthForHeight(self):
         return True

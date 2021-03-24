@@ -14,8 +14,11 @@ from oat.modules.registration import RegistrationView
 from oat.modules.registration.models.registration_model import RegistrationModel
 from oat.modules.dialogs.login import LoginDialog
 from oat.modules.dialogs.upload import ImportCfpDialog, ImportVolDialog, \
-    ImportHexmlDialog, ImportFolderDialog
+    ImportHexmlDialog, ImportFolderDialog, ImportNirDialog
 from oat.views.ui.ui_main_window import Ui_MainWindow
+
+from oat.modules.dialogs.help import ShortcutHelp, LayerAnnotationHelp,\
+    AreaAnnotationHelp, RegistrationHelp, IntroductionHelp
 
 
 class oat(QMainWindow, Ui_MainWindow):
@@ -30,6 +33,7 @@ class oat(QMainWindow, Ui_MainWindow):
 
         self.actionImportVol.triggered.connect(partial(self.upload, type="vol"))
         self.actionImportCfp.triggered.connect(partial(self.upload, type="cfp"))
+        self.actionImportNir.triggered.connect(partial(self.upload, type="nir"))
         self.actionImportHEXML.triggered.connect(partial(self.upload, type="hexml"))
         self.actionImportBSFolder.triggered.connect(partial(self.upload, type="folder"))
         self.actionSave.triggered.connect(self.save)
@@ -40,6 +44,34 @@ class oat(QMainWindow, Ui_MainWindow):
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
         self.navigationDock.setWidget(self.overview_view)
+
+        self.actionShortcutSheet.triggered.connect(
+            lambda: self.open_help("shortcuts"))
+        self.actionAreaAnnotationGuide.triggered.connect(
+            lambda: self.open_help("area_annotation"))
+        self.actionLayerAnnotationGuide.triggered.connect(
+            lambda: self.open_help("layer_annotation"))
+        self.actionRegistrationGuide.triggered.connect(
+            lambda: self.open_help("registration"))
+        self.actionIntroduction.triggered.connect(
+            lambda: self.open_help("introduction"))
+
+    def open_help(self, topic):
+        if topic == "introduction":
+            dialog = IntroductionHelp(self)
+        elif topic == "shortcuts":
+            dialog = ShortcutHelp(self)
+        elif topic == "area_annotation":
+            dialog = AreaAnnotationHelp(self)
+        elif topic == "layer_annotation":
+            dialog = LayerAnnotationHelp(self)
+        elif topic == "registration":
+            dialog = RegistrationHelp(self)
+        else:
+            raise ValueError("topic not available")
+
+        if dialog.exec_() == QtWidgets.QDialog.Rejected:
+            pass
 
     def open_annotation_view(self):
         self.save()
@@ -76,6 +108,8 @@ class oat(QMainWindow, Ui_MainWindow):
     def upload(self, type):
         if type == "cfp":
             dialog = ImportCfpDialog(models=self.models)
+        elif type == "nir":
+            dialog = ImportNirDialog(models=self.models)
         elif type == "vol":
             dialog = ImportVolDialog(models=self.models)
         elif type == "hexml":

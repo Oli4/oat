@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtCore
 from oat.models.config import DATA_ROLE
 from oat.models.db import LineTypeModel, AreaTypeModel
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
-from oat.modules.annotation.models.treeview.areaitem import TreeAreaItem
+from oat.modules.annotation.models.treeview.areaitem import TreeAreaItemDB
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
 from oat.views.ui.ui_add_annotation_dialog import Ui_AnnotationDialog
 import json
@@ -95,7 +95,7 @@ class AddAnnotationDialog(QtWidgets.QDialog, Ui_AnnotationDialog):
                                    }
 
                 try:
-                    new_item = TreeAreaItem.create(
+                    new_item = TreeAreaItemDB.create(
                         area_annotation, type=layer_model.scene.urlprefix,
                         shape=layer_model.scene.shape)
                     layer_model.appendRow(

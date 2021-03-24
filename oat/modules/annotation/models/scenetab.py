@@ -7,7 +7,9 @@ from oat.views.ui.ui_scene_tab import Ui_SceneTab
 from oat.modules.annotation.models.treeview.itemmodel import TreeItemModel
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB,\
     TreeLineItemBase
+from oat.modules.annotation.models.treeview.areaitem import TreeAreaItemBase
 from oat.models.db import LineTypeModel
+from oat.modules.annotation.tools import line_tools, area_tools, basic_tools
 
 import json
 import numpy as np
@@ -32,6 +34,11 @@ class SceneTab(QWidget, Ui_SceneTab):
 
 
         self.opacitySlider.valueChanged.connect(self.set_opacity)
+
+        self.line_tools = line_tools()
+        self.area_tools = area_tools()
+        self.basic_tools = basic_tools()
+        self.setTools(self.basic_tools)
 
     def compute_idealRPE(self):
         try:
@@ -93,15 +100,56 @@ class SceneTab(QWidget, Ui_SceneTab):
     def on_currentChanged(self, current, previous):
         current = self.model.getItem(current)
         previous = self.model.getItem(previous)
-        if previous == self.model.scene.mouseGrabberItem():
-            previous.ungrabMouse()
-        if current.isVisible():
-            current.grabMouse()
 
-        if issubclass(type(previous), TreeLineItemBase):
-            previous.hide_knots()
+        # Change activated item
+        previous.setActive(False)
+        current.setActive(True)
+        previous.ungrabMouse()
+        current.grabMouse()
+
+        # Set tools for current item
         if issubclass(type(current), TreeLineItemBase):
-            current.show_knots()
+            self.setTools(self.line_tools, default="spline")
+        elif issubclass(type(current), TreeAreaItemBase):
+            self.setTools(self.area_tools, default="pen")
+
+    def tools(self):
+        return self._tools
+
+    def setTools(self, tools, default="inspection"):
+        self._tools = tools
+        self._set_tool_buttons()
+        self._switch_to_tool(default)()
+
+    def _set_tool_buttons(self):
+        layout = self.toolsWidget.layout()
+        # Remove previous tools
+        for i in reversed(range(layout.count())):
+            layout.itemAt(i).widget().setParent(None)
+        # Add current tools
+        for i, (name, tool) in enumerate(self.tools().items()):
+            layout.addWidget(tool.button, 1,i,1,1)
+            tool.button.clicked.connect(self._switch_to_tool(name))
+
+    def _switch_to_tool(self, name):
+        def func():
+            tool = self._tools[name]
+            for n, t in self._tools.items():
+                t.button.setChecked(False)
+                t.disable()
+            tool.button.setChecked(True)
+
+            # Show tool options
+            self.toolboxWidget.layout().removeWidget(self.optionsWidget)
+            self.optionsWidget.setParent(None)
+            self.toolboxWidget.layout().addWidget(tool.options_widget)
+
+            self.optionsWidget = tool.options_widget
+            self.toolboxWidget.repaint()
+
+            self.scene.current_tool = tool
+            tool.enable()
+        return func
 
     def set_opacity(self, value):
         self.model.root_item.setOpacity(value / 100)

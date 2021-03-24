@@ -257,7 +257,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
         self.scene().update(self.scene().sceneRect())
         return True
 
-    def appendChild(self, data: "TreeAreaItem"):
+    def appendChild(self, data: "TreeAreaItemDB"):
         items = self.childItems()
 
         if items:
