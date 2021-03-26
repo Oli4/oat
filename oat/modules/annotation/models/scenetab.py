@@ -95,6 +95,11 @@ class SceneTab(QWidget, Ui_SceneTab):
             self.on_currentChanged)
         self.ImageTreeView.expandAll()
 
+    @property
+    def current_item(self):
+        model_index = self.ImageTreeView.selectionModel().currentIndex()
+        item = self.model.getItem(model_index)
+        return item
 
     @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
@@ -110,6 +115,11 @@ class SceneTab(QWidget, Ui_SceneTab):
         # Set tools for current item
         if issubclass(type(current), TreeLineItemBase):
             self.setTools(self.line_tools, default="spline")
+            if issubclass(type(previous), TreeLineItemBase):
+                if previous.control_points_visible:
+                    current.show_control_points()
+                else:
+                    current.hide_control_points()
         elif issubclass(type(current), TreeAreaItemBase):
             self.setTools(self.area_tools, default="pen")
 

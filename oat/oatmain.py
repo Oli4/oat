@@ -56,6 +56,8 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionIntroduction.triggered.connect(
             lambda: self.open_help("introduction"))
 
+        #self.statusBar().showMessage("")
+
     def open_help(self, topic):
         if topic == "introduction":
             dialog = IntroductionHelp(self)
@@ -136,7 +138,7 @@ class oat(QMainWindow, Ui_MainWindow):
         super().closeEvent(a0)
 
 
-def main(log_level=logging.DEBUG):
+def main(log_level=logging.INFO):
     # create logger for "oat" application
     logger = logging.getLogger("oat")
     logger.setLevel(logging.DEBUG)

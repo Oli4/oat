@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import QGraphicsScene
 from .scenetab import SceneTab
 from oat.modules.annotation.tools import Inspection
 
+from oat.utils import handle_exception_in_method
+
 Line = namedtuple("Line", ["a", "b", "c"])
 Point = namedtuple("Point", ["x", "y"])
 
@@ -41,6 +43,7 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.scene_tab = SceneTab(self)
 
     @property
+    @handle_exception_in_method
     def current_tool(self):
         return self._current_tool
 
@@ -98,10 +101,14 @@ class CustomGrahpicsScene(QGraphicsScene):
         super().mousePressEvent(event)
         if not event.isAccepted():
             self.grabber_cache = self.mouseGrabberItem()
-            self.grabber_cache.ungrabMouse()
+            if not self.grabber_cache is None:
+                self.grabber_cache.ungrabMouse()
             super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
+        if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
+            return
+
         super().mouseReleaseEvent(event)
         self.grabber_cache.grabMouse()
 

@@ -7,6 +7,8 @@ from oat.models.utils import get_volume_meta_by_id
 from oat.modules.annotation.models.scene import Point, Line
 import numpy as np
 
+from oat.utils import handle_exception_in_method
+
 class VolumeView(CustomGraphicsView):
     cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
     sceneChanged = QtCore.pyqtSignal()
@@ -19,6 +21,7 @@ class VolumeView(CustomGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
     @property
+    @handle_exception_in_method
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
              scene = BscanGraphicsScene(
@@ -30,6 +33,7 @@ class VolumeView(CustomGraphicsView):
         return self._bscan_scenes[self.current_slice]
 
     @property
+    @handle_exception_in_method
     def bscan_scenes(self):
         for i in range(len(self.slices)):
             if not i in self._bscan_scenes:

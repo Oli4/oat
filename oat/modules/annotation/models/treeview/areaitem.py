@@ -8,6 +8,7 @@ import requests
 from PyQt5 import Qt, QtCore, QtWidgets, QtGui
 
 from oat import config
+from oat.utils import handle_exception_in_method
 
 class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
     _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
@@ -307,6 +308,7 @@ class TreeAreaItemDB(TreeAreaItemBase):
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")
 
+    @handle_exception_in_method
     def save(self):
         # Upload local changes if the layer is active
         if self.changed and not self.interaction_ongoing:
@@ -350,5 +352,6 @@ class TreeAreaItemOffline(TreeAreaItemBase):
     def delete_annotation(annotation_id):
         pass
 
+    @handle_exception_in_method
     def save(self):
         pass

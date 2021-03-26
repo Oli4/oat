@@ -1,6 +1,24 @@
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
+from oat.views.ui.ui_spline_options import Ui_splineOptions
+from oat.modules.annotation.models.treeview.lineitem import TreeLineItemBase
 
-#from oat.modules.annotation.models.treeview.lineitem import TreeLineItemDB
+
+class SplineWidget(QtWidgets.QWidget, Ui_splineOptions):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setupUi(self)
+
+        #self.showCheckBox.setChecked()
+        self.showCheckBox.stateChanged.connect(self.change_controlpoints)
+
+    def change_controlpoints(self):
+        scenetab = self.parentWidget().parentWidget()
+        model_index = scenetab.ImageTreeView.selectionModel().currentIndex()
+        item = scenetab.model.getItem(model_index)
+        if self.showCheckBox.isChecked():
+            item.show_control_points()
+        else:
+            item.hide_control_points()
 
 class PaintPreview(Qt.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):
@@ -25,8 +43,12 @@ class Spline(object):
         self.cursor = self.get_cursor()
         self.button = self.get_tool_button()
         self.hot_key = None
-        self.options_widget = QtWidgets.QWidget()
+        self.options_widget = self.get_options_widget()
         self.paint_preview = PaintPreview(self.options_widget)
+
+    def get_options_widget(self):
+        widget = SplineWidget()
+        return widget
 
     def enable(self):
         pass
@@ -43,7 +65,7 @@ class Spline(object):
         button.setIconSize(QtCore.QSize(24, 24))
         button.setCheckable(True)
         button.setObjectName("inspectionButton")
-        button.setToolTip("Spline Tool")
+        button.setToolTip("Curve Tool")
         return button
 
     def get_cursor(self):
