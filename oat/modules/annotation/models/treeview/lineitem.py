@@ -356,9 +356,9 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         optimize_neighbours = options_widget.neighbourCheckBox.isChecked()
 
         if propagate and optimize_neighbours:
-            if index-1 > 0:
+            if index-1 >= 0:
                 self.optimize_controllpoints(knots[index - 1], propagate=False)
-            if index+1 < len(knots)-1:
+            if index+1 <= len(knots)-1:
                 self.optimize_controllpoints(knots[index + 1], propagate=False)
 
         if len(knots) == 1:
