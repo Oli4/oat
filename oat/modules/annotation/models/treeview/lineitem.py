@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 import numpy as np
 import requests
 import json
+import gc
 
 from PyQt5 import Qt, QtCore, QtWidgets, QtGui
 import qimage2ndarray
@@ -37,7 +38,7 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         center = self.center
         return np.round(center.x(), 2), np.round(center.y(), 2)
 
-    #@handle_exception_in_method
+    @handle_exception_in_method
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         self.parentItem().parentItem().interaction_ongoing = True
         super().mouseMoveEvent(event)
@@ -59,6 +60,7 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
         self.parentItem().cp_in.stay_in_scene()
         self.parentItem().cp_out.stay_in_scene()
         self.parentItem().parentItem().update_line()
+        logger.debug("set lines in controlPointGraphicsitem")
         self.parentItem().set_lines()
 
     def stay_in_scene(self):
@@ -89,9 +91,10 @@ class ControllPointGraphicsItem(Qt.QGraphicsRectItem):
 
         self.parentItem().set_line_of(self)
 
+    @handle_exception_in_method
     def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        self.parentItem().parentItem().interaction_ongoing = False
         super().mouseReleaseEvent(event)
+        self.parentItem().parentItem().interaction_ongoing = False
 
 class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
     def __init__(self, parent, pos, **kwargs):
@@ -107,6 +110,7 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
 
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, True)
 
+    @handle_exception_in_method
     def paint(self, painter: QtGui.QPainter, option: 'QStyleOptionGraphicsItem',
               widget: Optional[QtWidgets.QWidget] = ...) -> None:
         super().paint(painter, option, widget)
@@ -119,15 +123,18 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         center = self.center
         return np.round(center.x(), 2), np.round(center.y(), 2)
 
+    @handle_exception_in_method
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         self.parentItem().parentItem().interaction_ongoing = True
         if event.buttons() & QtCore.Qt.RightButton:
-            self.parentItem().parentItem().interaction_ongoing = False
+            line_item = self.parentItem().parentItem()
             self.parentItem().parentItem().delete_knot(self.parentItem())
             event.accept()
+            line_item.interaction_ongoing = False
         else:
             self.parentItem().mousePressEvent(event)
 
+    @handle_exception_in_method
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         modifiers = QtWidgets.QApplication.keyboardModifiers()
         if modifiers == QtCore.Qt.ControlModifier:
@@ -136,6 +143,7 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         if event.key() == QtCore.Qt.Key_Delete:
             self.parentItem().parentItem().delete_knot(self.parentItem())
 
+    @handle_exception_in_method
     def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         self.parentItem().mouseReleaseEvent(event)
         self.parentItem().parentItem().interaction_ongoing = False
@@ -166,7 +174,7 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
                         Qt.QPointF(self.center.x(), self.scene().shape[0])
                     )))
 
-
+    @handle_exception_in_method
     def mouseMoveEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         self.parentItem().mouseMoveEvent(event)
         self.stay_in_scene()
@@ -174,7 +182,10 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         self.parentItem().cp_in.stay_in_scene()
         self.parentItem().cp_out.stay_in_scene()
         self.parentItem().parentItem().update_line()
+        logger.debug("lines updated in knotgraphicsitem")
 
+
+    @handle_exception_in_method
     def focusInEvent(self, event: QtGui.QFocusEvent) -> None:
         super().focusInEvent(event)
         pen = Qt.QPen(Qt.QColor("yellow"))
@@ -182,13 +193,13 @@ class KnotGraphicsItem(Qt.QGraphicsEllipseItem):
         self.setPen(pen)
         self.update()
 
+    @handle_exception_in_method
     def focusOutEvent(self, event: QtGui.QFocusEvent) -> None:
         super().focusOutEvent(event)
         pen = Qt.QPen(Qt.QColor("red"))
         pen.setCosmetic(True)
         self.setPen(pen)
         self.update()
-
 
 class CubicSplineKnotItem(Qt.QGraphicsItem):
     def __init__(self, parent, knot_pos: Qt.QPointF,
@@ -231,10 +242,13 @@ class CubicSplineKnotItem(Qt.QGraphicsItem):
         line.setLength(length)
         self.cp_in = line.p2()
 
+    @handle_exception_in_method
     def boundingRect(self) -> QtCore.QRectF:
         return self.childrenBoundingRect()
 
+    @handle_exception_in_method
     def shape(self) -> QtGui.QPainterPath:
+        logger.debug("Shape of CubicSplineKnot")
         path = Qt.QPainterPath()
         return path
 
@@ -315,25 +329,25 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
 
     def __init__(self, *args, data, shape, parent=None, **kwargs):
         super().__init__(*args, parent=parent, **kwargs)
-        self.shape = shape
         data["line_data"] = json.loads(data["line_data"])
         self._data = data
         [setattr(self, key, value) for key, value in self._data.items()]
 
-        self.curve_knots = []
-        self.set_data()
-        self.changed = False
-        self.hide_knots()
-
         self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
-        self.interaction_ongoing = False
 
+        self.curve_knots = []
         self.control_points_visible = True
+        self.interaction_ongoing = False
+        self.changed = False
+
+        self.set_data()
+        self.hide_knots()
 
     def optimize_controllpoints(self, knot, distance_factor=0.25,
                                 propagate=True):
+        self.current_curve_knots = sorted(self.current_curve_knots,
+                                          key=lambda x: x.center.x())
         knots = self.current_curve_knots
-        knots = sorted(knots, key=lambda x: x.center.x())
         index = knots.index(knot)
 
         options_widget = self.scene().current_tool.options_widget
@@ -394,7 +408,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
             .translated(knot.center)
         knot.cp_out = revSource.p2()
 
-
+    @handle_exception_in_method
     def setActive(self, active: bool) -> None:
         if active:
             self.show_knots()
@@ -402,11 +416,14 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
             self.hide_knots()
         super().setActive(active)
 
+    @handle_exception_in_method
     def shape(self) -> QtGui.QPainterPath:
         # Create a path which closes without increasing its "area"
         # Only clicking exactly the line should activate this item
+        logger.debug("Shape of LineItem")
         path = self.path()
         path.connectPath(self.path().toReversed())
+        logger.debug("Shape of LineItem finished")
         return path
 
     def hide_knots(self):
@@ -429,8 +446,6 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
 
     def add_knot(self, pos):
         # if first knot, just add knot on the current path
-
-        self.changed = True
         new_knot = CubicSplineKnotItem(self, pos,
                                        Qt.QPointF(pos.x()-1, pos.y()),
                                        Qt.QPointF(pos.x()+1, pos.y()))
@@ -441,13 +456,14 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
 
         if len(self.current_curve_knots) > 1:
             self.update_line()
+            logger.debug("lines updated in add_knot")
 
     def delete_knot(self, knot):
-        self.changed = True
-        self.scene().removeItem(knot)
         for knots in self.curve_knots:
             if knot in knots:
                 index = knots.index(knot)
+                knot.prepareGeometryChange()
+                self.scene().removeItem(knot)
                 knots.remove(knot)
                 # Optimize knots before and after the deleted knot
                 if index > 0:
@@ -457,6 +473,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
                     next_knot = knots[index]
                     self.optimize_controllpoints(next_knot, propagate=False)
         self.update_line()
+        logger.debug("lines updated in delete knot")
 
 
     def as_array(self):
@@ -574,7 +591,6 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         return path
 
     def update_line(self, changed=True):
-        self.changed=changed
         paths = self.line_paths + self.curve_paths
         logger.debug("paths completed")
         paths = sorted(paths, key=lambda x: x.elementAt(0).x)
@@ -587,8 +603,8 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
             self.setPath(path)
         else:
             self.setPath(Qt.QPainterPath())
-        logger.debug("paths set")
         self.update()
+        self.changed = changed
 
     @property
     def curve_regions(self):
@@ -602,6 +618,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
                 self.curve_knots.remove(knots)
         return regions
 
+    @handle_exception_in_method
     def set_data(self):
         logger.debug(f"Set data for {self.annotationtype['name']}")
         if not self.line_data == {}:
@@ -617,41 +634,49 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
                          for p in curve]
                 knots = sorted(knots, key=lambda x: x.knot.as_tuple()[0])
                 self.curve_knots.append(knots)
-            if not self.isActive() or not self.control_points_visible:
+            if not self.isActive():
                 self.hide_knots()
+            if not self.control_points_visible:
+                self.hide_control_points()
             self.update_line(changed=False)
+            logger.debug("lines updated in set_data")
+
 
     def view(self):
         return self.scene().views()[0]
 
+    @handle_exception_in_method
     def mousePressEvent(self, event):
-        print("line press")
         event.ignore()
-        #print("line press")
         #super().mousePressEvent(event)
         #self.view().tool.mouse_press_handler(self, event)
         #event.accept()
 
+    @handle_exception_in_method
     def mouseDoubleClickEvent(self, event):
         self.view().tool.mouse_doubleclick_handler(self, event)
         #event.accept()
 
+    @handle_exception_in_method
     def mouseReleaseEvent(self, event):
         event.ignore()
         #super().mouseReleaseEvent(event)
         #self.view().tool.mouse_release_handler(self, event)
         #event.accept()
 
+    @handle_exception_in_method
     def keyPressEvent(self, event):
         event.ignore()
         #self.view().tool.key_press_handler(self, event)
         #event.accept()
 
+    @handle_exception_in_method
     def keyReleaseEvent(self, event):
         event.ignore()
         #self.view().tool.key_release_handler(self, event)
         #event.accept()
 
+    @handle_exception_in_method
     def mouseMoveEvent(self, event):
         event.ignore()
         #super().mouseMoveEvent(event)
@@ -703,11 +728,13 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         self.setPen(pen)
         self.update()
 
+    @handle_exception_in_method
     def childNumber(self):
         if self.parentItem():
             return self.parentItem().childItems().index(self)
         return 0
 
+    @handle_exception_in_method
     def childCount(self):
         return 0
     #    return len(self.childItems())
@@ -717,9 +744,11 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
     #        return False
     #    return self.childItems()[number]
 
+    @handle_exception_in_method
     def columnCount(self):
         return 1
 
+    @handle_exception_in_method
     def data(self, column: str):
         if column in self._data:
             return getattr(self, column)
@@ -728,7 +757,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
 
         raise Exception(f"column {column} not in data")
 
-
+    @handle_exception_in_method
     def setData(self, column: str, value):
         if (column not in self._data) or type(self._data[column]) != type(value):
             return False
@@ -738,6 +767,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         self.scene().update(self.scene().sceneRect())
         return True
 
+    @handle_exception_in_method
     def appendChild(self, data: "TreeLineItem"):
         items = self.childItems()
 
@@ -749,6 +779,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
         data.z_value = z_value
         data.setParentItem(self)
 
+    @handle_exception_in_method
     def insertChildren(self, row: int, count: int, data: List[Dict] = None):
         if row < 0:
             return False
@@ -770,6 +801,7 @@ class TreeLineItemBase(Qt.QGraphicsPathItem):
             layer = type(self)(data=item_data)
             layer.setParentItem(self)
 
+    @handle_exception_in_method
     def removeChildren(self, row: int, count: int):
         if row < 0 or row > self.childCount():
             raise Exception("what went wrong here?")
@@ -794,7 +826,7 @@ class TreeLineItemDB(TreeLineItemBase):
     def __init__(self, data, shape, parent=None, **kwargs):
         super().__init__(data=data, shape=shape, parent=parent, **kwargs)
         self.timer = QtCore.QTimer()
-        self.timer.start(10000)
+        self.timer.start(2000)
         self.timer.timeout.connect(self.save)
 
     @classmethod
@@ -860,16 +892,17 @@ class TreeLineItemDB(TreeLineItemBase):
     def save(self):
         # Upload local changes if the layer is active
         if self.changed and not self.interaction_ongoing:
+            self.changed = False
             logger.debug(f"Save {self.annotationtype['name']} annotation")
             self._data.update(line_data=json.dumps(self.as_dict()))
             data = self.put_annotation(annotation_id=self._data["id"],
                                        data=self._data)
-            self._data = data
+
             data["line_data"] = json.loads(data["line_data"])
+            self._data = data
             [setattr(self, key, value) for key, value in self._data.items()]
 
             self.set_data()
-            self.changed = False
 
 
 class TreeLineItemOffline(TreeLineItemBase):

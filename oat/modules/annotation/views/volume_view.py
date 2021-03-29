@@ -119,6 +119,7 @@ class VolumeView(CustomGraphicsView):
         # ToDo: this is an overkill, update only cursor position
         self.viewport().update()
 
+    @handle_exception_in_method
     def wheelEvent(self, event):
         if event.modifiers() == (QtCore.Qt.ControlModifier):
             if event.angleDelta().y() > 0:
@@ -134,6 +135,7 @@ class VolumeView(CustomGraphicsView):
         else:
             super().wheelEvent(event)
 
+    @handle_exception_in_method
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         scene_pos = self.mapToScene(event.pos())

@@ -99,11 +99,15 @@ class oat(QMainWindow, Ui_MainWindow):
         self.save()
         overview = self.overview_view
         data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
-        localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
-        cfp_id = [enface_image["id"] for enface_image  in data["enfaceimages"]
-                  if enface_image["id"] !=localizer_id][0]
+        #localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
+        #cfp_id = [enface_image["id"] for enface_image in data["enfaceimages"]
+        #          if enface_image["id"] !=localizer_id][0]
 
-        model = RegistrationModel(localizer_id, cfp_id)
+        cfp_id = [image["id"] for image in data["enfaceimages"]
+                  if image["modality"] == "CFP"][0]
+        nir_id = [image["id"] for image in data["enfaceimages"]
+                  if image["modality"] == "NIR"][0]
+        model = RegistrationModel(nir_id, cfp_id)
         rv = RegistrationView(model)
         self.setCentralWidget(rv)
 

@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QGraphicsView
 
 logger = logging.getLogger(__name__)
 
+from oat.utils import handle_exception_in_method
 
 class CustomGraphicsView(QGraphicsView):
     viewChanged = QtCore.pyqtSignal(QGraphicsView)
@@ -39,6 +40,7 @@ class CustomGraphicsView(QGraphicsView):
     def tool(self):
         return self.scene().current_tool
 
+    @handle_exception_in_method
     def setEnabled(self, a0: bool) -> None:
         if a0:
             self.setFrameStyle(Qt.QFrame.Raised | Qt.QFrame.Panel)
@@ -47,6 +49,7 @@ class CustomGraphicsView(QGraphicsView):
 
         super().setEnabled(a0)
 
+    @handle_exception_in_method
     def enterEvent(self, event):
         self.setEnabled(True)
         self.grabKeyboard()
@@ -60,6 +63,7 @@ class CustomGraphicsView(QGraphicsView):
             self.scene().activePanel())
         super().enterEvent(event)
 
+    @handle_exception_in_method
     def leaveEvent(self, event):
         self.setEnabled(False)
         self.releaseKeyboard()
@@ -109,20 +113,24 @@ class CustomGraphicsView(QGraphicsView):
             self._zoom -= 1
             self.scale(0.8, 0.8)
 
+    @handle_exception_in_method
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.angleDelta().y() > 0:
             self.zoom_in()
         else:
             self.zoom_out()
 
+    @handle_exception_in_method
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
         self.zoomToFit()
 
+    @handle_exception_in_method
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
         self.update_tool()
 
+    @handle_exception_in_method
     def setScene(self, scene) -> None:
         super().setScene(scene)
         self.update_tool()

@@ -42,6 +42,9 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.set_image()
         self.scene_tab = SceneTab(self)
 
+        self.grabber_cache = None
+        self.setItemIndexMethod(Qt.QGraphicsScene.NoIndex)
+
     @property
     @handle_exception_in_method
     def current_tool(self):
@@ -89,10 +92,12 @@ class CustomGrahpicsScene(QGraphicsScene):
             self.background_on = True
             self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
 
+    @handle_exception_in_method
     def mouseMoveEvent(self, event):
         self.fake_cursor.hide()
         super().mouseMoveEvent(event)
 
+    @handle_exception_in_method
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         # Do not handle the event in ScrollHandDrag Mode to not interfere
         if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
@@ -105,10 +110,12 @@ class CustomGrahpicsScene(QGraphicsScene):
                 self.grabber_cache.ungrabMouse()
             super().mousePressEvent(event)
 
+    @handle_exception_in_method
     def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
             return
 
         super().mouseReleaseEvent(event)
-        self.grabber_cache.grabMouse()
+        if not self.grabber_cache is None:
+            self.grabber_cache.grabMouse()
 
