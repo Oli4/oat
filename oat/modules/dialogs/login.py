@@ -19,7 +19,8 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
         _translate = QtCore.QCoreApplication.translate
 
         self.db_dict = {"Default DB": "http://localhost/api/v1",
-                        "UKB": "http://131.220.28.177/api/v1"}
+                        "UKB": "http://131.220.28.177/api/v1",
+                        "Informatik": "http://demeljoch/api/v1"}
 
         self.setupUi(self)
 
@@ -32,22 +33,15 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
     def handleLogin(self):
         # query selected DB for user:
         db_key = self.dbDropdown.currentText()
-        api_server = self.db_dict[db_key]
+        try:
+            api_server = self.db_dict[db_key]
+        except:
+            api_server = "http://" + db_key + "/api/v1"
 
         login_data = {
             "username": self.username.text(),
             "password": self.password.text(),
         }
-        if True:
-            pass
-            login_data = {
-                "username": "oli4morelle@gmail.com",
-                "password": "testpw",
-            }
-            # = {
-            #    "username": "admin@retina-annotation-tool.com",
-            #    "password": "4dc86c90f921dfd3727c99893b17dcf36a84642a332da52d626fd3573e171d98",
-            # }
 
         r = requests.post(f"{api_server}/login/access-token", data=login_data)
 

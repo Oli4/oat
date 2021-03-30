@@ -24,7 +24,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="dbDropdown"/>
+      <widget class="QComboBox" name="dbDropdown">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -52,11 +56,11 @@
       </widget>
      </item>
      <item>
-         <widget class="QLineEdit" name="password">
-             <property name="echoMode">
-                 <enum>QLineEdit::Password</enum>
-             </property>
-         </widget>
+      <widget class="QLineEdit" name="password">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

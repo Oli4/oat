@@ -23,6 +23,7 @@ class Ui_LoginDialog(object):
         self.label_3.setObjectName("label_3")
         self.horizontalLayout_3.addWidget(self.label_3)
         self.dbDropdown = QtWidgets.QComboBox(LoginDialog)
+        self.dbDropdown.setEditable(True)
         self.dbDropdown.setObjectName("dbDropdown")
         self.horizontalLayout_3.addWidget(self.dbDropdown)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
