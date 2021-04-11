@@ -20,6 +20,7 @@ EYEID_ROLE = Qt.UserRole + 15
 OPACITY_ROLE = Qt.UserRole + 16
 POSITION_ROLE = Qt.UserRole + 17
 COLOR_ROLE = Qt.UserRole + 18
+ID_ROLE = Qt.UserRole + 19
 
 role_mapping = {VISIBILITY_ROLE: "visible", NAME_ROLE: "name",
                 DATA_ROLE: "data", None: "data", SHAPE_ROLE: "shape",

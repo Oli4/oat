@@ -6,8 +6,8 @@ from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
 
 from oat.config import OAT_FOLDER
-from oat.models import PatientsModel, CollectionsModel
-from oat.models.config import DATA_ROLE
+from oat.models import PatientsModel, CollectionsModel, DatasetsModel
+from oat.models.config import DATA_ROLE, ID_ROLE
 from oat.modules.annotation.views.annotation_view import AnnotationView
 from oat.modules.navigation import NavigationView
 from oat.modules.registration import RegistrationView
@@ -20,6 +20,8 @@ from oat.views.ui.ui_main_window import Ui_MainWindow
 from oat.modules.dialogs.help import ShortcutHelp, LayerAnnotationHelp,\
     AreaAnnotationHelp, RegistrationHelp, IntroductionHelp
 
+import requests
+from oat import config
 
 class oat(QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
@@ -29,7 +31,8 @@ class oat(QMainWindow, Ui_MainWindow):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.models = {"patients": PatientsModel(), "collections": CollectionsModel()}
+        self.models = {"patients": PatientsModel(), "collections": CollectionsModel(),
+                       "datasets": DatasetsModel()}
 
         self.actionImportVol.triggered.connect(partial(self.upload, type="vol"))
         self.actionImportCfp.triggered.connect(partial(self.upload, type="cfp"))
@@ -39,7 +42,8 @@ class oat(QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        self.overview_view = NavigationView(model=self.models["collections"],
+        self.overview_view = NavigationView(datasets_model=self.models["datasets"],
+                                            collections_model=self.models["collections"],
                                             parent=self)
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
@@ -78,9 +82,14 @@ class oat(QMainWindow, Ui_MainWindow):
     def open_annotation_view(self):
         self.save()
         overview = self.overview_view
-        data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
+        collection_id = overview.model.data(
+            overview.tableView.selectionModel().currentIndex(), role=ID_ROLE)
+        response = requests.get(
+            f"{config.api_server}/collections/{collection_id}",
+            headers=config.auth_header)
+        data = response.json()
 
-        volume_ids = [v["id"] for v in data["volumeimages"]]
+        volume_ids = [d["id"] for d in data["volumeimages"]]
         volume_ids_with_localizer = [v["id"] for v in data["volumeimages"]
                                      if not v["localizer_image"] is None]
         volume_ids_without_localizer = list(set(volume_ids)-set(volume_ids_with_localizer))
@@ -98,10 +107,12 @@ class oat(QMainWindow, Ui_MainWindow):
     def open_registration_view(self):
         self.save()
         overview = self.overview_view
-        data = overview.model.data(overview.tableView.selectionModel().currentIndex(), role=DATA_ROLE)
-        #localizer_id = data["volumeimages"][0]["localizer_image"]["id"]
-        #cfp_id = [enface_image["id"] for enface_image in data["enfaceimages"]
-        #          if enface_image["id"] !=localizer_id][0]
+        collection_id = overview.model.data(
+            overview.tableView.selectionModel().currentIndex(), role=ID_ROLE)
+        response = requests.get(
+            f"{config.api_server}/collections/{collection_id}",
+            headers=config.auth_header)
+        data = response.json()
 
         cfp_id = [image["id"] for image in data["enfaceimages"]
                   if image["modality"] == "CFP"][0]

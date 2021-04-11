@@ -43,6 +43,11 @@ class LoginDialog(QtWidgets.QDialog, Ui_LoginDialog):
             "password": self.password.text(),
         }
 
+        login_data = {
+            "username": "oli4morelle@gmail.com",
+            "password": "testpw",
+        }
+
         r = requests.post(f"{api_server}/login/access-token", data=login_data)
 
         if r.status_code != 200:
