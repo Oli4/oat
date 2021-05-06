@@ -1,7 +1,7 @@
 import typing
 import pandas as pd
 import requests
-from PyQt5 import QtCore
+from PySide6 import QtCore
 
 from oat import config
 from oat.models.config import ID_ROLE, DATA_ROLE

@@ -6,7 +6,7 @@ import qimage2ndarray
 import requests
 import numpy as np
 import skimage.transform as skitrans
-from PyQt5 import QtWidgets, QtGui
+from PySide6 import QtWidgets, QtGui
 
 from oat import config
 

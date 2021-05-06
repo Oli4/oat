@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 from oat.models.config import DATA_ROLE
 from oat.models.db import LineTypeModel, AreaTypeModel

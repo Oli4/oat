@@ -1,8 +1,8 @@
 import logging
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtWidgets import QWidget
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import QModelIndex
+from PySide6.QtWidgets import QWidget
 
 from oat.models.config import POINT_ROLE
 from oat.modules.registration.models import RegistrationModel
@@ -68,11 +68,11 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         self.graphicsViewPatch.zoomToFit()
         self.graphicsViewCheckerboard.zoomToFit()
 
-    @QtCore.pyqtSlot(int)
+    @QtCore.Slot(int)
     def change_checkerboard_size(self, size):
         self.model.checkerboard_size = size
 
-    @QtCore.pyqtSlot(str)
+    @QtCore.Slot(str)
     def change_tmodel(self, tmodel):
         self.model.tmodel = tmodel.lower()
         self.model.update_checkerboard()
@@ -105,7 +105,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         else:
             return True
 
-    @QtCore.pyqtSlot(QModelIndex, QModelIndex)
+    @QtCore.Slot(QModelIndex, QModelIndex)
     def set_scenes(self, current_index: QModelIndex,
                    previous_index: QModelIndex):
         """
@@ -141,9 +141,7 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        print(event.key())
         try:
             self.key_actions[event.key()]()
         except:
-            print("super")
             super().keyPressEvent(event)

@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 requirements = [
-    'PyQt5', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio', 'eyepie',
-    'sqlalchemy', 'cryptography', "requests", "pandas", "scikit-image",
+    'PySide6', 'numpy', 'opencv-python', 'qimage2ndarray', 'imageio', 'eyepie',
+    'sqlalchemy', "cryptography", "requests", "pandas", "scikit-image",
 ]
 
 test_requirements = [
@@ -17,7 +17,7 @@ test_requirements = [
 setup(
     name='oat',
     version='0.0.1',
-    description="A GUI to annotate multi modal retial images",
+    description="A GUI to annotate multi modal retinal images",
     author="Olivier Morelle",
     author_email='oli4morelle@gmail.com',
     url='https://github.com/Oli4/oat',

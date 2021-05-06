@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 from oat import config
 from oat.core.security import get_local_patient_info

@@ -4,30 +4,28 @@ from typing import Iterable
 
 import numpy as np
 import requests
-import skimage.segmentation as skiseg
+import skimage.color as skicolor
+from skimage.segmentation import checkerboard_level_set
 import skimage.transform as skitrans
-from PyQt5 import QtCore
-from PyQt5.QtCore import QPoint, QPointF, QModelIndex
-from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsLineItem
-from skimage.color import gray2rgb
+from PySide6.QtCore import QPointF, QModelIndex
 
 from oat import config
-from PyQt5 import Qt, QtCore, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 from oat.models.config import FEATUREID_ROLE, MATCHID_ROLE, SCENE_ROLE, \
     POINT_ROLE, FEATURE_DICT_ROLE, DELETE_ROLE
-from oat.models.utils import array2qgraphicspixmapitem, qgraphicspixmap2array, \
-    get_registration_from_enface_ids
+import qimage2ndarray
+from oat.models.utils import array2qgraphicspixmapitem, get_registration_from_enface_ids
 
 logger = logging.getLogger(__name__)
 f_dict = {0: "feature1", 1: "feature2"}
 
 from typing import Tuple, Dict
 
-from PyQt5.QtWidgets import QGraphicsPixmapItem
+from PySide6.QtWidgets import QGraphicsPixmapItem
 from oat.models.utils import get_enface_by_id
 
 
-class CustomGrahpicsScene(Qt.QGraphicsScene):
+class CustomGrahpicsScene(QtWidgets.QGraphicsScene):
     number = 0
     base_name = "Default"
 
@@ -48,6 +46,8 @@ class CustomGrahpicsScene(Qt.QGraphicsScene):
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
 
         self.image_id = None
+
+        self.img_array = None
         if image_id:
             self.set_image(image_id)
 
@@ -71,27 +71,26 @@ class CustomGrahpicsScene(Qt.QGraphicsScene):
 
     def set_image(self, image_id):
         self.image_id = image_id
-        pixmap_item, meta = self._fetch_image(image_id)
+        self.img_array, meta = self._fetch_image(image_id)
+        qimage = qimage2ndarray.array2qimage(self.img_array)
         self.image_meta = meta
-        self.shape = (
-        pixmap_item.pixmap().height(), pixmap_item.pixmap().width())
-        pixmap = pixmap_item.pixmap()
+        self.shape = (qimage.height(), qimage.width())
 
-        self.setSceneRect(Qt.QRectF(pixmap.rect()))
+        self.setSceneRect(QtCore.QRectF(0.0, 0.0, qimage.width(), qimage.height()))
         self._widthForHeightFactor = \
-            1.0 * pixmap.size().width() / pixmap.size().height()
-        brush = Qt.QBrush(pixmap)
+            1.0 * qimage.width() / qimage.height()
+        brush = QtGui.QBrush(qimage)
         self.setBackgroundBrush(brush)
 
     def hide_background(self):
         if self.background_on:
             self.background_on = False
-            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
+            self.invalidate(self.sceneRect(), QtWidgets.QGraphicsScene.BackgroundLayer)
 
     def show_background(self):
         if not self.background_on:
             self.background_on = True
-            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
+            self.invalidate(self.sceneRect(), QtWidgets.QGraphicsScene.BackgroundLayer)
 
 
 class RegistrationGraphicsScene(CustomGrahpicsScene):
@@ -101,9 +100,9 @@ class RegistrationGraphicsScene(CustomGrahpicsScene):
         self.column = column
 
 
-    def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
+    def _fetch_image(self, image_id) -> Tuple[np.ndarray, Dict]:
         img, meta = get_enface_by_id(image_id)
-        return array2qgraphicspixmapitem(img), meta
+        return img, meta
 
 
 class RegistrationModel(QtCore.QAbstractTableModel):
@@ -115,10 +114,8 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         self.scenes = {i: RegistrationGraphicsScene(self, i, image_id=image_id)
                        for i, image_id in enumerate(self.image_ids)}
 
-        self.checker_images, self.checker_scale = \
-            zip(*[self.img_rescale(qgraphicspixmap2array(scene.backgroundBrush().texture()),
-                                   300)
-                  for scene in self.scenes.values()])
+        self.checker_images, self.checker_scale = zip(*[self.img_rescale(scene.img_array, 300)
+                                                        for scene in self.scenes.values()])
 
         self.scenes[-1] = RegistrationGraphicsScene(self, -1)
 
@@ -192,6 +189,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
     def update_checkerboard(self):
         img1 = self.checker_images[0]
+        print(self.checker_images[1].shape)
         img2 = skitrans.warp(self.checker_images[1],
                              inverse_map=self.tform.inverse,
                              output_shape=self.checker_images[0].shape,
@@ -199,14 +197,14 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
         size = self.checkerboard_size
 
-        mask = skiseg.checkerboard_level_set(
+        mask = checkerboard_level_set(
             img1.shape[:2], size).astype(bool)
 
         if len(img1.shape) == 2:
-            img1 = gray2rgb(img1)
+            img1 = skicolor.gray2rgb(img1)
 
         if len(img2.shape) == 2:
-            img2 = gray2rgb(img2)
+            img2 = skicolor.gray2rgb(img2)
 
         checkerboard = np.copy(img1)
         checkerboard[np.where(mask)] = img2[np.where(mask)]
@@ -237,19 +235,19 @@ class RegistrationModel(QtCore.QAbstractTableModel):
                         pass
 
     def _marker_1(self, pos):
-        pos = QPoint(int(pos.x()), int(pos.y())) + QPointF(0.5, 0.5)
+        pos = QPointF(int(pos.x()), int(pos.y())) + QPointF(0.5, 0.5)
         marker = self._create_marker_1()
         marker.setPos(pos)
         marker.setZValue(10)
         return marker
 
     def _create_marker_1(self):
-        marker_group = QGraphicsItemGroup()
-        marker_group.addToGroup(QGraphicsLineItem(0, -3, 0, -2))
-        marker_group.addToGroup(QGraphicsLineItem(0, 2, 0, 3))
+        marker_group = QtWidgets.QGraphicsItemGroup()
+        marker_group.addToGroup(QtWidgets.QGraphicsLineItem(0, -3, 0, -2))
+        marker_group.addToGroup(QtWidgets.QGraphicsLineItem(0, 2, 0, 3))
 
-        marker_group.addToGroup(QGraphicsLineItem(-3, 0, -2, 0))
-        marker_group.addToGroup(QGraphicsLineItem(2, 0, 3, 0))
+        marker_group.addToGroup(QtWidgets.QGraphicsLineItem(-3, 0, -2, 0))
+        marker_group.addToGroup(QtWidgets.QGraphicsLineItem(2, 0, 3, 0))
 
         return marker_group
 

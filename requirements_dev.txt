@@ -1,0 +1,7 @@
+python-semantic-release
+pyinstaller
+pynsist
+stdeb
+
+# apt install binutils (for pyinstaller)
+# apt install python3-all debhelper dh-python (for stdeb)

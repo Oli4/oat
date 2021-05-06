@@ -1,15 +1,16 @@
 import logging
 
 import math
-from PyQt5 import QtCore, QtWidgets, QtGui, Qt
-from PyQt5.QtWidgets import QGraphicsView
+from PySide6 import QtCore, QtWidgets, QtGui, Qt
+from PySide6.QtWidgets import QGraphicsView
 
 logger = logging.getLogger(__name__)
 
 from oat.utils import handle_exception_in_method
 
 class CustomGraphicsView(QGraphicsView):
-    viewChanged = QtCore.pyqtSignal(QGraphicsView)
+
+    viewChanged = QtCore.Signal(QGraphicsView)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -27,7 +28,7 @@ class CustomGraphicsView(QGraphicsView):
         self.mouse_grabber_cache = None
 
         self.setLineWidth(3)
-        self.setPalette(Qt.QPalette(QtCore.Qt.red, QtCore.Qt.black))
+        self.setPalette(QtGui.QPalette(QtCore.Qt.red, QtCore.Qt.black))
         self.setEnabled(False)
 
     def unlink_navigation(self):
@@ -40,16 +41,16 @@ class CustomGraphicsView(QGraphicsView):
     def tool(self):
         return self.scene().current_tool
 
-    @handle_exception_in_method
+    
     def setEnabled(self, a0: bool) -> None:
         if a0:
-            self.setFrameStyle(Qt.QFrame.Raised | Qt.QFrame.Panel)
+            self.setFrameStyle(QtWidgets.QFrame.Raised | QtWidgets.QFrame.Panel)
         else:
-            self.setFrameStyle(Qt.QFrame.Plain | Qt.QFrame.Panel)
+            self.setFrameStyle(QtWidgets.QFrame.Plain | QtWidgets.QFrame.Panel)
 
         super().setEnabled(a0)
 
-    @handle_exception_in_method
+    
     def enterEvent(self, event):
         self.setEnabled(True)
         self.grabKeyboard()
@@ -63,7 +64,7 @@ class CustomGraphicsView(QGraphicsView):
             self.scene().activePanel())
         super().enterEvent(event)
 
-    @handle_exception_in_method
+    
     def leaveEvent(self, event):
         self.setEnabled(False)
         self.releaseKeyboard()
@@ -113,24 +114,24 @@ class CustomGraphicsView(QGraphicsView):
             self._zoom -= 1
             self.scale(0.8, 0.8)
 
-    @handle_exception_in_method
+    
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if event.angleDelta().y() > 0:
             self.zoom_in()
         else:
             self.zoom_out()
 
-    @handle_exception_in_method
+    
     def showEvent(self, event: QtGui.QShowEvent) -> None:
         super().showEvent(event)
         self.zoomToFit()
 
-    @handle_exception_in_method
+    
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
         self.update_tool()
 
-    @handle_exception_in_method
+    
     def setScene(self, scene) -> None:
         super().setScene(scene)
         self.update_tool()
@@ -139,7 +140,7 @@ class CustomGraphicsView(QGraphicsView):
         if tool is None:
             tool = self.scene().current_tool
         if tool.name == "inspection":
-            self.setDragMode(Qt.QGraphicsView.ScrollHandDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
         else:
-            self.setDragMode(Qt.QGraphicsView.NoDrag)
+            self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
         self.viewport().setCursor(tool.cursor)

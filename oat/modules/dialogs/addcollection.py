@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from PyQt5 import QtWidgets
+from PySide6 import QtWidgets
 
 from oat import config
 from oat.views.ui.ui_add_collection_dialog import Ui_AddCollectionDialog

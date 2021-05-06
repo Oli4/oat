@@ -1,17 +1,7 @@
-import base64
-import zlib
-from typing import List, Dict
-
-import numpy as np
-import qimage2ndarray
-import requests
-from PyQt5 import Qt, QtCore, QtGui
-import typing
-
-from oat import config
+from PySide6 import QtWidgets, QtCore
 
 
-class ItemGroup(Qt.QGraphicsItem):
+class ItemGroup(QtWidgets.QGraphicsItem):
     def __init__(self, *args, parent=None, name="Areas", **kwargs):
         """ Provide data to create a new annotation or the id of an existing
         annotation.
@@ -19,7 +9,7 @@ class ItemGroup(Qt.QGraphicsItem):
         super().__init__(*args, parent=parent, **kwargs)
         self._data = {"visible": True, "z_value": 0.0, "name": name}
 
-        self.setFlag(Qt.QGraphicsItem.ItemHasNoContents, True)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemHasNoContents, True)
 
     def hide_controlls(self):
         pass

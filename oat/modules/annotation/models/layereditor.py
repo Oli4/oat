@@ -1,12 +1,12 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtWidgets import QWidget
 
 from oat.views.ui.ui_layer_entry import Ui_LayerEntry
 from oat.views.ui.ui_layergroup_entry import Ui_LayerGroupEntry
 
 
 class LayerGroupEntry(QWidget, Ui_LayerGroupEntry):
-    editorChanged = QtCore.pyqtSignal()
+    editorChanged = QtCore.Signal()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -49,7 +49,7 @@ class LayerGroupEntry(QWidget, Ui_LayerGroupEntry):
 
 
 class LayerEntry(QWidget, Ui_LayerEntry):
-    editorChanged = QtCore.pyqtSignal()
+    editorChanged = QtCore.Signal()
 
     def __init__(self, parent):
         super().__init__(parent)

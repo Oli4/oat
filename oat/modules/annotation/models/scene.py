@@ -1,10 +1,8 @@
 from collections import namedtuple
 from typing import Tuple, Dict
 
-from PyQt5 import QtGui, QtCore, Qt
-from PyQt5.Qt import QBrush, QGraphicsPixmapItem
-from PyQt5.QtCore import QRectF
-from PyQt5.QtWidgets import QGraphicsScene
+from PySide6 import QtGui, QtCore, Qt, QtWidgets
+from PySide6.QtCore import QRectF
 
 from .scenetab import SceneTab
 from oat.modules.annotation.tools import Inspection
@@ -15,10 +13,10 @@ Line = namedtuple("Line", ["a", "b", "c"])
 Point = namedtuple("Point", ["x", "y"])
 
 
-class CustomGrahpicsScene(QGraphicsScene):
+class CustomGrahpicsScene(QtWidgets.QGraphicsScene):
     number = 0
     base_name = "Default"
-    toolChanged = QtCore.pyqtSignal(object)
+    toolChanged = QtCore.Signal(object)
 
     def __init__(self, parent, image_id, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=parent)
@@ -36,17 +34,17 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.background_on = True
         self.fake_cursor = self.addPixmap(
             QtGui.QPixmap(":/cursors/cursors/navigation_cursor.svg"))
-        self.fake_cursor.setFlag(Qt.QGraphicsItem.ItemIgnoresTransformations)
+        self.fake_cursor.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations)
         self.fake_cursor.hide()
 
         self.set_image()
         self.scene_tab = SceneTab(self)
 
         self.grabber_cache = None
-        self.setItemIndexMethod(Qt.QGraphicsScene.NoIndex)
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
     @property
-    @handle_exception_in_method
+    
     def current_tool(self):
         return self._current_tool
 
@@ -63,7 +61,7 @@ class CustomGrahpicsScene(QGraphicsScene):
             self.name = f"{self.base_name}_{self.number}"
             self.number += 1
 
-    def _fetch_image(self, image_id) -> Tuple[QGraphicsPixmapItem, Dict]:
+    def _fetch_image(self, image_id) -> Tuple[QtWidgets.QGraphicsPixmapItem, Dict]:
         raise NotImplementedError
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
@@ -80,27 +78,27 @@ class CustomGrahpicsScene(QGraphicsScene):
         self.setSceneRect(QRectF(pixmap.rect()))
         self._widthForHeightFactor = \
             1.0 * pixmap.size().width() / pixmap.size().height()
-        self.setBackgroundBrush(QBrush(pixmap))
+        self.setBackgroundBrush(QtGui.QBrush(pixmap))
 
     def hide_background(self):
         if self.background_on:
             self.background_on = False
-            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
+            self.invalidate(self.sceneRect(), QtWidgets.QGraphicsScene.BackgroundLayer)
 
     def show_background(self):
         if not self.background_on:
             self.background_on = True
-            self.invalidate(self.sceneRect(), Qt.QGraphicsScene.BackgroundLayer)
+            self.invalidate(self.sceneRect(), QtWidgets.QGraphicsScene.BackgroundLayer)
 
-    @handle_exception_in_method
+    
     def mouseMoveEvent(self, event):
         self.fake_cursor.hide()
         super().mouseMoveEvent(event)
 
-    @handle_exception_in_method
+    
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
         # Do not handle the event in ScrollHandDrag Mode to not interfere
-        if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
+        if self.views()[0].dragMode() == QtWidgets.QGraphicsView.ScrollHandDrag:
             return
 
         super().mousePressEvent(event)
@@ -110,9 +108,9 @@ class CustomGrahpicsScene(QGraphicsScene):
                 self.grabber_cache.ungrabMouse()
             super().mousePressEvent(event)
 
-    @handle_exception_in_method
+    
     def mouseReleaseEvent(self, event: 'QGraphicsSceneMouseEvent') -> None:
-        if self.views()[0].dragMode() == Qt.QGraphicsView.ScrollHandDrag:
+        if self.views()[0].dragMode() == QtWidgets.QGraphicsView.ScrollHandDrag:
             return
 
         super().mouseReleaseEvent(event)

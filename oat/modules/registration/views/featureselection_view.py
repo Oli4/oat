@@ -1,12 +1,12 @@
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt, QPoint
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import Qt, QPoint
 
 from oat.modules.registration.views.graphicsview import CustomGraphicsView
 
 
 class FeatureSelectionView(CustomGraphicsView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
-    featureChanged = QtCore.pyqtSignal(QtCore.QPoint)
+    cursorPosChanged = QtCore.Signal(QtCore.QPointF)
+    featureChanged = QtCore.Signal(QtCore.QPoint)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)

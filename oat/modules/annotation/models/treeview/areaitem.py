@@ -5,12 +5,12 @@ from typing import List, Dict
 import numpy as np
 import qimage2ndarray
 import requests
-from PyQt5 import Qt, QtCore, QtWidgets, QtGui
+from PySide6 import Qt, QtCore, QtWidgets, QtGui
 
 from oat import config
 from oat.utils import handle_exception_in_method
 
-class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
+class TreeAreaItemBase(QtWidgets.QGraphicsPixmapItem):
     _defaults = {"visible": True, "mask": "", "upperleft_x": 0,
                  "upperleft_y": 0,
                  "size_x": 0, "size_y": 0}
@@ -24,13 +24,13 @@ class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
         self.type = type
         self._data = data
         height, width = shape
-        self.qimage = Qt.QImage(width, height,
-                                Qt.QImage.Format_ARGB32)
-        color = Qt.QColor()
+        self.qimage = QtGui.QImage(width, height,
+                                QtGui.QImage.Format_ARGB32)
+        color = QtGui.QColor()
         color.setNamedColor(f"#{self.current_color}")
         self.qimage.fill(color)
         self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
-        self.setPixmap(Qt.QPixmap())
+        self.setPixmap(QtGui.QPixmap())
         self.set_data()
 
 
@@ -39,13 +39,13 @@ class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
 
         [setattr(self, key, value) for key, value in self._data.items()]
 
-        self.setFlag(Qt.QGraphicsItem.ItemIsPanel)
-        #self.setPanelModality(Qt.QGraphicsItem.PanelModal)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsPanel)
+        #self.setPanelModality(QtWidgets.QGraphicsItem.PanelModal)
         self.interaction_ongoing = False
 
     def shape(self) -> QtGui.QPainterPath:
-        path = Qt.QPainterPath()
-        path.addRect(Qt.QRectF(self.qimage.rect()))
+        path = QtGui.QPainterPath()
+        path.addRect(QtCore.QRectF(self.qimage.rect()))
         return path
 
     def setActive(self, active: bool) -> None:
@@ -152,7 +152,7 @@ class TreeAreaItemBase(Qt.QGraphicsPixmapItem):
     @current_color.setter
     def current_color(self, value):
         self._data["current_color"] = value
-        color = Qt.QColor()
+        color = QtGui.QColor()
         color.setNamedColor(f"#{self.current_color}")
         qimage2ndarray.rgb_view(self.qimage)[:] = \
             np.array([color.red(), color.green(), color.blue()])
@@ -308,7 +308,7 @@ class TreeAreaItemDB(TreeAreaItemBase):
             raise ValueError(f"Status Code: {response.status_code}\n"
                              f"{response.json()}")
 
-    @handle_exception_in_method
+    
     def save(self):
         # Upload local changes if the layer is active
         if self.changed and not self.interaction_ongoing:
@@ -352,6 +352,6 @@ class TreeAreaItemOffline(TreeAreaItemBase):
     def delete_annotation(annotation_id):
         pass
 
-    @handle_exception_in_method
+    
     def save(self):
         pass

@@ -1,6 +1,6 @@
 from typing import Tuple, Dict
 
-from PyQt5.QtWidgets import QGraphicsPixmapItem
+from PySide6.QtWidgets import QGraphicsPixmapItem
 from skimage import transform as skitrans
 
 from oat.modules.annotation.models.scene import CustomGrahpicsScene

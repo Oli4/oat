@@ -1,5 +1,5 @@
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QWidget
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtWidgets import QWidget
 
 from oat.modules.annotation.models.treeitemdelegate import TreeItemDelegate
 from oat.modules.dialogs import AddAnnotationDialog
@@ -101,7 +101,7 @@ class SceneTab(QWidget, Ui_SceneTab):
         item = self.model.getItem(model_index)
         return item
 
-    @QtCore.pyqtSlot('QModelIndex', 'QModelIndex')
+    @QtCore.Slot('QModelIndex', 'QModelIndex')
     def on_currentChanged(self, current, previous):
         current = self.model.getItem(current)
         previous = self.model.getItem(previous)

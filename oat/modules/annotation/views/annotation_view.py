@@ -1,8 +1,8 @@
 import logging
 from typing import List
 
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtWidgets import QWidget
+from PySide6 import QtGui, QtCore, QtWidgets
+from PySide6.QtWidgets import QWidget
 
 from oat.views.ui.ui_annotation_view import Ui_AnnotationView
 

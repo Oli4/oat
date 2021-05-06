@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 from oat import config
 from oat.utils.api import upload_vol, upload_enface_file, upload_hexml, upload_folder
@@ -49,12 +49,13 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
         index = self.collectionDropdown.currentIndex()
         return self.collection_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
 
-    @QtCore.pyqtSlot(int)
+    @QtCore.Slot(int)
     def update_collections(self, index):
-        filter_key_column = [x for x in range(self.collection_model.columnCount())
-                             if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
-                             == "patient_id"][0]
-        self.collection_model.setFilterRegExp(str(self.patient_id))
+        #filter_key_column = [x for x in range(self.collection_model.columnCount())
+        #                     if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
+        #                     == "patient_id"][0]
+        filter_key_column = self.collection_model.sourceModel().column_order.index("patient_id")
+        self.collection_model.setFilterRegularExpression(str(self.patient_id))
         self.collection_model.setFilterKeyColumn(filter_key_column)
 
     def add_patient(self):

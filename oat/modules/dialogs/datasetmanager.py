@@ -1,7 +1,7 @@
 import logging
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import QMessageBox
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtWidgets import QMessageBox
 
 from oat.models.config import DATA_ROLE
 from oat.views.ui.ui_datasetmanager_dialog import Ui_DatasetManagerDialog

@@ -1,5 +1,5 @@
-from PyQt5 import QtWidgets, QtCore, Qt
-from PyQt5.QtCore import QPointF
+from PySide6 import QtWidgets, QtCore, Qt
+from PySide6.QtCore import QPointF
 
 from oat.modules.annotation.views.graphicsview import CustomGraphicsView
 from oat.modules.annotation.models import BscanGraphicsScene
@@ -10,8 +10,8 @@ import numpy as np
 from oat.utils import handle_exception_in_method
 
 class VolumeView(CustomGraphicsView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
-    sceneChanged = QtCore.pyqtSignal()
+    cursorPosChanged = QtCore.Signal(QtCore.QPointF, CustomGraphicsView)
+    sceneChanged = QtCore.Signal()
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -21,19 +21,20 @@ class VolumeView(CustomGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
     @property
-    @handle_exception_in_method
+    
     def bscan_scene(self):
         if not self.current_slice in self._bscan_scenes:
              scene = BscanGraphicsScene(
                 parent=self, data=self.slices[self.current_slice],
                 base_name=self.name)
              scene.toolChanged.connect(self.update_tool)
+             print(scene)
              self._bscan_scenes[self.current_slice] = scene
 
         return self._bscan_scenes[self.current_slice]
 
     @property
-    @handle_exception_in_method
+    
     def bscan_scenes(self):
         for i in range(len(self.slices)):
             if not i in self._bscan_scenes:
@@ -119,7 +120,7 @@ class VolumeView(CustomGraphicsView):
         # ToDo: this is an overkill, update only cursor position
         self.viewport().update()
 
-    @handle_exception_in_method
+    
     def wheelEvent(self, event):
         if event.modifiers() == (QtCore.Qt.ControlModifier):
             if event.angleDelta().y() > 0:
@@ -135,7 +136,7 @@ class VolumeView(CustomGraphicsView):
         else:
             super().wheelEvent(event)
 
-    @handle_exception_in_method
+    
     def mouseMoveEvent(self, event):
         super().mouseMoveEvent(event)
         scene_pos = self.mapToScene(event.pos())

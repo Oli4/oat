@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-from PyQt5 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 from oat import config
 from oat.core.security import get_fernet

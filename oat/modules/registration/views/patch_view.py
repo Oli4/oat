@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsView
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QGraphicsView
 
 
 class PatchView(QGraphicsView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF)
+    cursorPosChanged = QtCore.Signal(QtCore.QPointF)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)

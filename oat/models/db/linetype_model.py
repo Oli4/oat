@@ -1,13 +1,13 @@
 import typing
 
 import requests
-from PyQt5 import Qt, QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 
 from oat import config
 from oat.models.config import DATA_ROLE
 
 
-class LineTypeModel(Qt.QAbstractTableModel):
+class LineTypeModel(QtCore.QAbstractTableModel):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
         self._data = self.get_line_types()

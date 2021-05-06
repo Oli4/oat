@@ -1,8 +1,8 @@
 import logging
 
 import math
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QGraphicsView
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.QtWidgets import QGraphicsView
 
 logger = logging.getLogger(__name__)
 

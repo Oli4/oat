@@ -1,16 +1,31 @@
 import logging
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget
 
-from oat.models.config import DATA_ROLE, ID_ROLE
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from oat.models.config import DATA_ROLE, ID_ROLE, EMPTY_ROLE
 from oat.views.ui.ui_data_overview import Ui_OverviewView
 from oat.modules.dialogs.datasetmanager import DatasetManagerDialog
 
 logger = logging.getLogger(__name__)
 
+class CustomQSortFilterProxyModel(QtCore.QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
-class NavigationView(QWidget, Ui_OverviewView):
+    def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
+        model = self.sourceModel()
+        index = model.index(source_row, 0, source_parent)
+        return not model.data(index, EMPTY_ROLE)
+
+    def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
+        header = self.sourceModel().headerData(source_column, QtCore.Qt.Horizontal)
+        if header in ["Name", "Laterality", "Patient Pseudonym"]:
+            return True
+        else:
+            return False
+
+class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
     def __init__(self, datasets_model, collections_model, parent=None):
         """Initialize the components of the Toolbox subwindow."""
         super().__init__(parent)
@@ -19,28 +34,18 @@ class NavigationView(QWidget, Ui_OverviewView):
         self.datasets_model = datasets_model
         self.collections_model = collections_model
 
-        self.model = QtCore.QSortFilterProxyModel(self)
+        self.model = CustomQSortFilterProxyModel(self)
         self.model.setSourceModel(self.collections_model)
+
+
         self.tableView.setModel(self.model)
         self.tableView.setSortingEnabled(True)
 
-        filtered_columns = [x for x in range(self.model.columnCount())
-                            if self.model.headerData(x, QtCore.Qt.Horizontal)
-                            not in ["Name", "Patient Pseudonym",]]
-        visible_columns = [x for x in range(self.model.columnCount())
-                           if self.model.headerData(x, QtCore.Qt.Horizontal)
-                           in ["Name", "Patient Pseudonym", ]]
-
-        for i in filtered_columns:
-            self.tableView.setColumnHidden(i, True)
         self.tableView.verticalHeader().setVisible(False)
         self.tableView.selectionModel().currentChanged.connect(
             self.toggle_buttons)
 
-        header = self.tableView.horizontalHeader()
-        for c in visible_columns:
-            header.setSectionResizeMode(c, QtWidgets.QHeaderView.Stretch)
-
+        self.tableView.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.toggle_buttons()
 
         # self.annotateButton.clicked.connect(self.annotate_collection)

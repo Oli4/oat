@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt
+from PySide6.QtCore import Qt
 
 # models data roles
 VISIBILITY_ROLE = Qt.UserRole + 1
@@ -21,6 +21,7 @@ OPACITY_ROLE = Qt.UserRole + 16
 POSITION_ROLE = Qt.UserRole + 17
 COLOR_ROLE = Qt.UserRole + 18
 ID_ROLE = Qt.UserRole + 19
+EMPTY_ROLE = Qt.UserRole + 20
 
 role_mapping = {VISIBILITY_ROLE: "visible", NAME_ROLE: "name",
                 DATA_ROLE: "data", None: "data", SHAPE_ROLE: "shape",

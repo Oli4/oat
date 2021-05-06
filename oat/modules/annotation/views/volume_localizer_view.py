@@ -1,10 +1,10 @@
-from PyQt5 import QtCore, Qt
+from PySide6 import QtCore, QtWidgets
 
 from oat.modules.annotation.views.graphicsview import CustomGraphicsView
 from oat.views.ui.ui_volumelocalizer_view import Ui_VolumeLocalizerView
 
-class VolumeLocalizerView(Qt.QWidget, Ui_VolumeLocalizerView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
+class VolumeLocalizerView(QtWidgets.QWidget, Ui_VolumeLocalizerView):
+    cursorPosChanged = QtCore.Signal(QtCore.QPointF, CustomGraphicsView)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)

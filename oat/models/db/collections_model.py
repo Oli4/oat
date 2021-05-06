@@ -1,9 +1,9 @@
 import pandas as pd
 import requests
-from PyQt5 import QtCore
+from PySide6 import QtCore
 
 from oat import config
-from oat.models.config import DATA_ROLE, ID_ROLE
+from oat.models.config import DATA_ROLE, ID_ROLE, EMPTY_ROLE
 
 
 class CollectionsModel(QtCore.QAbstractTableModel):
@@ -84,6 +84,15 @@ class CollectionsModel(QtCore.QAbstractTableModel):
                     return None
                 else:
                     return int(self._data.iloc[index.row()].name)
+
+        elif role == EMPTY_ROLE:
+            if len(self._data) > 0:
+                row = self._data.iloc[index.row(), :]
+                if len(row["enfaceimage_ids"]) + len(row["volumeimage_ids"]) == 0:
+                    return True
+                else:
+                    return False
+
 
     def indexByName(self, name):
         return self._data.columns.get_loc(name)

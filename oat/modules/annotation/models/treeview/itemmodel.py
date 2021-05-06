@@ -1,6 +1,6 @@
 import requests
-from PyQt5 import Qt, QtCore, QtWidgets
-from PyQt5.QtCore import QAbstractItemModel
+from PySide6 import Qt, QtCore, QtWidgets
+from PySide6.QtCore import QAbstractItemModel
 
 from oat import config
 from oat.modules.annotation.models.treeview.areaitem import TreeAreaItemDB
@@ -9,7 +9,7 @@ from oat.modules.annotation.models.treeview.itemgroup import ItemGroup
 
 
 class TreeItemModel(QAbstractItemModel):
-    def __init__(self, scene: Qt.QGraphicsScene, parent=None, *args, **kwargs):
+    def __init__(self, scene: QtWidgets.QGraphicsScene, parent=None, *args, **kwargs):
         super().__init__(*args, **kwargs, parent=parent)
         self.scene = scene
         self.prefix = scene.urlprefix

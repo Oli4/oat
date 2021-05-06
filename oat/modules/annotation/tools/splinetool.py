@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtWidgets, QtCore, Qt
+from PySide6 import QtGui, QtWidgets, QtCore, Qt
 from oat.views.ui.ui_spline_options import Ui_splineOptions
 from oat.modules.annotation.models.treeview.lineitem import TreeLineItemBase
 
@@ -20,7 +20,7 @@ class SplineWidget(QtWidgets.QWidget, Ui_splineOptions):
         else:
             item.hide_control_points()
 
-class PaintPreview(Qt.QGraphicsItem):
+class PaintPreview(QtWidgets.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):
         super().__init__(parent)
         self.settings_widget = settings_widget

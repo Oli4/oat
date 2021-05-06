@@ -2,8 +2,7 @@ import logging
 from functools import partial
 
 import sys
-from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import (QApplication, QDesktopWidget, QMainWindow)
+from PySide6 import QtWidgets, QtGui
 
 from oat.config import OAT_FOLDER
 from oat.models import PatientsModel, CollectionsModel, DatasetsModel
@@ -23,7 +22,7 @@ from oat.modules.dialogs.help import ShortcutHelp, LayerAnnotationHelp,\
 import requests
 from oat import config
 
-class oat(QMainWindow, Ui_MainWindow):
+class oat(QtWidgets.QMainWindow, Ui_MainWindow):
     """Create the main window that stores all of the widgets necessary for the application."""
 
     def __init__(self, parent=None):
@@ -175,12 +174,12 @@ def main(log_level=logging.INFO):
     logger.addHandler(ch)
 
     logger.info("Starting Application.")
-    application = QApplication(sys.argv)
+    application = QtWidgets.QApplication(sys.argv)
     login = LoginDialog()
 
     if login.exec_() == QtWidgets.QDialog.Accepted:
         window = oat()
-        desktop = QDesktopWidget().availableGeometry()
+        desktop = QtGui.QScreen().availableGeometry()
         width = (desktop.width() - window.width()) / 2
         height = (desktop.height() - window.height()) / 2
         window.show()

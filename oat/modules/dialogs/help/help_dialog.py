@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PySide6 import QtWidgets
 from oat.views.ui.ui_text_window import Ui_TextWindow
 
 class HelpWindow(QtWidgets.QDialog, Ui_TextWindow):

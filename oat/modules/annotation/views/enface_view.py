@@ -1,5 +1,5 @@
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import Qt, QPointF
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import Qt, QPointF
 
 from oat.modules.annotation.views.graphicsview import CustomGraphicsView
 from oat.models.utils import get_transformation
@@ -8,7 +8,7 @@ from oat.models.utils import get_enface_meta_by_id
 
 
 class EnfaceView(CustomGraphicsView):
-    cursorPosChanged = QtCore.pyqtSignal(QtCore.QPointF, CustomGraphicsView)
+    cursorPosChanged = QtCore.Signal(QtCore.QPointF, CustomGraphicsView)
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -85,6 +85,6 @@ class EnfaceView(CustomGraphicsView):
     #    print(tform)
     #    top_left = tform((rect.topLeft().x(), rect.topLeft().y()))[0]
     #    bot_right = tform((rect.bottomRight().x(), rect.bottomRight().y()))[0]
-    #    return Qt.QRectF(Qt.QPointF(*top_left), Qt.QPointF(*bot_right))
+    #    return QtCore.QRectF(QtCore.QPointF(*top_left), QtCore.QPointF(*bot_right))
 
 

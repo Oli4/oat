@@ -1,7 +1,7 @@
 import pytest
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QDialog, QFileDialog
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QDialog, QFileDialog
 
 from oat import oatmain
 

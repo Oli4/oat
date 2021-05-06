@@ -5,12 +5,12 @@ from typing import List, Dict
 import numpy as np
 import qimage2ndarray
 import requests
-from PyQt5 import Qt, QtCore
+from PySide6 import Qt, QtCore
 
 from oat import config
 
 
-class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
+class TreeGraphicsItem(QtWidgets.QGraphicsPixmapItem):
     _defaults = {"visible": True}
 
     def __init__(self, *args, parent=None, data=None, is_panel=True,
@@ -27,19 +27,19 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
             # Dict of pixels for every
             self._data = data
             height, width = self.shape
-            self.qimage = Qt.QImage(width, height,
-                                    Qt.QImage.Format_ARGB32)
-            color = Qt.QColor()
+            self.qimage = QtGui.QImage(width, height,
+                                    QtGui.QImage.Format_ARGB32)
+            color = QtGui.QColor()
             color.setNamedColor(f"#{self.current_color}")
             self.qimage.fill(color)
             self.alpha_array = qimage2ndarray.alpha_view(self.qimage)
-            self.setPixmap(Qt.QPixmap())
+            self.setPixmap(QtGui.QPixmap())
             self.set_data()
 
 
             self.pixels = self._data["mask"]
             self.changed = False
-            self.setFlag(Qt.QGraphicsItem.ItemIsFocusable)
+            self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable)
             self.timer = QtCore.QTimer()
             self.timer.start(2500)
             self.timer.timeout.connect(self.sync)
@@ -218,7 +218,7 @@ class TreeGraphicsItem(Qt.QGraphicsPixmapItem):
     @current_color.setter
     def current_color(self, value):
         self._data["current_color"] = value
-        color = Qt.QColor()
+        color = QtGui.QColor()
         color.setNamedColor(f"#{self.current_color}")
         self.qimage.fill(color)
         self.set_data()

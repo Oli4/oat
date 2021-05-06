@@ -1,7 +1,7 @@
-from PyQt5 import QtGui, QtWidgets, QtCore, Qt
+from PySide6 import QtGui, QtWidgets, QtCore, Qt
 
 
-class PaintPreview(Qt.QGraphicsItem):
+class PaintPreview(QtWidgets.QGraphicsItem):
     def __init__(self, settings_widget, parent=None):
         super().__init__(parent)
         self.settings_widget = settings_widget

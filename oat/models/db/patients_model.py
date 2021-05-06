@@ -1,6 +1,6 @@
 import pandas as pd
 import requests
-from PyQt5 import QtCore
+from PySide6 import QtCore
 
 from oat import config
 from oat.core.security import get_local_patient_info

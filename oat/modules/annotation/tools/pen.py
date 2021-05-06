@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtWidgets, QtCore, Qt
+from PySide6 import QtGui, QtWidgets, QtCore, Qt
 from oat.views.ui.ui_pen_options import Ui_penOptions
 
 class PenWidget(QtWidgets.QWidget, Ui_penOptions):
@@ -13,7 +13,7 @@ class PenWidget(QtWidgets.QWidget, Ui_penOptions):
         self.sizeLabel.setText(f"Size: {self.sizeSlider.value()}")
 
 
-class PaintPreview(Qt.QGraphicsPixmapItem):
+class PaintPreview(QtWidgets.QGraphicsPixmapItem):
     def __init__(self, tool, parent=None):
         super().__init__(parent)
         self.tool = tool
@@ -23,10 +23,10 @@ class PaintPreview(Qt.QGraphicsPixmapItem):
 
     def set_preview(self):
         diameter = self.settings_widget.sizeSlider.value()
-        pm = Qt.QPixmap(diameter+1, diameter+1)
+        pm = QtGui.QPixmap(diameter+1, diameter+1)
         pm.fill(QtCore.Qt.transparent)
-        painter = Qt.QPainter(pm)
-        pen = Qt.QPen(QtCore.Qt.red)
+        painter = QtGui.QPainter(pm)
+        pen = QtGui.QPen(QtCore.Qt.red)
         painter.setPen(pen)
         painter.setBackgroundMode(QtCore.Qt.TransparentMode)
         painter.drawPixmap(0, 0, self.tool.mask)
@@ -59,10 +59,10 @@ class Pen(object):
     def mask(self):
         diameter = self.options_widget.sizeSlider.value()
         if diameter not in self._masks:
-            bm = Qt.QBitmap(diameter+1, diameter+1)
+            bm = QtGui.QBitmap(diameter+1, diameter+1)
             bm.fill(QtCore.Qt.color0)
-            painter = Qt.QPainter(bm)
-            brush = Qt.QBrush()
+            painter = QtGui.QPainter(bm)
+            brush = QtGui.QBrush()
             brush.setStyle(QtCore.Qt.SolidPattern)
             painter.setBrush(brush)
             painter.drawEllipse(0,0, diameter, diameter)
@@ -95,9 +95,9 @@ class Pen(object):
             QtGui.QPixmap(":/cursors/cursors/pen_cursor.svg"), hotX=0, hotY=0)
 
     def get_painter(self, gitem):
-        painter = Qt.QPainter(gitem.qimage)
-        color = Qt.QColor(f"#{gitem.current_color}")
-        brush = Qt.QBrush()
+        painter = QtGui.QPainter(gitem.qimage)
+        color = QtGui.QColor(f"#{gitem.current_color}")
+        brush = QtGui.QBrush()
         brush.setStyle(QtCore.Qt.SolidPattern)
         brush.setColor(color)
         painter.setPen(color)
@@ -108,7 +108,7 @@ class Pen(object):
         radius = self.options_widget.sizeSlider.value() / 2
         painter = self.get_painter(gitem)
         painter.setBackgroundMode(QtCore.Qt.TransparentMode)
-        pos = Qt.QPointF(pos.x()-radius, pos.y()-radius)
+        pos = QtCore.QPointF(pos.x()-radius, pos.y()-radius)
         painter.drawPixmap(pos, self.mask)
         painter.end()
 
@@ -118,8 +118,8 @@ class Pen(object):
     def erase(self, gitem, pos):
         radius = self.options_widget.sizeSlider.value() / 2
         painter = self.get_painter(gitem)
-        painter.setCompositionMode(Qt.QPainter.CompositionMode_Clear)
-        pos = Qt.QPointF(pos.x() - radius, pos.y() - radius)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_Clear)
+        pos = QtCore.QPointF(pos.x() - radius, pos.y() - radius)
         painter.drawPixmap(pos, self.mask)
         painter.end()
 

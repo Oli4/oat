@@ -1,5 +1,5 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QWidget
+from PySide6 import QtWidgets, QtGui, QtCore
+from PySide6.QtWidgets import QWidget
 
 from oat.modules.annotation.models.layereditor import LayerEntry, LayerGroupEntry
 
@@ -24,7 +24,7 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         self.editor.editorChanged.connect(self.update_model)
         return self.editor
 
-    @QtCore.pyqtSlot()
+    @QtCore.Slot()
     def update_model(self):
         editor = self.sender()
         self.commitData.emit(editor)
