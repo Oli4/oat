@@ -42,6 +42,7 @@ class CollectionsModel(QtCore.QAbstractTableModel):
 
         clean_collections = []
         for c in collections:
+            print(c)
             patient = c.pop("patient")
             c["patient_id"] = patient["id"]
             c["patient_pseudonym"] = patient["pseudonym"]
