@@ -65,6 +65,17 @@ class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
         self.datasetComboBox.currentIndexChanged.connect(self.update_collections)
         self.editDatasetButton.clicked.connect(self.open_dataset_manager)
 
+        #self.context_menu = QtWidgets.QMenu()
+        delete_action = QtGui.QAction("Remove", self.tableView)
+        delete_action.triggered.connect(self.delete_collection)
+        self.tableView.addAction(delete_action)
+
+    def delete_collection(self):
+        # Get currents collection id
+        id = self.model.data(self.tableView.currentIndex(), role=ID_ROLE)
+        # Delete collection
+        self.model.sourceModel().delete_collection(id)
+
     def update_collections(self):
         self.collections_model.dataset_id = self.datasetComboBox.currentData(
             role=ID_ROLE)

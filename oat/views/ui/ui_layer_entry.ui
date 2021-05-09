@@ -115,7 +115,7 @@
       </font>
      </property>
      <property name="contextMenuPolicy">
-      <enum>Qt::NoContextMenu</enum>
+      <enum>Qt::ActionsContextMenu</enum>
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>

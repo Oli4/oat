@@ -71,13 +71,15 @@ class LayerEntry(QWidget, Ui_LayerEntry):
         self.colorButton.clicked.connect(self.set_color)
         self.colorDialog = QtWidgets.QColorDialog()
 
-    #def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
-    #    if self.label.text() == "RPE":
-    #        contextMenu = QtWidgets.QMenu(self)
-    #        idealRPE = contextMenu.addAction("Compute idealRPE")
-    #        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
-    #        if action == idealRPE:
-    #            print("Smart computations happening")
+
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
+        print("here")
+        if self.label.text() == "RPE":
+            contextMenu = QtWidgets.QMenu(self)
+            idealRPE = contextMenu.addAction("Compute idealRPE")
+            action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+            if action == idealRPE:
+                print("Smart computations happening")
 
     def set_color(self, color=None):
         if not color:

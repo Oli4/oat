@@ -55,7 +55,7 @@ class Ui_LayerEntry(object):
         font = QFont()
         font.setPointSize(8)
         self.label.setFont(font)
-        self.label.setContextMenuPolicy(Qt.NoContextMenu)
+        self.label.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.label.setAutoFillBackground(False)
         self.label.setStyleSheet(u"")
         self.label.setScaledContents(False)

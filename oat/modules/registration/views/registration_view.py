@@ -48,7 +48,13 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
         self.graphicsViewCheckerboard.setTransformationAnchor(
             QtWidgets.QGraphicsView.AnchorUnderMouse)
 
+    def enterEvent(self, event:QtGui.QEnterEvent) -> None:
+        super().enterEvent(event)
         self.grabKeyboard()
+
+    def leaveEvent(self, event:QtCore.QEvent) -> None:
+        super().leaveEvent(event)
+        self.releaseKeyboard()
 
     def save(self):
         pass

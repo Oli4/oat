@@ -33,7 +33,7 @@ class TreeItemDelegate(QtWidgets.QStyledItemDelegate):
         data = index.model().data(index, QtCore.Qt.EditRole)
         editor.label.setText(str(data["name"]))
         if data["name"] == "RPE":
-            idealRPE_action = QtWidgets.QAction("idealRPE", editor)
+            idealRPE_action = QtGui.QAction("idealRPE", editor)
             scene_tab = editor.parent().parent().parent()
             idealRPE_action.triggered.connect(scene_tab.compute_idealRPE)
             editor.addAction(idealRPE_action)

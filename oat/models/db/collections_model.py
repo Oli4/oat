@@ -27,6 +27,13 @@ class CollectionsModel(QtCore.QAbstractTableModel):
         self._dataset_id = value
         self.reload_data()
 
+    def delete_collection(self, id):
+        response = requests.delete(
+            f"{config.api_server}/collections/{id}",
+            headers=config.auth_header)
+        self.reload_data()
+        return response
+
     def reload_data(self):
         self.layoutAboutToBeChanged.emit()
         if type(self.dataset_id) == int:
@@ -42,7 +49,6 @@ class CollectionsModel(QtCore.QAbstractTableModel):
 
         clean_collections = []
         for c in collections:
-            print(c)
             patient = c.pop("patient")
             c["patient_id"] = patient["id"]
             c["patient_pseudonym"] = patient["pseudonym"]

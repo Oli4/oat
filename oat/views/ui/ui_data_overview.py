@@ -109,6 +109,7 @@ class Ui_OverviewView(object):
 
         self.tableView = QTableView(OverviewView)
         self.tableView.setObjectName(u"tableView")
+        self.tableView.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.tableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableView.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableView.horizontalHeader().setCascadingSectionResizes(True)

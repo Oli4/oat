@@ -59,6 +59,7 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionIntroduction.triggered.connect(
             lambda: self.open_help("introduction"))
 
+
         #self.statusBar().showMessage("")
 
     def open_help(self, topic):
@@ -144,7 +145,20 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
             self.centralWidget().save()
 
     def export(self):
+        # Get current Dataset
+        #self.navigationDock.widget().
         pass
+        # Get all collection ids for dataset
+
+        # Export all enface images in selected format
+
+        # Export warped enface images
+
+        # Export registration as JSON
+
+        # Export BScans
+
+        # Export Annotations
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         # Save all unchanged annotations
