@@ -32,8 +32,9 @@ class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
         self.setupUi(self)
 
         self.datasets_model = datasets_model
-        self.collections_model = collections_model
+        print
 
+        self.collections_model = collections_model
         self.model = CustomQSortFilterProxyModel(self)
         self.model.setSourceModel(self.collections_model)
 
@@ -63,6 +64,8 @@ class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
 
         self.datasetComboBox.setModel(self.datasets_model)
         self.datasetComboBox.currentIndexChanged.connect(self.update_collections)
+        self.update_collections()
+
         self.editDatasetButton.clicked.connect(self.open_dataset_manager)
 
         #self.context_menu = QtWidgets.QMenu()
@@ -79,6 +82,7 @@ class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
     def update_collections(self):
         self.collections_model.dataset_id = self.datasetComboBox.currentData(
             role=ID_ROLE)
+        self.model.invalidate()
 
     def open_dataset_manager(self):
         dialog = DatasetManagerDialog()

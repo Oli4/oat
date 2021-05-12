@@ -146,8 +146,8 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def export(self):
         # Get current Dataset
-        #self.navigationDock.widget().
-        pass
+        dataset_id = self.navigationDock.widget().datasetComboBox.currentData(role=ID_ROLE)
+        print(dataset_id)
         # Get all collection ids for dataset
 
         # Export all enface images in selected format

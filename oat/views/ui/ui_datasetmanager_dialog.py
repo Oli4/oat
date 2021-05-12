@@ -70,6 +70,7 @@ class Ui_DatasetManagerDialog(object):
 
         self.datasetTableView = QTableView(DatasetManagerDialog)
         self.datasetTableView.setObjectName(u"datasetTableView")
+        self.datasetTableView.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.datasetTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.datasetTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
 
@@ -98,11 +99,13 @@ class Ui_DatasetManagerDialog(object):
 
         self.verticalLayout_2.addWidget(self.descriptionTextEdit)
 
+        self.line = QFrame(self.frame)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
 
-        self.horizontalLayout_6.addLayout(self.verticalLayout_2)
+        self.verticalLayout_2.addWidget(self.line)
 
-        self.verticalLayout_3 = QVBoxLayout()
-        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.formLayout = QFormLayout()
         self.formLayout.setObjectName(u"formLayout")
         self.label_3 = QLabel(self.frame)
@@ -135,22 +138,20 @@ class Ui_DatasetManagerDialog(object):
         self.formLayout.setLayout(0, QFormLayout.FieldRole, self.horizontalLayout_3)
 
 
-        self.verticalLayout_3.addLayout(self.formLayout)
+        self.verticalLayout_2.addLayout(self.formLayout)
 
         self.collaboratorsTableView = QTableView(self.frame)
         self.collaboratorsTableView.setObjectName(u"collaboratorsTableView")
         self.collaboratorsTableView.setSelectionMode(QAbstractItemView.SingleSelection)
         self.collaboratorsTableView.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.verticalLayout_3.addWidget(self.collaboratorsTableView)
+        self.verticalLayout_2.addWidget(self.collaboratorsTableView)
 
-        self.line = QFrame(self.frame)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.HLine)
-        self.line.setFrameShadow(QFrame.Sunken)
 
-        self.verticalLayout_3.addWidget(self.line)
+        self.horizontalLayout_6.addLayout(self.verticalLayout_2)
 
+        self.verticalLayout_3 = QVBoxLayout()
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.formLayout_2 = QFormLayout()
         self.formLayout_2.setObjectName(u"formLayout_2")
         self.label_4 = QLabel(self.frame)
