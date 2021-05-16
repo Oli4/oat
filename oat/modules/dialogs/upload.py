@@ -7,6 +7,7 @@ from oat import config
 from oat.utils.api import upload_vol, upload_enface_file, upload_hexml, upload_folder
 from oat.modules.dialogs import AddPatientDialog, AddCollectionDialog
 from oat.views.ui.ui_upload_dialog import Ui_UploadDialog
+from oat.models.config import ID_ROLE, DATA_ROLE
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,9 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
         self.collection_model.setFilterRegularExpression(self.patient_id)
         self.collection_model.setFilterKeyColumn(filter_key_column)
+
+        for row in range(self.collection_model.rowCount()):
+            print(self.collection_model.data(self.collection_model.index(row, 0), role=DATA_ROLE))
 
     def add_patient(self):
         dialog = AddPatientDialog()
