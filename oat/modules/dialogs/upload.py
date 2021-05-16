@@ -26,6 +26,11 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
         self.collection_model = QtCore.QSortFilterProxyModel(self)
         self.collection_model.setSourceModel(models["collections"])
+        filter_key_column = [x for x in range(self.collection_model.columnCount())
+                             if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
+                             == "Patient Id"][0]
+        self.collection_model.setFilterKeyColumn(filter_key_column)
+
         self.collectionDropdown.setModel(self.collection_model)
         self.collectionDropdown.setModelColumn(0)
         self.update_collections(0)
@@ -52,12 +57,8 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
     @QtCore.Slot(int)
     def update_collections(self, index):
-        filter_key_column = [x for x in range(self.collection_model.columnCount())
-                             if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
-                             == "Patient Id"][0]
-
         self.collection_model.setFilterFixedString(self.patient_id)
-        self.collection_model.setFilterKeyColumn(filter_key_column)
+
 
     def add_patient(self):
         dialog = AddPatientDialog()

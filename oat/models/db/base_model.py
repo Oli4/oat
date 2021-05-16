@@ -48,7 +48,7 @@ class BaseModel(QtCore.QAbstractTableModel):
     # Subclassing requires data, rowCount and columnCount methods
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
-            return self._data[index.row()][self.columns[index.column()]]
+            return str(self._data[index.row()][self.columns[index.column()]])
         elif role == ID_ROLE:
             return int(self._data[index.row()]["id"])
         elif role == DATA_ROLE:
