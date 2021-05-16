@@ -55,13 +55,9 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
         filter_key_column = [x for x in range(self.collection_model.columnCount())
                              if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
                              == "Patient Id"][0]
-        print(filter_key_column, self.patient_id)
 
-        self.collection_model.setFilterRegularExpression(self.patient_id)
+        self.collection_model.setFilterFixedString(self.patient_id)
         self.collection_model.setFilterKeyColumn(filter_key_column)
-
-        for row in range(self.collection_model.rowCount()):
-            print(self.collection_model.data(self.collection_model.index(row, 0), role=DATA_ROLE))
 
     def add_patient(self):
         dialog = AddPatientDialog()
