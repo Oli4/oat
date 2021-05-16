@@ -48,6 +48,7 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
     @property
     def patient_id(self):
         index = self.patientDropdown.currentIndex()
+        print(self.patient_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole))
         return self.patient_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
 
     @property
@@ -59,6 +60,8 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
     def update_collections(self, index):
         self.collection_model.setFilterFixedString(self.patient_id)
 
+        for row in range(self.collection_model.rowCount()):
+            print(self.collection_model.data(self.collection_model.index(row, 0), role=DATA_ROLE)["patient_id"])
 
     def add_patient(self):
         dialog = AddPatientDialog()
