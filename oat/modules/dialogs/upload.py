@@ -58,7 +58,9 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
     @QtCore.Slot(int)
     def update_collections(self, index):
-        self.collection_model.setFilterFixedString(self.patient_id)
+        #self.collection_model.setFilterFixedString(self.patient_id)
+        self.collection_model.setFilterRegularExpression(
+            QtCore.QRegularExpression(f"^{self.patient_id}$"))
 
         for row in range(self.collection_model.rowCount()):
             print(self.collection_model.data(self.collection_model.index(row, 0), role=DATA_ROLE)["patient_id"])
