@@ -41,9 +41,7 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionSave.triggered.connect(self.save)
         self.actionExport.triggered.connect(self.export)
 
-        self.overview_view = NavigationView(datasets_model=self.models["datasets"],
-                                            collections_model=self.models["collections"],
-                                            parent=self)
+        self.overview_view = NavigationView(models=self.models, parent=self)
         self.overview_view.annotateButton.clicked.connect(self.open_annotation_view)
         self.overview_view.registerButton.clicked.connect(self.open_registration_view)
         self.navigationDock.setWidget(self.overview_view)
@@ -136,7 +134,7 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             raise ValueError("'type' has to be either 'cfp' or 'vol'")
 
-        if dialog.exec_() == QtWidgets.QDialog.Accepted:
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
             pass
 
     def save(self):
@@ -146,11 +144,21 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def export(self):
         # Get current Dataset
-        dataset_id = self.navigationDock.widget().datasetComboBox.currentData(role=ID_ROLE)
-        print(dataset_id)
-        # Get all collection ids for dataset
+        id = self.navigationDock.widget().datasetComboBox.currentData(role=ID_ROLE)
+        # Get all collections for dataset
+        collections = self.models["collections"].get_collections(dataset_id=id)
+        full_collections = [c for c in collections if c["enfaceimage_ids"] != []]
 
         # Export all enface images in selected format
+        # Download nir
+
+        # Save nir
+
+        # Download cfp
+
+        # Warp cfp
+
+        # Save cfp
 
         # Export warped enface images
 
@@ -191,7 +199,7 @@ def main(log_level=logging.INFO):
     application = QtWidgets.QApplication(sys.argv)
     login = LoginDialog()
 
-    if login.exec_() == QtWidgets.QDialog.Accepted:
+    if login.exec() == QtWidgets.QDialog.Accepted:
         window = oat()
         desktop = QtGui.QScreen().availableGeometry()
         width = (desktop.width() - window.width()) / 2
@@ -199,7 +207,7 @@ def main(log_level=logging.INFO):
         window.show()
         window.move(width, height)
 
-        sys.exit(application.exec_())
+        sys.exit(application.exec())
 
 if __name__ == '__main__':
     main()

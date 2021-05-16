@@ -51,10 +51,10 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
     @QtCore.Slot(int)
     def update_collections(self, index):
-        #filter_key_column = [x for x in range(self.collection_model.columnCount())
-        #                     if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
-        #                     == "patient_id"][0]
-        filter_key_column = self.collection_model.sourceModel().column_order.index("patient_id")
+        filter_key_column = [x for x in range(self.collection_model.columnCount())
+                             if self.collection_model.headerData(x, QtCore.Qt.Horizontal)
+                             == "Patient Id"][0]
+        #filter_key_column = self.collection_model.sourceModel().column_order.index("patient_id")
         self.collection_model.setFilterRegularExpression(str(self.patient_id))
         self.collection_model.setFilterKeyColumn(filter_key_column)
 

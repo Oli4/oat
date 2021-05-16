@@ -13,10 +13,19 @@ class CustomQSortFilterProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.dataset_id = None
+
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
-        model = self.sourceModel()
-        index = model.index(source_row, 0, source_parent)
-        return not model.data(index, EMPTY_ROLE)
+        accept_row = True
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        data = self.sourceModel().data(index, DATA_ROLE)
+        if len(data["enfaceimage_ids"] + data["volumeimage_ids"]) == 0:
+            accept_row = False
+        if self.dataset_id is not None:
+            if self.dataset_id not in data["dataset_ids"]:
+                accept_row = False
+
+        return accept_row
 
     def filterAcceptsColumn(self, source_column:int, source_parent:QtCore.QModelIndex) -> bool:
         header = self.sourceModel().headerData(source_column, QtCore.Qt.Horizontal)
@@ -26,15 +35,14 @@ class CustomQSortFilterProxyModel(QtCore.QSortFilterProxyModel):
             return False
 
 class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
-    def __init__(self, datasets_model, collections_model, parent=None):
+    def __init__(self, models, parent=None):
         """Initialize the components of the Toolbox subwindow."""
         super().__init__(parent)
         self.setupUi(self)
 
-        self.datasets_model = datasets_model
-        print
+        self.datasets_model = models["datasets"]
+        self.collections_model = models["collections"]
 
-        self.collections_model = collections_model
         self.model = CustomQSortFilterProxyModel(self)
         self.model.setSourceModel(self.collections_model)
 
@@ -74,18 +82,16 @@ class NavigationView(QtWidgets.QWidget, Ui_OverviewView):
         self.tableView.addAction(delete_action)
 
     def delete_collection(self):
-        # Get currents collection id
-        id = self.model.data(self.tableView.currentIndex(), role=ID_ROLE)
-        # Delete collection
-        self.model.sourceModel().delete_collection(id)
+        self.model.removeRow(self.tableView.currentIndex().row(), QtCore.QModelIndex())
 
     def update_collections(self):
-        self.collections_model.dataset_id = self.datasetComboBox.currentData(
-            role=ID_ROLE)
+        self.model.dataset_id = int(self.datasetComboBox.currentData(role=ID_ROLE))
         self.model.invalidate()
 
     def open_dataset_manager(self):
-        dialog = DatasetManagerDialog()
+
+
+        dialog = DatasetManagerDialog(self.datasets_model)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.datasets_model.layoutChanged.emit()
 

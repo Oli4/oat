@@ -25,10 +25,10 @@ class CustomQSortFilterProxyModel(QtCore.QSortFilterProxyModel):
             return False
 
 class DatasetManagerDialog(QtWidgets.QDialog, Ui_DatasetManagerDialog):
-    def __init__(self, parent=None):
+    def __init__(self, datasets_model, parent=None):
         super().__init__(parent)
         self.setupUi(self)
-        self.datasets_model = DatasetsModel(owned_only=True)
+        self.datasets_model = datasets_model
 
         self.dataset_proxy_model = CustomQSortFilterProxyModel(self)
         self.dataset_proxy_model.setSourceModel(self.datasets_model)
@@ -68,6 +68,7 @@ class DatasetManagerDialog(QtWidgets.QDialog, Ui_DatasetManagerDialog):
         dialog = AddDatasetDialog(self.datasets_model)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             self.dataset_proxy_model.invalidate()
+            pass
 
     def ask_confirmation(self, question):
         msgBox = QMessageBox()
