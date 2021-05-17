@@ -112,7 +112,7 @@ class RegistrationModel(QtCore.QAbstractTableModel):
         self.collection_data = collection_data
         self.cfp = [image for image in self.collection_data["enfaceimages"] if image["modality"] == "CFP"][0]
         self.nir = [image for image in self.collection_data["enfaceimages"] if image["modality"] == "NIR"][0]
-        self.image_ids = [self.cfp["id"], self.nir["id"]]
+        self.image_ids = [self.nir["id"], self.cfp["id"]]
 
         self.scenes = {0: RegistrationGraphicsScene(self, 0, image_id=self.nir["id"]),
                        1: RegistrationGraphicsScene(self, 1, image_id=self.cfp["id"])}
