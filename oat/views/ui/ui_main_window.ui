@@ -44,7 +44,6 @@
     <addaction name="menuUpload"/>
     <addaction name="actionSave"/>
     <addaction name="separator"/>
-    <addaction name="actionExport"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="enabled">

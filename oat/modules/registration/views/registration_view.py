@@ -8,6 +8,8 @@ from oat.models.config import POINT_ROLE
 from oat.modules.registration.models import RegistrationModel
 from oat.views.ui.ui_registration_manual import Ui_RegistrationManual
 
+from oat import config
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,6 +49,36 @@ class RegistrationView(QWidget, Ui_RegistrationManual):
 
         self.graphicsViewCheckerboard.setTransformationAnchor(
             QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+        self.exportButton.clicked.connect(self.export)
+
+    def export(self):
+        # Ask For folder
+        dir = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Select Export Location", config.export_path)
+
+        config.export_path = dir
+        import imageio
+        import skimage.transform as skitrans
+        from pathlib import Path
+
+        nir_image = self.model.scenes[0].img_array
+        cfp_image = self.model.scenes[1].img_array
+
+        # Use current transformation for warping the CFP
+        cfp_warped = skitrans.warp(cfp_image,
+                      inverse_map=self.model.tform.inverse,
+                      output_shape=nir_image.shape,
+                      preserve_range=True)
+
+        patient_pseudonym = self.model.collection_data["patient"]["pseudonym"]
+        laterality = {"OS":"L", "OD":"R"}[self.model.collection_data["laterality"]]
+        # Save NIR
+        imageio.imwrite(Path(dir) / f"{patient_pseudonym}{laterality}_nir.jpeg", nir_image)
+
+        # Save CFP
+        imageio.imwrite(Path(dir) / f"{patient_pseudonym}{laterality}_cfp.jpeg", cfp_warped)
+
 
     def enterEvent(self, event:QtGui.QEnterEvent) -> None:
         super().enterEvent(event)

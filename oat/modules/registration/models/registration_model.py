@@ -106,13 +106,16 @@ class RegistrationGraphicsScene(CustomGrahpicsScene):
 
 
 class RegistrationModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args):
+    def __init__(self, collection_data):
         super().__init__()
 
-        self.image_ids = args
+        self.collection_data = collection_data
+        self.cfp = [image for image in self.collection_data["enfaceimages"] if image["modality"] == "CFP"][0]
+        self.nir = [image for image in self.collection_data["enfaceimages"] if image["modality"] == "NIR"][0]
+        self.image_ids = [self.cfp["id"], self.nir["id"]]
 
-        self.scenes = {i: RegistrationGraphicsScene(self, i, image_id=image_id)
-                       for i, image_id in enumerate(self.image_ids)}
+        self.scenes = {0: RegistrationGraphicsScene(self, 0, image_id=self.nir["id"]),
+                       1: RegistrationGraphicsScene(self, 1, image_id=self.cfp["id"])}
 
         self.checker_images, self.checker_scale = zip(*[self.img_rescale(scene.img_array, 300)
                                                         for scene in self.scenes.values()])
@@ -154,7 +157,14 @@ class RegistrationModel(QtCore.QAbstractTableModel):
 
     @property
     def tform(self):
-        return self.estimate_transformation()
+        self.estimate_transformation()
+        return self._tform
+
+    @property
+    def local_tform(self):
+        self.estimate_transformation()
+        return self._local_tform
+
 
     @property
     def checkerboard_size(self):
@@ -185,13 +195,14 @@ class RegistrationModel(QtCore.QAbstractTableModel):
             local_tform = skitrans.ProjectiveTransform(matrix)
             tform = local_tform
         self._data[self.tmodel] = [float(p) for p in tform.params.flatten()]
-        return local_tform
+        self._local_tform = local_tform
+        self._tform = tform
 
     def update_checkerboard(self):
         img1 = self.checker_images[0]
         print(self.checker_images[1].shape)
         img2 = skitrans.warp(self.checker_images[1],
-                             inverse_map=self.tform.inverse,
+                             inverse_map=self.local_tform.inverse,
                              output_shape=self.checker_images[0].shape,
                              preserve_range=True)
 

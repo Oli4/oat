@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_registration_manual.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.0.4
+## Created by: Qt User Interface Compiler version 6.1.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -171,6 +171,13 @@ class Ui_RegistrationManual(object):
 
         self.verticalLayout_4.addWidget(self.transformationDropdown)
 
+        self.exportButton = QToolButton(RegistrationManual)
+        self.exportButton.setObjectName(u"exportButton")
+        sizePolicy4.setHeightForWidth(self.exportButton.sizePolicy().hasHeightForWidth())
+        self.exportButton.setSizePolicy(sizePolicy4)
+
+        self.verticalLayout_4.addWidget(self.exportButton)
+
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.verticalLayout_4.addItem(self.verticalSpacer)
@@ -191,5 +198,6 @@ class Ui_RegistrationManual(object):
         self.transformationDropdown.setItemText(0, QCoreApplication.translate("RegistrationManual", u"Similarity", None))
         self.transformationDropdown.setItemText(1, QCoreApplication.translate("RegistrationManual", u"Affine", None))
 
+        self.exportButton.setText(QCoreApplication.translate("RegistrationManual", u"Export", None))
     # retranslateUi
 

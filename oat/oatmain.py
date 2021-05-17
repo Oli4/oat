@@ -111,12 +111,8 @@ class oat(QtWidgets.QMainWindow, Ui_MainWindow):
             f"{config.api_server}/collections/{collection_id}",
             headers=config.auth_header)
         data = response.json()
+        model = RegistrationModel(data)
 
-        cfp_id = [image["id"] for image in data["enfaceimages"]
-                  if image["modality"] == "CFP"][0]
-        nir_id = [image["id"] for image in data["enfaceimages"]
-                  if image["modality"] == "NIR"][0]
-        model = RegistrationModel(nir_id, cfp_id)
         rv = RegistrationView(model)
         self.setCentralWidget(rv)
 

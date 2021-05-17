@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'ui_main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.0.4
+## Created by: Qt User Interface Compiler version 6.1.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -18,7 +18,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(836, 637)
+        MainWindow.resize(836, 618)
         self.actionSave_as = QAction(MainWindow)
         self.actionSave_as.setObjectName(u"actionSave_as")
         self.actionOpen_Project = QAction(MainWindow)
@@ -113,7 +113,6 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.menuUpload.menuAction())
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionExport)
         self.menuUpload.addAction(self.actionImportVol)
         self.menuUpload.addAction(self.actionImportHEXML)
         self.menuUpload.addAction(self.actionImportBSFolder)

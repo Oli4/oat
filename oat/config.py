@@ -11,5 +11,6 @@ auth_header = ''
 local_patient_info_file = ''
 fernet = ''
 import_path = os.path.expanduser('~')
+export_path = os.path.expanduser('~')
 
 debug = True

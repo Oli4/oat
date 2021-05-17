@@ -48,7 +48,6 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
     @property
     def patient_id(self):
         index = self.patientDropdown.currentIndex()
-        print(self.patient_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole))
         return self.patient_model.headerData(index, QtCore.Qt.Vertical, QtCore.Qt.DisplayRole)
 
     @property
@@ -58,12 +57,8 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
 
     @QtCore.Slot(int)
     def update_collections(self, index):
-        #self.collection_model.setFilterFixedString(self.patient_id)
         self.collection_model.setFilterRegularExpression(
             QtCore.QRegularExpression(f"^{self.patient_id}$"))
-
-        for row in range(self.collection_model.rowCount()):
-            print(self.collection_model.data(self.collection_model.index(row, 0), role=DATA_ROLE)["patient_id"])
 
     def add_patient(self):
         dialog = AddPatientDialog()
@@ -87,7 +82,8 @@ class ImportDialog(QtWidgets.QDialog, Ui_UploadDialog):
         self.fname, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                               "Select Upload File",
                                                               config.import_path,
-                                                              self.filefilter)
+                                                              self.filefilter,)
+
         if self.fname != '':
             self.fileName.setText(str(Path(self.fname).name))
 
@@ -149,6 +145,7 @@ class ImportHexmlDialog(ImportDialog):
     def select_file(self):
         self.fname = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Select HEYEX XML folder", config.import_path)
+        config.import_path = self.fname
         if self.fname != '':
             self.fileName.setText(str(Path(self.fname).name))
 
@@ -163,6 +160,7 @@ class ImportFolderDialog(ImportDialog):
     def select_file(self):
         self.fname = QtWidgets.QFileDialog.getExistingDirectory(
             self, "Select folder with B-Scans", config.import_path)
+        config.import_path = self.fname
         if self.fname != '':
             self.fileName.setText(str(Path(self.fname).name))
 
